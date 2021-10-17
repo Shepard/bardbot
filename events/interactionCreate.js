@@ -21,7 +21,7 @@ const interactionCreateEvent = {
 
 function isMatchingCommand(interaction, command) {
 	if (interaction.isCommand()) {
-		return command.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
+		return command.data.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
 	}
 	if (interaction.isContextMenu()) {
 		return (interaction.targetType === 'USER' && command.data.type === Constants.ApplicationCommandTypes.USER)
