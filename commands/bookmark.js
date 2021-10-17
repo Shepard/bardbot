@@ -8,12 +8,12 @@ const bookmarkCommand = {
 	// Data for registering the command
 	data: {
 		name: 'bookmark',
-		description: 'Creates a bookmark post for an event happening in this channel and posts it to another channel.',
+		description: 'Creates a bookmark to identify a new chapter in the lore for easy referencing.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'event',
-				description: 'Description of the event',
+				description: 'Description of the event starting the chapter',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}
@@ -35,7 +35,7 @@ const bookmarkCommand = {
 
 				// Then send a message to the bookmarks channel, pointing back to the message sent above.
 				const bookmarkMessageEmbed = new MessageEmbed()
-					.setDescription(`${hyperlink('A new chapter was opened', eventMessage.url)} in ${channelMention(interaction.channelId)}.\n\n${eventMessageText}`);
+					.setDescription(`A ${hyperlink('new chapter', eventMessage.url)} was written in ${channelMention(interaction.channelId)}.\n\n${eventMessageText}`);
 				await bookmarksChannel.send({
 					embeds: [bookmarkMessageEmbed]
 				});

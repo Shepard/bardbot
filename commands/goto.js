@@ -5,7 +5,7 @@ const gotoCommand = {
 	// Data for registering the command
 	data: {
 		name: 'goto',
-		description: 'Creates a link in the lore for when characters move between two location channels.',
+		description: 'Creates a link in the lore for characters to easily travel between two channels.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
@@ -16,7 +16,7 @@ const gotoCommand = {
 			},
 			{
 				name: 'action',
-				description: 'A short description of the action taking place as people move between places',
+				description: 'A short description of the action taking place as people travel to a new place',
 				type: Constants.ApplicationCommandOptionTypes.STRING
 			}
 		]
@@ -49,7 +49,7 @@ const gotoCommand = {
 		// to a specific message in a channel, the app will just jump to the end of the channel. Links embedded in messages on the
 		// other hand work some of the time.
 		const destinationMessageEmbed = new MessageEmbed()
-			.setDescription(`${hyperlink('People arrived', sourceMessage.url)} from ${channelMention(sourceChannel.id)}. The story continues here.`);
+			.setDescription(`Following ${hyperlink('the events', sourceMessage.url)} from ${channelMention(sourceChannel.id)}…`);
 		const destinationMessage = await destinationChannel.send({
 			embeds: [destinationMessageEmbed]
 		});

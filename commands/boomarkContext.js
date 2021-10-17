@@ -12,7 +12,7 @@ const bookmarkContextCommand = {
 	},
 	// Handler for when the command is used
 	async execute(interaction) {
-		// TODO Check this as a condition for registering the command.
+		// TODO Check this as a condition for registering the command. And extract the check/fetching.
 		const guildConfig = guilds.find(guild => guild.id === interaction.guildId);
 		if (guildConfig && guildConfig.bookmarksChannel) {
 			const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
@@ -23,7 +23,7 @@ const bookmarkContextCommand = {
 				if (message && message.content) {
 					// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 					const bookmarkMessageEmbed = new MessageEmbed()
-						.setDescription(`${hyperlink('A new chapter was opened', message.url)} in ${channelMention(interaction.channelId)}.\n\n${message.content}`);
+						.setDescription(`A ${hyperlink('new chapter', message.url)} was written in ${channelMention(interaction.channelId)}.\n\n${message.content}`);
 					const bookmarkMessage = await bookmarksChannel.send({
 						embeds: [bookmarkMessageEmbed]
 					});
