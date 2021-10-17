@@ -24,13 +24,16 @@ const bookmarkContextCommand = {
 					// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 					const bookmarkMessageEmbed = new MessageEmbed()
 						.setDescription(`${hyperlink('A new chapter was opened', message.url)} in ${channelMention(interaction.channelId)}.\n\n${message.content}`);
-					await bookmarksChannel.send({
+					const bookmarkMessage = await bookmarksChannel.send({
 						embeds: [bookmarkMessageEmbed]
 					});
 
 					// Some positive feedback for the user who used the command (only visible to them).
 					// If we don't send any reply, discord will show the command as failed after a while.
-					await interaction.reply({ content: `Your bookmark was successfully created in ${channelMention(bookmarksChannel.id)}!`, ephemeral: true });
+					await interaction.reply({
+						content: `${hyperlink('Your bookmark', bookmarkMessage.url)} was successfully created in ${channelMention(bookmarksChannel.id)}!`,
+						ephemeral: true
+					});
 				} else {
 					await interaction.reply({ content: 'This message does not have any text content.', ephemeral: true });
 				}
