@@ -23,13 +23,14 @@ const { clientId, guilds, token } = JSON.parse(fs.readFileSync('./config.json'))
 	try {
 		console.log('Started refreshing application (/) commands.');
 
-		guilds.forEach(async (guild) => {
+		await Promise.allSettled(guilds.map(guild => {
 			// TODO check if the bot is in that guild.
-			await rest.put(
+			// Replace all existing commands of this application in this guild with the provided ones.
+			return rest.put(
 				Routes.applicationGuildCommands(clientId, guild.id),
 				{ body: commands },
 			);
-		});
+		}));
 
 		console.log('Successfully reloaded application (/) commands.');
 	} catch (error) {
