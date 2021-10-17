@@ -1,5 +1,5 @@
 import { hyperlink, channelMention } from '@discordjs/builders';
-import { Constants, MessageEmbed /*, MessageActionRow, MessageButton*/ } from 'discord.js';
+import { Constants, MessageEmbed } from 'discord.js';
 
 const gotoCommand = {
 	// Data for registering the command
@@ -53,20 +53,6 @@ const gotoCommand = {
 		const destinationMessage = await destinationChannel.send({
 			embeds: [destinationMessageEmbed]
 		});
-
-		// Attempt to use a link button instead. As described above, this does not work well in the Android app but is kept here
-		// for future reference.
-		/*const destinationMessageButtonRow = new MessageActionRow()
-			.addComponents(
-				new MessageButton()
-					.setURL(sourceMessage.url)
-					.setLabel('Go back')
-					.setStyle('LINK'),
-			);
-		const destinationMessage = await destinationChannel.send({
-			content: `People arrived from ${channelMention(sourceChannel.id)}. The story continues here.`,
-			components: [destinationMessageButtonRow]
-		});*/
 
 		// As a last step we edit the original reply message to the command usage again. We now have a URL to the message in the
 		// destination channel and we'll use it to create a link in this original message, pointing at the other message.
