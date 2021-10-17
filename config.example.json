@@ -1,0 +1,16 @@
+{
+	"clientId": "Client id of your app",
+	"token": "Secret authentication token of your bot",
+	"guilds": [
+		{
+			"id": "Id of a guild (server)",
+			"bookmarksChannel": "Id of a bookmarks channel in that guild; optional",
+			"quotesChannel": "Id of a quotes channel in that guild; optional"
+		},
+		{
+			"id": "Id of another guild",
+			"bookmarksChannel": "Id of a bookmarks channel in that guild; optional",
+			"quotesChannel": "Id of a quotes channel in that guild; optional"
+		}
+	]
+}
