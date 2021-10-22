@@ -1,9 +1,12 @@
 import fs from 'fs';
 import { Client, Collection, Intents } from 'discord.js';
+import deployGuildCommands from './deploy-guild-commands.js';
 
-const { token } = JSON.parse(fs.readFileSync('./config.json'));
+const { token, guilds } = JSON.parse(fs.readFileSync('./config.json'));
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+
+client.guildConfigs = guilds;
 
 // Find all js files in /commands, import them and collect their exported commands on the client for later use.
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -25,3 +28,5 @@ for (const file of eventFiles) {
 }
 
 client.login(token);
+
+deployGuildCommands(client);

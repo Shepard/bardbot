@@ -19,32 +19,33 @@ const bookmarkCommand = {
 			}
 		]
 	},
-	// Handler for when the command is used
-	async execute(interaction) {
-		const guildConfig = guilds.find(guild => guild.id === interaction.guildId);
+	// Test function to check if the command should apply to a guild
+	guard(client, guild, guildConfig) {
 		if (guildConfig && guildConfig.bookmarksChannel) {
-			const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
+			const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannel);
 			if (bookmarksChannel) {
-				// First send a message in the channel where the user used the command,
-				// as as reply to their command call, showing the text they entered with the command.
-				const eventMessageText = interaction.options.getString('event');
-				const eventMessage = await interaction.reply({
-					content: eventMessageText,
-					fetchReply: true
-				});
-
-				// Then send a message to the bookmarks channel, pointing back to the message sent above.
-				const bookmarkMessageEmbed = new MessageEmbed()
-					.setDescription(`A ${hyperlink('new chapter', eventMessage.url)} was written in ${channelMention(interaction.channelId)}.\n\n${eventMessageText}`);
-				await bookmarksChannel.send({
-					embeds: [bookmarkMessageEmbed]
-				});
-			} else {
-				console.log(`Bookmark was requested but configured bookmarks channel ${guildConfig.bookmarksChannel} could not be found for guild ${interaction.guildId}.`);
+				return true;
 			}
-		} else {
-			console.log(`Bookmark was requested but no bookmarks channel has been configured for guild ${interaction.guildId}.`);
 		}
+		return false;
+	},
+	// Handler for when the command is used
+	async execute(interaction, guildConfig) {
+		// First send a message in the channel where the user used the command,
+		// as a reply to their command call, showing the text they entered with the command.
+		const eventMessageText = interaction.options.getString('event');
+		const eventMessage = await interaction.reply({
+			content: eventMessageText,
+			fetchReply: true
+		});
+
+		// Then send a message to the bookmarks channel, pointing back to the message sent above.
+		const bookmarkMessageEmbed = new MessageEmbed()
+			.setDescription(`A ${hyperlink('new chapter', eventMessage.url)} was written in ${channelMention(interaction.channelId)}.\n\n${eventMessageText}`);
+		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
+		await bookmarksChannel.send({
+			embeds: [bookmarkMessageEmbed]
+		});
 	}
 };
 

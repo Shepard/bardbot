@@ -1,39 +1,19 @@
-import fs from 'fs';
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
+export default function deployGuildCommands(client) {
+	client.on("ready", async () => {
+		console.log('Deploying commands for guilds.');
 
-const { clientId, guilds, token } = JSON.parse(fs.readFileSync('./config.json'));
+		await Promise.allSettled(client.guilds.cache.map(guild => {
+			const guildConfig = client.guildConfigs.find(gc => gc.id === guild.id);
 
-(async () => {
-	// Find all js files in /commands, import them and deploy their exported commands as
-	// available commands on any server ("guild") found in the configuration file.
-
-	const commands = [];
-
-	const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-	for (const file of commandFiles) {
-		const command = (await import(`./commands/${file}`)).default;
-		commands.push(command.data);
-	}
-
-	const rest = new REST({ version: '9' }).setToken(token);
-
-	try {
-		console.log('Started refreshing application (/) commands.');
-
-		await Promise.allSettled(guilds.map(guild => {
-			// TODO check if the bot is in that guild.
-			// Replace all existing commands of this application in this guild with the provided ones.
-			return rest.put(
-				Routes.applicationGuildCommands(clientId, guild.id),
-				{ body: commands },
-			);
+			const guildCommands = [];
+			client.commands.each(command => {
+				if (!command.guard || command.guard(client, guild, guildConfig)) {
+					guildCommands.push(command.data);
+				}
+			});
+			return guild.commands.set(guildCommands);
 		}));
 
-		console.log('Successfully reloaded application (/) commands.');
-	} catch (error) {
-		console.error(error);
-	}
-})();
+		console.log('Commands for guilds deployed.');
+	});
+};
