@@ -4,7 +4,10 @@ import deployGuildCommands from './deploy-guild-commands.js';
 
 const { token, guilds } = JSON.parse(fs.readFileSync('./config.json'));
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({
+	intents: [Intents.FLAGS.GUILDS],
+	presence: { activities: [{ name: 'Toss a coin to your witcher', type: 2 }] }
+});
 
 client.guildConfigs = guilds;
 
