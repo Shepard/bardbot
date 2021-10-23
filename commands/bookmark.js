@@ -2,8 +2,6 @@ import fs from 'fs';
 import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 
-const { guilds } = JSON.parse(fs.readFileSync('./config.json'));
-
 const bookmarkCommand = {
 	// Configuration for registering the command
 	configuration: {

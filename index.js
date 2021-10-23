@@ -5,7 +5,7 @@ import { updateCommandsForAllGuilds } from './update-guild-commands.js';
 const { token, guilds } = JSON.parse(fs.readFileSync('./config.json'));
 
 const client = new Client({
-	intents: [Intents.FLAGS.GUILDS],
+	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
 	presence: { activities: [{ name: 'Toss a coin to your witcher', type: 2 }] }
 });
 
