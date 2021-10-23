@@ -5,8 +5,8 @@ import { Constants, MessageEmbed } from 'discord.js';
 const { guilds } = JSON.parse(fs.readFileSync('./config.json'));
 
 const bookmarkContextCommand = {
-	// Data for registering the command
-	data: {
+	// Configuration for registering the command
+	configuration: {
 		name: 'Bookmark',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},

@@ -22,11 +22,11 @@ const interactionCreateEvent = {
 
 function isMatchingCommand(interaction, command) {
 	if (interaction.isCommand()) {
-		return command.data.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
+		return command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
 	}
 	if (interaction.isContextMenu()) {
-		return (interaction.targetType === 'USER' && command.data.type === Constants.ApplicationCommandTypes.USER)
-			|| (interaction.targetType === 'MESSAGE' && command.data.type === Constants.ApplicationCommandTypes.MESSAGE);
+		return (interaction.targetType === 'USER' && command.configuration.type === Constants.ApplicationCommandTypes.USER)
+			|| (interaction.targetType === 'MESSAGE' && command.configuration.type === Constants.ApplicationCommandTypes.MESSAGE);
 	}
 }
 

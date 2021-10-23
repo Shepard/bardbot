@@ -5,8 +5,8 @@ import { Constants, MessageEmbed } from 'discord.js';
 const { guilds } = JSON.parse(fs.readFileSync('./config.json'));
 
 const bookmarkCommand = {
-	// Data for registering the command
-	data: {
+	// Configuration for registering the command
+	configuration: {
 		name: 'bookmark',
 		description: 'Creates a bookmark to identify a new chapter in the lore for easy referencing.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,

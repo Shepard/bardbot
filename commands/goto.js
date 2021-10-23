@@ -2,8 +2,8 @@ import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 
 const gotoCommand = {
-	// Data for registering the command
-	data: {
+	// Configuration for registering the command
+	configuration: {
 		name: 'goto',
 		description: 'Creates a link in the lore for characters to easily travel between two channels.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
