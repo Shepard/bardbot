@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 
