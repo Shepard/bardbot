@@ -17,7 +17,7 @@ const interactionCreateEvent = {
 				}
 			}
 		}
-	},
+	}
 };
 
 function isMatchingCommand(interaction, command) {

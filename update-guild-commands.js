@@ -1,16 +1,13 @@
-export function updateCommandsForAllGuilds(client) {
-	// Wait for the client to be ready so we know the guilds cache in the client is filled.
-	client.on('ready', async () => {
-		console.log('Updating commands for all guilds.');
+export async function updateCommandsForAllGuilds(client) {
+	console.log('Updating commands for all guilds.');
 
-		// Map all guilds the client is currently in to a promise each that updates all commands for that guild.
-		// Then wait for all those promises to be done.
-		await Promise.allSettled(client.guilds.cache.map(guild => {
-			return updateCommandsForSingleGuild(client, guild);
-		}));
+	// Map all guilds the client is currently in to a promise each that updates all commands for that guild.
+	// Then wait for all those promises to be done.
+	await Promise.allSettled(client.guilds.cache.map(guild => {
+		return updateCommandsForSingleGuild(client, guild);
+	}));
 
-		console.log('Commands for all guilds updated.');
-	});
+	console.log('Commands for all guilds updated.');
 }
 
 export async function updateCommandsForSingleGuild(client, guild) {
