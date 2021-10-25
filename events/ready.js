@@ -11,6 +11,7 @@ const readyEvent = {
 		await updateCommandsForAllGuilds(client);
 
 		// This will only be defined if the process has been started a certain way (e.g. via pm2).
+		// We use it to tell pm2 that the application can be considered fully online.
 		if (process.send) {
 			process.send('ready');
 		}
