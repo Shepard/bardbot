@@ -1,5 +1,6 @@
 import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
+import { bookmarkMessages } from './bookmark.js';
 
 const bookmarkContextCommand = {
 	// Configuration for registering the command
@@ -26,8 +27,9 @@ const bookmarkContextCommand = {
 			const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
 
 			// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
+			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const bookmarkMessageEmbed = new MessageEmbed()
-				.setDescription(`A ${hyperlink('new chapter', message.url)} was written in ${channelMention(interaction.channelId)}.\n\n${message.content}`);
+				.setDescription(`${bookmarkMessages.any(message.url, interaction.channelId)}\n\n${message.content}`);
 			const bookmarkMessage = await bookmarksChannel.send({
 				embeds: [bookmarkMessageEmbed]
 			});
