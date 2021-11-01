@@ -3,8 +3,12 @@ export async function updateCommandsForAllGuilds(client) {
 
 	// Map all guilds the client is currently in to a promise each that updates all commands for that guild.
 	// Then wait for all those promises to be done.
-	await Promise.allSettled(client.guilds.cache.map(guild => {
-		return updateCommandsForSingleGuild(client, guild);
+	await Promise.allSettled(client.guilds.cache.map(async (guild) => {
+		try {
+			return await updateCommandsForSingleGuild(client, guild);
+		} catch (e) {
+			console.error(e);
+		}
 	}));
 
 	console.log('Commands for all guilds updated.');
