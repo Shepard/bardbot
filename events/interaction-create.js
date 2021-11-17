@@ -1,4 +1,5 @@
 import { Constants } from 'discord.js';
+import { getGuildConfig } from '../storage/guild-config-dao.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',
@@ -7,7 +8,7 @@ const interactionCreateEvent = {
 			const { commandName, client } = interaction;
 			const command = client.commands.get(interaction.commandName);
 			if (command && isMatchingCommand(interaction, command)) {
-				const guildConfig = client.guildConfigs.find(gc => gc.id === interaction.guildId);
+				const guildConfig = getGuildConfig(interaction.guildId);
 				if (!command.guard) {
 					await executeCommand(command, interaction, guildConfig);
 				} else if (command.guard(client, interaction.guild, guildConfig)) {
@@ -34,9 +35,13 @@ async function executeCommand(command, interaction, guildConfig) {
 	try {
 		await command.execute(interaction, guildConfig);
 	} catch (error) {
-		console.error(error);
+		console.error(`Error while executing command '${interaction.commandName}':`, error);
 		// Tell the user who used the command (and only them) that the command failed.
-		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		try {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		} catch (innerError) {
+			console.error('Error while trying to tell user about the previous error:', innerError);
+		}
 	}
 }
 

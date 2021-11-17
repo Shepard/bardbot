@@ -1,16 +1,17 @@
 import process from 'process';
 import fsPromises from 'fs/promises';
 import { Client, Collection, Intents } from 'discord.js';
+import { initDatabase, closeDatabase } from './storage/database.js';
 
 async function initApp() {
-	const { token, guilds } = JSON.parse(await fsPromises.readFile('./config.json'));
+	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
+
+	await initDatabase();
 
 	const client = new Client({
 		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
 		presence: { activities: [{ name: 'Toss a coin to your witcher', type: 2 }] }
 	});
-
-	client.guildConfigs = guilds;
 
 	// Find all js files in /commands, import them and collect their exported commands on the client for later use.
 	const commandFiles = await getJSFilesInDir('./commands');
@@ -36,6 +37,7 @@ async function initApp() {
 	// Gracefully shut down when process is requested to terminate.
 	process.on('SIGINT', () => {
 		client.destroy();
+		closeDatabase();
 		process.exit(0);
 	});
 }

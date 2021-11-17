@@ -1,5 +1,5 @@
 import process from 'process';
-import { updateCommandsForAllGuilds } from '../update-guild-commands.js';
+import { updateCommandsForAllGuilds } from '../command-handling/update-commands.js';
 
 const readyEvent = {
 	name: 'ready',
