@@ -21,7 +21,7 @@ const bookmarkContextCommand = {
 	// Handler for when the command is used
 	async execute(interaction, guildConfig) {
 		// Get message that the context menu command was used on.
-		const message = await interaction.channel.messages.fetch(interaction.targetId);
+		const message = interaction.options.getMessage('message');
 		// The bookmark command will only work with text-based messages, not e.g. embeds.
 		if (message && message.content) {
 			const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
