@@ -13,11 +13,11 @@ const namesCommand = {
 		// Defer reply for now so we get more time to reply in case fetching the member list takes an unusual amount of time.
 		await interaction.deferReply();
 
-		// Retieve all (non-bot) members of this guild and add their names to the list.
+		// Retrieve all (non-bot) members of this guild and add their names to the list.
 		let messageText = '';
 		const members = await interaction.guild.members.fetch();
 		members.each(member => {
-			if (!member.user.bot) {
+			if (!member.user.bot && member.user.username !== member.displayName) {
 				if (messageText) {
 					messageText += '\n';
 				}
