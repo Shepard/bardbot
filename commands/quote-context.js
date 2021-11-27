@@ -1,4 +1,4 @@
-import { hyperlink, userMention, channelMention, blockQuote, italic } from '@discordjs/builders';
+import { hyperlink, userMention, channelMention, quote, italic } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../random-message-provider.js';
 
@@ -22,7 +22,7 @@ const quoteContextCommand = {
 	},
 	// Test function to check if the command should apply to a guild
 	guard(client, guild, guildConfig) {
-		if (guildConfig && guildConfig.quotesChannel) {
+		if (guildConfig?.quotesChannel) {
 			const quotesChannel = client.channels.cache.get(guildConfig.quotesChannel);
 			if (quotesChannel) {
 				return true;
@@ -35,20 +35,23 @@ const quoteContextCommand = {
 		// Get message that the context menu command was used on.
 		const message = interaction.options.getMessage('message');
 		// The quote command will only work with text-based messages, not e.g. embeds.
-		if (message && message.content) {
+		if (message?.content) {
 			const quotesChannel = interaction.client.channels.cache.get(guildConfig.quotesChannel);
+			// Can't use block quote for creating the quote because that extends until the end of the message
+			// and would thus show the creator line as quoted as well. Inline-quoting will only quote a single
+			// line however so we need to apply it to every line of the message.
+			const quoteText = message.content.split('\n').map(line => quote(line)).join('\n');
 
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const quoteMessageEmbed = new MessageEmbed()
-				.setDescription(`${quoteMessages.any(message.author.id, message.url)}\n\n${blockQuote(message.content)}`);
-				// For now we're not posting who used the command as it makes the message too busy.
-				// Should this ever become a problem (people spamming and you don't know who to ban)
-				// then this could be added in again via an option.
-				// In that case it will also look nicer with one of the \n' above removed.
-				//.setFooter(`Quote created by ${interaction.member.displayName}`);
+				.setDescription(`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}\n\nQuote created by ${userMention(interaction.user.id)}`);
 			const quoteMessage = await quotesChannel.send({
-				embeds: [quoteMessageEmbed]
+				embeds: [quoteMessageEmbed],
+				// Suppress mentions because we don't want to ping people mentioned in the content of the message being quoted.
+				allowed_mentions: {
+					parse: []
+				}
 			});
 
 			// Some positive feedback for the user who used the command (only visible to them).
@@ -58,7 +61,7 @@ const quoteContextCommand = {
 				ephemeral: true
 			});
 		} else {
-			await interaction.reply({ content: 'This message does not have any text content.', ephemeral: true });
+			await interaction.reply({ content: 'This message does not have any quotable content.', ephemeral: true });
 		}
 	}
 };

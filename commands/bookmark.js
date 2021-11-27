@@ -1,4 +1,4 @@
-import { hyperlink, channelMention } from '@discordjs/builders';
+import { hyperlink, channelMention, userMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../random-message-provider.js';
 
@@ -28,7 +28,7 @@ const bookmarkCommand = {
 	},
 	// Test function to check if the command should apply to a guild
 	guard(client, guild, guildConfig) {
-		if (guildConfig && guildConfig.bookmarksChannel) {
+		if (guildConfig?.bookmarksChannel) {
 			const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannel);
 			if (bookmarksChannel) {
 				return true;
@@ -43,16 +43,24 @@ const bookmarkCommand = {
 		const eventMessageText = interaction.options.getString('event');
 		const eventMessage = await interaction.reply({
 			content: eventMessageText,
-			fetchReply: true
+			fetchReply: true,
+			// We could try to find out which roles the member is allowed to ping in a complicated way but it's easier to just restrict it to none.
+			allowed_mentions: {
+				parse: []
+			}
 		});
 
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 		const bookmarkMessageEmbed = new MessageEmbed()
-			.setDescription(`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n\n${eventMessageText}`);
+			.setDescription(`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n${eventMessageText}\n\nBookmark created by ${userMention(interaction.user.id)}`);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
 		await bookmarksChannel.send({
-			embeds: [bookmarkMessageEmbed]
+			embeds: [bookmarkMessageEmbed],
+			// We don't want any mentions pinging people here.
+			allowed_mentions: {
+				parse: []
+			}
 		});
 	}
 };

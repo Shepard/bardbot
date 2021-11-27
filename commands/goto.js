@@ -37,7 +37,11 @@ const gotoCommand = {
 		// preprend that to the message.
 		const sourceMessage = await interaction.reply({
 			content: actionMessageText + `The story continues in ${channelMention(destinationChannel.id)}.`,
-			fetchReply: true
+			fetchReply: true,
+			// We could try to find out which roles the member is allowed to ping in a complicated way but it's easier to just restrict it to none.
+			allowed_mentions: {
+				parse: []
+			}
 		});
 
 		// Send a message to the channel where the action moved to, pointing people back at the channel where the action originated
