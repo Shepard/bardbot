@@ -5,13 +5,12 @@ const interactionCreateEvent = {
 	name: 'interactionCreate',
 	async execute(interaction) {
 		if (interaction.isCommand() || interaction.isContextMenu()) {
-			const { commandName, client } = interaction;
-			const command = client.commands.get(interaction.commandName);
+			const command = interaction.client.commands.get(interaction.commandName);
 			if (command && isMatchingCommand(interaction, command)) {
 				const guildConfig = getGuildConfig(interaction.guildId);
 				if (!command.guard) {
 					await executeCommand(command, interaction, guildConfig);
-				} else if (command.guard(client, interaction.guild, guildConfig)) {
+				} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
 					await executeCommand(command, interaction, guildConfig);
 				} else {
 					console.error('Command was called in guild that it should not apply to.');

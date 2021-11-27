@@ -18,7 +18,7 @@ const deleteContextCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, guildConfig) {
+	async execute(interaction) {
 		// Get the message that the context menu command was used on.
 		const message = interaction.options.getMessage('message');
 		if (message) {
