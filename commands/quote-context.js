@@ -8,9 +8,14 @@ const quoteMessages = new RandomMessageProvider()
 	.add((author, url) => `${hyperlink('What was that', url)}, ${userMention(author)}?`)
 	.add((author, url) => `Did ${userMention(author)} ${italic('really')} ${hyperlink('say that', url)}?`)
 	.add((author, url) => `${userMention(author)}, did you actually just ${hyperlink('say that', url)}?`)
-	.add((author, url) => `Look at ${userMention(author)} just ${hyperlink('saying things', url)} without a care in the world!`)
-	.add((author, url) => `Now ${hyperlink('that\'s something quotable', url)}, ${userMention(author)}!`)
-	.add((author, url) => `Don't mind me, just making a note of what ${userMention(author)} ${hyperlink('just said', url)}.`)
+	.add(
+		(author, url) =>
+			`Look at ${userMention(author)} just ${hyperlink('saying things', url)} without a care in the world!`
+	)
+	.add((author, url) => `Now ${hyperlink("that's something quotable", url)}, ${userMention(author)}!`)
+	.add(
+		(author, url) => `Don't mind me, just making a note of what ${userMention(author)} ${hyperlink('just said', url)}.`
+	)
 	.add((author, url) => `Hey, those were ${userMention(author)}'s ${hyperlink('words', url)}, not mine!`)
 	.add((author, url) => `So, we're ${hyperlink('saying that', url)} now, are we, ${userMention(author)}?`);
 
@@ -40,12 +45,18 @@ const quoteContextCommand = {
 			// Can't use block quote for creating the quote because that extends until the end of the message
 			// and would thus show the creator line as quoted as well. Inline-quoting will only quote a single
 			// line however so we need to apply it to every line of the message.
-			const quoteText = message.content.split('\n').map(line => quote(line)).join('\n');
+			const quoteText = message.content
+				.split('\n')
+				.map(line => quote(line))
+				.join('\n');
 
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-			const quoteMessageEmbed = new MessageEmbed()
-				.setDescription(`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}\n\nQuote created by ${userMention(interaction.user.id)}`);
+			const quoteMessageEmbed = new MessageEmbed().setDescription(
+				`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}\n\nQuote created by ${userMention(
+					interaction.user.id
+				)}`
+			);
 			const quoteMessage = await quotesChannel.send({
 				embeds: [quoteMessageEmbed],
 				// Suppress mentions because we don't want to ping people mentioned in the content of the message being quoted.
@@ -57,7 +68,9 @@ const quoteContextCommand = {
 			// Some positive feedback for the user who used the command (only visible to them).
 			// If we don't send any reply, discord will show the command as failed after a while.
 			await interaction.reply({
-				content: `${hyperlink('A quote', quoteMessage.url)} was successfully created in ${channelMention(quotesChannel.id)}!`,
+				content: `${hyperlink('A quote', quoteMessage.url)} was successfully created in ${channelMention(
+					quotesChannel.id
+				)}!`,
 				ephemeral: true
 			});
 		} else {

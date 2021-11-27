@@ -1,11 +1,14 @@
 import db from './database.js';
 
-const getGuildConfigStatement = db.prepare('SELECT bookmarks_channel_id, quotes_channel_id FROM guild_config WHERE id = ?');
+const getGuildConfigStatement = db.prepare(
+	'SELECT bookmarks_channel_id, quotes_channel_id FROM guild_config WHERE id = ?'
+);
 const setBookmarksChannelStatement = db.prepare(`INSERT INTO guild_config(id, bookmarks_channel_id) VALUES(?, ?)
 	ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = ?`);
 const setQuotesChannelStatement = db.prepare(`INSERT INTO guild_config(id, quotes_channel_id) VALUES(?, ?)
 	ON CONFLICT(id) DO UPDATE SET quotes_channel_id = ?`);
-const setChannelsStatement = db.prepare(`INSERT INTO guild_config(id, bookmarks_channel_id, quotes_channel_id) VALUES(?, ?, ?)
+const setChannelsStatement =
+	db.prepare(`INSERT INTO guild_config(id, bookmarks_channel_id, quotes_channel_id) VALUES(?, ?, ?)
 	ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = ?, quotes_channel_id = ?`);
 const removeGuildConfigStatement = db.prepare('DELETE FROM guild_config WHERE id = ?');
 
@@ -39,7 +42,13 @@ export function setConfigurationValues(guildId, patch) {
 		// In the future when there's more settings to set, just fetch the current configuration,
 		// change its values with the patch and send an update - or insert a new row if no configuration existed.
 		// Thus handling the upsert ourselves and not having an upsert statement for all possible combinations of settings.
-		setChannelsStatement.run(guildId, patch.bookmarksChannelId, patch.quotesChannelId, patch.bookmarksChannelId, patch.quotesChannelId);
+		setChannelsStatement.run(
+			guildId,
+			patch.bookmarksChannelId,
+			patch.quotesChannelId,
+			patch.bookmarksChannelId,
+			patch.quotesChannelId
+		);
 	} else if (patch.bookmarksChannelId) {
 		setBookmarksChannelStatement.run(guildId, patch.bookmarksChannelId, patch.bookmarksChannelId);
 	} else if (patch.quotesChannelId) {

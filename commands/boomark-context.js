@@ -28,8 +28,11 @@ const bookmarkContextCommand = {
 
 			// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-			const bookmarkMessageEmbed = new MessageEmbed()
-				.setDescription(`${bookmarkMessages.any(message.url, interaction.channelId)}\n${message.content}\n\nBookmark created by ${userMention(interaction.user.id)}`);
+			const bookmarkMessageEmbed = new MessageEmbed().setDescription(
+				`${bookmarkMessages.any(message.url, interaction.channelId)}\n${
+					message.content
+				}\n\nBookmark created by ${userMention(interaction.user.id)}`
+			);
 			const bookmarkMessage = await bookmarksChannel.send({
 				embeds: [bookmarkMessageEmbed],
 				// Suppress mentions because we don't want to ping people mentioned in the content of the message being bookmarked.
@@ -41,7 +44,9 @@ const bookmarkContextCommand = {
 			// Some positive feedback for the user who used the command (only visible to them).
 			// If we don't send any reply, discord will show the command as failed after a while.
 			await interaction.reply({
-				content: `${hyperlink('Your bookmark', bookmarkMessage.url)} was successfully created in ${channelMention(bookmarksChannel.id)}!`,
+				content: `${hyperlink('Your bookmark', bookmarkMessage.url)} was successfully created in ${channelMention(
+					bookmarksChannel.id
+				)}!`,
 				ephemeral: true
 			});
 		} else {

@@ -52,15 +52,19 @@ const gotoCommand = {
 		// added below the message. But while testing in the Android app it turned out that link buttons never work to take the user
 		// to a specific message in a channel, the app will just jump to the end of the channel. Links embedded in messages on the
 		// other hand work some of the time.
-		const destinationMessageEmbed = new MessageEmbed()
-			.setDescription(`Following ${hyperlink('the events', sourceMessage.url)} from ${channelMention(sourceChannel.id)}…`);
+		const destinationMessageEmbed = new MessageEmbed().setDescription(
+			`Following ${hyperlink('the events', sourceMessage.url)} from ${channelMention(sourceChannel.id)}…`
+		);
 		const destinationMessage = await destinationChannel.send({
 			embeds: [destinationMessageEmbed]
 		});
 
 		// As a last step we edit the original reply message to the command usage again. We now have a URL to the message in the
 		// destination channel and we'll use it to create a link in this original message, pointing at the other message.
-		await interaction.editReply(actionMessageText + `The ${hyperlink('story continues', destinationMessage.url)} in ${channelMention(destinationChannel.id)}.`);
+		await interaction.editReply(
+			actionMessageText +
+				`The ${hyperlink('story continues', destinationMessage.url)} in ${channelMention(destinationChannel.id)}.`
+		);
 	}
 };
 

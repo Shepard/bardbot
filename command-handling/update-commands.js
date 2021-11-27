@@ -8,13 +8,15 @@ export async function updateCommandsForAllGuilds(client) {
 
 	// Map all guilds the client is currently in to a promise each that updates all commands for that guild.
 	// Then wait for all those promises to be done.
-	await Promise.allSettled(client.guilds.cache.map(async (guild) => {
-		try {
-			await updateCommandsForSingleGuild(client, guild);
-		} catch (e) {
-			console.error(`Error while trying to update commands for guild ${guild.id}:`, e);
-		}
-	}));
+	await Promise.allSettled(
+		client.guilds.cache.map(async guild => {
+			try {
+				await updateCommandsForSingleGuild(client, guild);
+			} catch (e) {
+				console.error(`Error while trying to update commands for guild ${guild.id}:`, e);
+			}
+		})
+	);
 
 	console.log('Commands for all guilds updated.');
 }
@@ -40,21 +42,26 @@ export async function updateCommandsForSingleGuild(client, guild) {
 
 	const remoteCommands = await guild.commands.set(guildCommands);
 
-	const fullPermissions = remoteCommands.map(remoteCommand => {
-		const matchingLocalCommand = client.commands.find(localCommand => localCommand.configuration.name === remoteCommand.name);
-		if (matchingLocalCommand && matchingLocalCommand.permissions) {
-			const roles = getMatchingRoles(guild, matchingLocalCommand.permissions);
-			return {
-				id: remoteCommand.id,
-				permissions: roles.map(role => ({
-					id: role.id,
-					type: Constants.ApplicationCommandPermissionTypes.ROLE,
-					permission: true
-				}))
-			};
-		}
-		return null;
-	}).filter(commandPermissions => commandPermissions !== null);
+	// TODO Extract to method. Provide a method for updating only the permissions. (Will load commands and then run this code.)
+	const fullPermissions = remoteCommands
+		.map(remoteCommand => {
+			const matchingLocalCommand = client.commands.find(
+				localCommand => localCommand.configuration.name === remoteCommand.name
+			);
+			if (matchingLocalCommand?.permissions) {
+				const roles = getMatchingRoles(guild, matchingLocalCommand.permissions);
+				return {
+					id: remoteCommand.id,
+					permissions: roles.map(role => ({
+						id: role.id,
+						type: Constants.ApplicationCommandPermissionTypes.ROLE,
+						permission: true
+					}))
+				};
+			}
+			return null;
+		})
+		.filter(commandPermissions => commandPermissions !== null);
 
 	await guild.commands.permissions.set({ fullPermissions });
 

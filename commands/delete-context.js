@@ -49,7 +49,8 @@ const deleteContextCommand = {
 		}
 
 		await interaction.reply({
-			content: 'This is not a message you can delete. ' +
+			content:
+				'This is not a message you can delete. ' +
 				'This command will only work on quotes or bookmarks you created or quotes where you were quoted.',
 			ephemeral: true
 		});
@@ -70,10 +71,16 @@ async function deleteMessage(message, interaction) {
 		await message.delete();
 	} catch (e) {
 		console.error('Error while trying to delete message:', e);
-		await interaction.reply({ content: 'There was an error trying to delete the message.', ephemeral: true });
+		await interaction.reply({
+			content: 'There was an error trying to delete the message.',
+			ephemeral: true
+		});
 		return;
 	}
-	await interaction.reply({ content: 'Message was successfully deleted.', ephemeral: true });
+	await interaction.reply({
+		content: 'Message was successfully deleted.',
+		ephemeral: true
+	});
 }
 
 export default deleteContextCommand;

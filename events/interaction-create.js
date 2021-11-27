@@ -26,8 +26,10 @@ function isMatchingCommand(interaction, command) {
 		return command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
 	}
 	if (interaction.isContextMenu()) {
-		return (interaction.targetType === 'USER' && command.configuration.type === Constants.ApplicationCommandTypes.USER)
-			|| (interaction.targetType === 'MESSAGE' && command.configuration.type === Constants.ApplicationCommandTypes.MESSAGE);
+		return (
+			(interaction.targetType === 'USER' && command.configuration.type === Constants.ApplicationCommandTypes.USER) ||
+			(interaction.targetType === 'MESSAGE' && command.configuration.type === Constants.ApplicationCommandTypes.MESSAGE)
+		);
 	}
 }
 

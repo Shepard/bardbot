@@ -1,6 +1,12 @@
 import { Constants, Permissions, MessageEmbed } from 'discord.js';
 import { channelMention, inlineCode, italic } from '@discordjs/builders';
-import { getGuildConfig, setConfigurationValues, clearConfigurationValues, setBookmarksChannel, setQuotesChannel } from '../storage/guild-config-dao.js';
+import {
+	getGuildConfig,
+	setConfigurationValues,
+	clearConfigurationValues,
+	setBookmarksChannel,
+	setQuotesChannel
+} from '../storage/guild-config-dao.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 
 const configCommand = {
@@ -85,11 +91,17 @@ const configCommand = {
 
 async function showConfiguration(interaction) {
 	const guildConfig = getGuildConfig(interaction.guildId);
-	const bookmarksChannelValue = guildConfig.bookmarksChannel ? channelMention(guildConfig.bookmarksChannel) : italic('none');
+	const bookmarksChannelValue = guildConfig.bookmarksChannel
+		? channelMention(guildConfig.bookmarksChannel)
+		: italic('none');
 	const quotesChannelValue = guildConfig.quotesChannel ? channelMention(guildConfig.quotesChannel) : italic('none');
 	const configurationValuesEmbed = new MessageEmbed()
 		.setTitle('Configuration')
-		.setDescription(`This is the current configuration of the bot in this server. To change any options, use the ${inlineCode('/config set')} command.`)
+		.setDescription(
+			`This is the current configuration of the bot in this server. To change any options, use the ${inlineCode(
+				'/config set'
+			)} command.`
+		)
 		.addField('Bookmarks channel', bookmarksChannelValue)
 		.addField('Quotes channel', quotesChannelValue);
 	await interaction.reply({
@@ -132,10 +144,16 @@ async function setConfiguration(interaction) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {
-		console.error(`Error while trying to update commands for guild ${interaction.guildId} after changing configuration:`, e);
+		console.error(
+			`Error while trying to update commands for guild ${interaction.guildId} after changing configuration:`,
+			e
+		);
 		await interaction.followUp({
-			content: 'Configuration was changed but commands could not be updated on the server.\n' +
-				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode('/refresh-commands')}.`,
+			content:
+				'Configuration was changed but commands could not be updated on the server.\n' +
+				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode(
+					'/refresh-commands'
+				)}.`,
 			ephemeral: true
 		});
 	}
@@ -170,8 +188,11 @@ async function resetConfiguration(interaction) {
 	} catch (e) {
 		console.error(`Error while trying to update commands for guild ${interaction.guildId} after clearing options:`, e);
 		await interaction.followUp({
-			content: 'Options were reset but commands could not be updated on the server.\n' +
-				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode('/refresh-commands')}.`,
+			content:
+				'Options were reset but commands could not be updated on the server.\n' +
+				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode(
+					'/refresh-commands'
+				)}.`,
 			ephemeral: true
 		});
 	}

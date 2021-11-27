@@ -41,7 +41,9 @@ const namesCommand = {
 		// Send member list as messages with embeds. The initial message contains a title and the first batch of names and edits the original deferred reply.
 
 		const embeds = messageTexts.map(text => new MessageEmbed().setDescription(text));
-		embeds[0].setTitle(`When we turn the back the pages, the members of ${interaction.guild.name} had the following names:`);
+		embeds[0].setTitle(
+			`When we turn the back the pages, the members of ${interaction.guild.name} had the following names:`
+		);
 
 		// We can send up to ten embeds per message: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-messages
 		const embedChunks = chunk(embeds, 10);

@@ -6,7 +6,12 @@ export const bookmarkMessages = new RandomMessageProvider()
 	.add((url, channel) => `A ${hyperlink('new chapter', url)} was written in ${channelMention(channel)}.`)
 	.add((url, channel) => `Something ${hyperlink('new happened', url)} in ${channelMention(channel)}!`)
 	.add((url, channel) => `The ${hyperlink('story continued', url)} in ${channelMention(channel)}.`)
-	.add((url, channel) => `The ${hyperlink('pen touched the paper', url)} and the pages turned; find out what happened in ${channelMention(channel)}.`)
+	.add(
+		(url, channel) =>
+			`The ${hyperlink('pen touched the paper', url)} and the pages turned; find out what happened in ${channelMention(
+				channel
+			)}.`
+	)
 	.add((url, channel) => `Little by little, ${hyperlink('developments were made', url)} in ${channelMention(channel)}.`)
 	.add((url, channel) => `Let's see ${hyperlink('what happened', url)} in ${channelMention(channel)}!`)
 	.add((url, channel) => `Another key event ${hyperlink('took place', url)} in ${channelMention(channel)}!`);
@@ -52,8 +57,12 @@ const bookmarkCommand = {
 
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-		const bookmarkMessageEmbed = new MessageEmbed()
-			.setDescription(`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n${eventMessageText}\n\nBookmark created by ${userMention(interaction.user.id)}`);
+		const bookmarkMessageEmbed = new MessageEmbed().setDescription(
+			`${bookmarkMessages.any(
+				eventMessage.url,
+				interaction.channelId
+			)}\n${eventMessageText}\n\nBookmark created by ${userMention(interaction.user.id)}`
+		);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
 		await bookmarksChannel.send({
 			embeds: [bookmarkMessageEmbed],
