@@ -1,5 +1,11 @@
 import Database from 'better-sqlite3';
 import fsPromises from 'fs/promises';
+import fs from 'fs';
+
+const dbDir = './db';
+if (!fs.existsSync(dbDir)) {
+	fs.mkdirSync(dbDir);
+}
 
 const db = new Database('db/bard.db');
 

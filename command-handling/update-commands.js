@@ -42,7 +42,6 @@ export async function updateCommandsForSingleGuild(client, guild) {
 
 	const remoteCommands = await guild.commands.set(guildCommands);
 
-	// TODO Extract to method. Provide a method for updating only the permissions. (Will load commands and then run this code.)
 	const fullPermissions = remoteCommands
 		.map(remoteCommand => {
 			const matchingLocalCommand = client.commands.find(
