@@ -8,15 +8,6 @@ const deleteContextCommand = {
 		name: 'Delete',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
-	// Test function to check if the command should apply to a guild
-	guard(client, guild, guildConfig) {
-		// Can only delete quote and bookmark messages so either of these two features needs to be configured.
-		// Otherwise there's no point showing the command.
-		if (guildConfig?.bookmarksChannel || guildConfig?.quotesChannel) {
-			return true;
-		}
-		return false;
-	},
 	// Handler for when the command is used
 	async execute(interaction) {
 		// Get the message that the context menu command was used on.
@@ -25,8 +16,12 @@ const deleteContextCommand = {
 			if (message.author.id === interaction.client.user.id) {
 				// This is a message that was created by this bot's user.
 
-				if (message.interaction?.commandName === 'bookmark' && message.interaction?.user.id === interaction.user.id) {
-					// This was the bot's reply to a /bookmark command interaction
+				const commandName = message.interaction?.commandName;
+				if (
+					(commandName === 'bookmark' || commandName === 'names') &&
+					message.interaction?.user.id === interaction.user.id
+				) {
+					// This was the bot's reply to a /bookmark or /names command interaction
 					// and it was used by the current user so we allow it to be deleted.
 					await deleteMessage(message, interaction);
 					return;
