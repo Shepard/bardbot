@@ -1,4 +1,5 @@
 import { Constants } from 'discord.js';
+import { inlineCode } from '@discordjs/builders';
 
 const userMentionPattern = /<@(\d+)>/;
 
@@ -46,7 +47,12 @@ const deleteContextCommand = {
 		await interaction.reply({
 			content:
 				'This is not a message you can delete. ' +
-				'This command will only work on quotes or bookmarks you created or quotes where you were quoted.',
+				'This command will only work on:\n' +
+				`- Quotes or bookmarks you created through me (including my reply to the ${inlineCode(
+					'/bookmark'
+				)} command),\n` +
+				'- Quotes someone else created through me where you were quoted,\n' +
+				`- My reply to ${inlineCode('/names')}.`,
 			ephemeral: true
 		});
 	}
