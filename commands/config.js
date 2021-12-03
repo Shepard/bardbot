@@ -29,12 +29,14 @@ const configCommand = {
 					{
 						name: 'bookmarks-channel',
 						description: 'The channel to set for posting bookmarks in',
-						type: Constants.ApplicationCommandOptionTypes.CHANNEL
+						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
 					},
 					{
 						name: 'quotes-channel',
 						description: 'The channel to set for posting quotes in',
-						type: Constants.ApplicationCommandOptionTypes.CHANNEL
+						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
 					}
 				]
 			},

@@ -12,6 +12,7 @@ const gotoCommand = {
 				name: 'destination',
 				description: 'The destination channel to go to',
 				type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+				channel_types: [Constants.ChannelTypes.GUILD_TEXT],
 				required: true
 			},
 			{
