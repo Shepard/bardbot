@@ -42,7 +42,7 @@ const namesCommand = {
 
 		const embeds = messageTexts.map(text => new MessageEmbed().setDescription(text));
 		embeds[0].setTitle(
-			`When we turn the back the pages, the members of ${interaction.guild.name} had the following names:`
+			`When we turn back the pages, the members of ${interaction.guild.name} had the following names:`
 		);
 
 		// We can send up to ten embeds per message: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-messages
