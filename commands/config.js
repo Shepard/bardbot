@@ -5,9 +5,15 @@ import {
 	setConfigurationValues,
 	clearConfigurationValues,
 	setBookmarksChannel,
-	setQuotesChannel
+	setQuotesChannel,
+	addRolePlayChannel,
+	removeRolePlayChannel
 } from '../storage/guild-config-dao.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
+
+// Limit for characters in a field value of an embed.
+// See https://discord.com/developers/docs/resources/channel#embed-limits
+const FIELD_VALUE_CHARACTER_LIMIT = 1024;
 
 const configCommand = {
 	// Configuration for registering the command
@@ -66,6 +72,48 @@ const configCommand = {
 						]
 					}
 				]
+			},
+			{
+				name: 'add',
+				description: 'Add a value to the options.',
+				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+				options: [
+					{
+						name: 'role-play-channel',
+						description: 'Add a channel to the list of role-play channels for this server.',
+						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+						options: [
+							{
+								name: 'channel',
+								description: 'The channel to add as a role-play channel. Leave empty to use the current channel.',
+								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
+								required: false
+							}
+						]
+					}
+				]
+			},
+			{
+				name: 'remove',
+				description: 'Remove a value from the options.',
+				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+				options: [
+					{
+						name: 'role-play-channel',
+						description: 'Remove a channel from the list of role-play channels for this server.',
+						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+						options: [
+							{
+								name: 'channel',
+								description: 'The role-play channel to remove. Leave empty to use the current channel.',
+								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
+								required: false
+							}
+						]
+					}
+				]
 			}
 		]
 	},
@@ -75,13 +123,25 @@ const configCommand = {
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
 	async execute(interaction) {
-		const subcommand = interaction.options.getSubcommand();
+		const subcommandGroup = interaction.options.getSubcommandGroup(false);
+		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'show') {
 			await showConfiguration(interaction);
 		} else if (subcommand === 'set') {
 			await setConfiguration(interaction);
 		} else if (subcommand === 'reset') {
 			await resetConfiguration(interaction);
+		} else if (subcommand === 'role-play-channel') {
+			if (subcommandGroup === 'add') {
+				await handleAddRolePlayChannelInteraction(interaction);
+			} else if (subcommandGroup === 'remove') {
+				await handleRemoveRolePlayChannelInteraction(interaction);
+			} else {
+				await interaction.reply({
+					content: 'Unknown command',
+					ephemeral: true
+				});
+			}
 		} else {
 			await interaction.reply({
 				content: 'Unknown command',
@@ -97,6 +157,9 @@ async function showConfiguration(interaction) {
 		? channelMention(guildConfig.bookmarksChannel)
 		: italic('none');
 	const quotesChannelValue = guildConfig.quotesChannel ? channelMention(guildConfig.quotesChannel) : italic('none');
+
+	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannels);
+
 	const configurationValuesEmbed = new MessageEmbed()
 		.setTitle('Configuration')
 		.setDescription(
@@ -106,10 +169,24 @@ async function showConfiguration(interaction) {
 		)
 		.addField('Bookmarks channel', bookmarksChannelValue)
 		.addField('Quotes channel', quotesChannelValue);
+	if (rolePlayChannelsList.length <= FIELD_VALUE_CHARACTER_LIMIT) {
+		configurationValuesEmbed.addField('Role-play channels', rolePlayChannelsList);
+	}
 	await interaction.reply({
 		embeds: [configurationValuesEmbed],
 		ephemeral: true
 	});
+	// If the RP channel list doesn't fit in a single field value,
+	// send it in the description of a follow-up embed instead.
+	if (rolePlayChannelsList.length > FIELD_VALUE_CHARACTER_LIMIT) {
+		const rolePlayChannelsListEmbed = new MessageEmbed()
+			.setTitle('Role-play channels')
+			.setDescription(rolePlayChannelsList);
+		await interaction.followUp({
+			embeds: [rolePlayChannelsListEmbed],
+			ephemeral: true
+		});
+	}
 }
 
 async function setConfiguration(interaction) {
@@ -143,22 +220,7 @@ async function setConfiguration(interaction) {
 		ephemeral: true
 	});
 
-	try {
-		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
-	} catch (e) {
-		console.error(
-			`Error while trying to update commands for guild ${interaction.guildId} after changing configuration:`,
-			e
-		);
-		await interaction.followUp({
-			content:
-				'Configuration was changed but commands could not be updated on the server.\n' +
-				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode(
-					'/refresh-commands'
-				)}.`,
-			ephemeral: true
-		});
-	}
+	await updateCommandsAfterConfigChange(interaction);
 }
 
 async function resetConfiguration(interaction) {
@@ -185,13 +247,105 @@ async function resetConfiguration(interaction) {
 		ephemeral: true
 	});
 
+	await updateCommandsAfterConfigChange(interaction);
+}
+
+async function handleAddRolePlayChannelInteraction(interaction) {
+	const channelId = getChannelId(interaction);
+	if (!channelId) {
+		await interaction.reply({
+			content: 'This will only work with text channels in a server.',
+			ephemeral: true
+		});
+		return;
+	}
+	try {
+		addRolePlayChannel(interaction.guildId, channelId);
+	} catch (e) {
+		console.error(`Database error while trying to add role-play channel for guild ${interaction.guildId}:`, e);
+		await interaction.reply({
+			content: 'Adding the role-play channel failed.',
+			ephemeral: true
+		});
+		return;
+	}
+
+	await interaction.reply({
+		content: 'Successfully added role-play channel.',
+		ephemeral: true
+	});
+
+	await updateCommandsAfterConfigChange(interaction);
+}
+
+async function handleRemoveRolePlayChannelInteraction(interaction) {
+	const channelId = getChannelId(interaction);
+	if (!channelId) {
+		await interaction.reply({
+			content: 'This will only work with text channels in a server.',
+			ephemeral: true
+		});
+		return;
+	}
+	try {
+		removeRolePlayChannel(interaction.guildId, channelId);
+	} catch (e) {
+		console.error(`Database error while trying to remove role-play channel for guild ${interaction.guildId}:`, e);
+		await interaction.reply({
+			content: 'Removing the role-play channel failed.',
+			ephemeral: true
+		});
+		return;
+	}
+
+	await interaction.reply({
+		content: 'Successfully removed role-play channel.',
+		ephemeral: true
+	});
+
+	await updateCommandsAfterConfigChange(interaction);
+}
+
+function getChannelId(interaction) {
+	// Either get the channel from a provided option 'channel' or fall back to the channel the interaction was sent in.
+	const channel = interaction.options.getChannel('channel');
+	if (channel) {
+		// Other channel types should be prevented by the command configuration anyway but just to be safe...
+		if (channel.type === Constants.ChannelTypes.GUILD_TEXT) {
+			return channel.id;
+		}
+	}
+	// Make sure the user is using this command in a guild text channel.
+	if (interaction.channel.type === Constants.ChannelTypes.GUILD_TEXT) {
+		return interaction.channelId;
+	}
+	return null;
+}
+
+function getChannelsList(channelIds) {
+	// It would be nice to be able to print the channel list in server order and with categories as headers.
+	// Unfortunately channel positions from API are buggy so we can't do that for now.
+	// const guildChannels = await interaction.guild.channels.fetch();
+	// guildChannels.each(guildChannel => {
+	// 	console.log(
+	// 		`Position: ${guildChannel.position}, raw position: ${guildChannel.rawPosition}, type: ${guildChannel.type}, name: ${guildChannel.name}` +
+	// 			(guildChannel.parent ? `, parent: ${guildChannel.parent.name}` : '')
+	// 	);
+	// });
+	return channelIds.map(channelId => channelMention(channelId)).join('\n');
+}
+
+async function updateCommandsAfterConfigChange(interaction) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {
-		console.error(`Error while trying to update commands for guild ${interaction.guildId} after clearing options:`, e);
+		console.error(
+			`Error while trying to update commands for guild ${interaction.guildId} after changing configuration:`,
+			e
+		);
 		await interaction.followUp({
 			content:
-				'Options were reset but commands could not be updated on the server.\n' +
+				'Configuration was changed but commands could not be updated on the server.\n' +
 				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode(
 					'/refresh-commands'
 				)}.`,

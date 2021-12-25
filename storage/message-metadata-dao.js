@@ -9,6 +9,16 @@ export const MessageType = Object.freeze({
 const getMessageMetadataStatement = db.prepare(
 	'SELECT channel_id, guild_id, sent_timestamp, interacting_user_id, message_type FROM message_metadata WHERE message_id = ?'
 );
+const fetchRPMessageMetadataStatement = db.prepare(
+	'SELECT mm.message_id, mm.channel_id, mm.sent_timestamp, mm.message_type' +
+		' FROM message_metadata mm' +
+		' WHERE mm.interacting_user_id = ?' +
+		'  AND mm.guild_id = ?' +
+		"  AND mm.message_type = 'Arrival'" +
+		'  AND mm.channel_id IN' +
+		'   (SELECT grpc.role_play_channel_id FROM guild_role_play_channels grpc WHERE grpc.guild_id = mm.guild_id)' +
+		' ORDER BY mm.sent_timestamp DESC'
+);
 const addMessageMetadataStatement = db.prepare(
 	'INSERT INTO message_metadata(message_id, channel_id, guild_id, sent_timestamp, interacting_user_id, message_type) VALUES(?, ?, ?, ?, ?, ?)'
 );
@@ -32,6 +42,38 @@ export function getMessageMetadata(messageId) {
 				interactingUserId: metadata.interacting_user_id,
 				messageType: metadata.message_type
 			};
+		}
+		return null;
+	} catch (e) {
+		console.error(e);
+		return null;
+	}
+}
+
+/**
+ * Returns the newest recorded metadata for messages that have been sent
+ * in any of the currently configured role-playing channels of the guild with the provided id,
+ * associated with the user with the provided id.
+ * If no matching entry could be found or if an error occurred while querying the database,
+ * this is handled and null is returned.
+ */
+export function findNewestRPMessageMetadata(interactingUserId, guildId, channelIdsToSearch) {
+	try {
+		// First we query for all messages associated with this user in the RP channels of this guild.
+		const iterator = fetchRPMessageMetadataStatement.iterate(interactingUserId, guildId);
+		// Then we try to find one that was sent in one of the supplied channels.
+		// That way we can query the db efficiently without having to pass too many parameters (all channels to search).
+		for (const row of iterator) {
+			if (channelIdsToSearch.includes(row.channel_id)) {
+				return {
+					messageId: row.message_id,
+					channelId: row.channel_id,
+					guildId,
+					sentTimestamp: row.sent_timestamp,
+					interactingUserId,
+					messageType: row.message_type
+				};
+			}
 		}
 		return null;
 	} catch (e) {

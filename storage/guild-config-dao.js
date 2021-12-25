@@ -11,6 +11,16 @@ const setChannelsStatement =
 	db.prepare(`INSERT INTO guild_config(id, bookmarks_channel_id, quotes_channel_id) VALUES(?, ?, ?)
 	ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = ?, quotes_channel_id = ?`);
 const removeGuildConfigStatement = db.prepare('DELETE FROM guild_config WHERE id = ?');
+const getRolePlayChannelsStatement = db.prepare(
+	'SELECT role_play_channel_id FROM guild_role_play_channels WHERE guild_id = ?'
+);
+const addRolePlayChannelStatement = db.prepare(
+	'INSERT OR IGNORE INTO guild_role_play_channels(guild_id, role_play_channel_id) VALUES(?, ?)'
+);
+const removeRolePlayChannelStatement = db.prepare(
+	'DELETE FROM guild_role_play_channels WHERE guild_id = ? AND role_play_channel_id = ?'
+);
+const removeAllRolePlayChannelsStatement = db.prepare('DELETE FROM guild_role_play_channels WHERE guild_id = ?');
 
 /**
  * Tries to retrieve configuration for a guild from the database.
@@ -21,10 +31,12 @@ export function getGuildConfig(guildId) {
 	try {
 		const config = getGuildConfigStatement.get(guildId);
 		if (config) {
+			const rolePlayChannels = getRolePlayChannels(guildId);
 			return {
 				id: config.id,
 				bookmarksChannel: config.bookmarks_channel_id,
-				quotesChannel: config.quotes_channel_id
+				quotesChannel: config.quotes_channel_id,
+				rolePlayChannels
 			};
 		}
 		return { id: guildId };
@@ -59,11 +71,10 @@ export function setConfigurationValues(guildId, patch) {
 /**
  * @throws Caller has to handle potential database errors.
  */
-export function clearConfigurationValues(guildId) {
+export const clearConfigurationValues = db.transaction(guildId => {
 	removeGuildConfigStatement.run(guildId);
-	// In the future this might have to update other tables too.
-	// Do that in a transaction then.
-}
+	removeAllRolePlayChannels(guildId);
+});
 
 /**
  * @throws Caller has to handle potential database errors.
@@ -77,4 +88,32 @@ export function setBookmarksChannel(guildId, bookmarksChannelId) {
  */
 export function setQuotesChannel(guildId, quotesChannelId) {
 	setQuotesChannelStatement.run(guildId, quotesChannelId, quotesChannelId);
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+function getRolePlayChannels(guildId) {
+	return getRolePlayChannelsStatement.all(guildId).map(row => row.role_play_channel_id);
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function addRolePlayChannel(guildId, rolePlayChannelId) {
+	addRolePlayChannelStatement.run(guildId, rolePlayChannelId);
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function removeRolePlayChannel(guildId, rolePlayChannelId) {
+	removeRolePlayChannelStatement.run(guildId, rolePlayChannelId);
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function removeAllRolePlayChannels(guildId) {
+	removeAllRolePlayChannelsStatement.run(guildId);
 }
