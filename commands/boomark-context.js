@@ -1,6 +1,7 @@
-import { hyperlink, channelMention, userMention } from '@discordjs/builders';
+import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import { bookmarkMessages } from './bookmark.js';
+import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 const bookmarkContextCommand = {
 	// Configuration for registering the command
@@ -29,9 +30,7 @@ const bookmarkContextCommand = {
 			// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const bookmarkMessageEmbed = new MessageEmbed().setDescription(
-				`${bookmarkMessages.any(message.url, interaction.channelId)}\n${
-					message.content
-				}\n\nBookmark created by ${userMention(interaction.user.id)}`
+				`${bookmarkMessages.any(message.url, interaction.channelId)}\n${message.content}`
 			);
 			const bookmarkMessage = await bookmarksChannel.send({
 				embeds: [bookmarkMessageEmbed],
@@ -49,6 +48,8 @@ const bookmarkContextCommand = {
 				)}!`,
 				ephemeral: true
 			});
+
+			addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark);
 		} else {
 			await interaction.reply({ content: 'This message does not have any bookmarkable content.', ephemeral: true });
 		}

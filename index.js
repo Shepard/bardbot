@@ -1,7 +1,9 @@
 import process from 'process';
 import fsPromises from 'fs/promises';
 import { Client, Collection, Intents } from 'discord.js';
+import schedule from 'node-schedule';
 import { initDatabase, closeDatabase } from './storage/database.js';
+import './storage/maintenance-jobs.js';
 
 async function initApp() {
 	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
@@ -9,7 +11,7 @@ async function initApp() {
 	await initDatabase();
 
 	const client = new Client({
-		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
+		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES],
 		presence: { activities: [{ name: 'Toss a coin to your witcher', type: 2 }] }
 	});
 
@@ -38,7 +40,7 @@ async function initApp() {
 	process.on('SIGINT', () => {
 		client.destroy();
 		closeDatabase();
-		process.exit(0);
+		schedule.gracefulShutdown().then(() => process.exit(0));
 	});
 }
 

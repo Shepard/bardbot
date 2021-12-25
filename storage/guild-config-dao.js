@@ -35,7 +35,7 @@ export function getGuildConfig(guildId) {
 }
 
 /**
- * Caller has to handle potential errors.
+ * @throws Caller has to handle potential database errors.
  */
 export function setConfigurationValues(guildId, patch) {
 	if (patch.bookmarksChannelId && patch.quotesChannelId) {
@@ -57,7 +57,7 @@ export function setConfigurationValues(guildId, patch) {
 }
 
 /**
- * Caller has to handle potential errors.
+ * @throws Caller has to handle potential database errors.
  */
 export function clearConfigurationValues(guildId) {
 	removeGuildConfigStatement.run(guildId);
@@ -66,14 +66,14 @@ export function clearConfigurationValues(guildId) {
 }
 
 /**
- * Caller has to handle potential errors.
+ * @throws Caller has to handle potential database errors.
  */
 export function setBookmarksChannel(guildId, bookmarksChannelId) {
 	setBookmarksChannelStatement.run(guildId, bookmarksChannelId, bookmarksChannelId);
 }
 
 /**
- * Caller has to handle potential errors.
+ * @throws Caller has to handle potential database errors.
  */
 export function setQuotesChannel(guildId, quotesChannelId) {
 	setQuotesChannelStatement.run(guildId, quotesChannelId, quotesChannelId);

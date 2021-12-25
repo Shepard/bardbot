@@ -1,5 +1,6 @@
 import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
+import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 const gotoCommand = {
 	// Configuration for registering the command
@@ -66,6 +67,8 @@ const gotoCommand = {
 			actionMessageText +
 				`The ${hyperlink('story continues', destinationMessage.url)} in ${channelMention(destinationChannel.id)}.`
 		);
+
+		addMessageMetadata(destinationMessage, interaction.user.id, MessageType.Arrival);
 	}
 };
 

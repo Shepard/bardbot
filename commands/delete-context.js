@@ -1,5 +1,6 @@
 import { Constants } from 'discord.js';
 import { inlineCode } from '@discordjs/builders';
+import { getMessageMetadata } from '../storage/message-metadata-dao.js';
 
 const userMentionPattern = /<@(\d+)>/;
 
@@ -32,6 +33,9 @@ const deleteContextCommand = {
 				// We're excluding interaction replies to /names here so that the last line of the embed description
 				// of that is not checked for mentions (because it can contain an arbitrary user).
 
+				// TODO Remove most of this after the metadata-based approach has been deployed for a while.
+				//  Not sure yet if the metadata should also contain the quoted user.
+
 				const lines = message.embeds[0].description.split('\n');
 				const firstLine = lines[0];
 				const lastLine = lines[lines.length - 1];
@@ -46,6 +50,12 @@ const deleteContextCommand = {
 					return;
 				}
 			}
+
+			const messageMetadata = getMessageMetadata(message.id);
+			if (messageMetadata?.interactingUserId === interaction.user.id) {
+				await deleteMessage(message, interaction);
+				return;
+			}
 		}
 
 		await interaction.reply({
@@ -56,7 +66,7 @@ const deleteContextCommand = {
 					'/bookmark'
 				)} command),\n` +
 				'- Quotes someone else created through me where you were quoted,\n' +
-				`- My reply to ${inlineCode('/goto')},\n` +
+				`- My reply to ${inlineCode('/goto')} and the corresponding message in the destination channel,\n` +
 				`- My reply to ${inlineCode('/narrate')},\n` +
 				`- My reply to ${inlineCode('/names')}.`,
 			ephemeral: true
@@ -76,6 +86,9 @@ function isUserMentioned(line, currentUserId) {
 async function deleteMessage(message, interaction) {
 	try {
 		await message.delete();
+
+		// We don't need to delete the metadata we stored for this message here.
+		// We will receive a messageDelete event in which we do that.
 	} catch (e) {
 		console.error('Error while trying to delete message:', e);
 		await interaction.reply({

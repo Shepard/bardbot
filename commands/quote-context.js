@@ -1,6 +1,7 @@
 import { hyperlink, userMention, channelMention, quote, italic } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../random-message-provider.js';
+import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 const quoteMessages = new RandomMessageProvider()
 	.add((author, url) => `Did you hear what ${userMention(author)} ${hyperlink('just said', url)}?`)
@@ -53,9 +54,7 @@ const quoteContextCommand = {
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const quoteMessageEmbed = new MessageEmbed().setDescription(
-				`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}\n\nQuote created by ${userMention(
-					interaction.user.id
-				)}`
+				`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}`
 			);
 			const quoteMessage = await quotesChannel.send({
 				embeds: [quoteMessageEmbed],
@@ -73,6 +72,8 @@ const quoteContextCommand = {
 				)}!`,
 				ephemeral: true
 			});
+
+			addMessageMetadata(quoteMessage, interaction.user.id, MessageType.Quote);
 		} else {
 			await interaction.reply({ content: 'This message does not have any quotable content.', ephemeral: true });
 		}

@@ -1,6 +1,7 @@
-import { hyperlink, channelMention, userMention } from '@discordjs/builders';
+import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../random-message-provider.js';
+import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 export const bookmarkMessages = new RandomMessageProvider()
 	.add((url, channel) => `A ${hyperlink('new chapter', url)} was written in ${channelMention(channel)}.`)
@@ -58,19 +59,18 @@ const bookmarkCommand = {
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 		const bookmarkMessageEmbed = new MessageEmbed().setDescription(
-			`${bookmarkMessages.any(
-				eventMessage.url,
-				interaction.channelId
-			)}\n${eventMessageText}\n\nBookmark created by ${userMention(interaction.user.id)}`
+			`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n${eventMessageText}`
 		);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
-		await bookmarksChannel.send({
+		const bookmarkMessage = await bookmarksChannel.send({
 			embeds: [bookmarkMessageEmbed],
 			// We don't want any mentions pinging people here.
 			allowed_mentions: {
 				parse: []
 			}
 		});
+
+		addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark);
 	}
 };
 
