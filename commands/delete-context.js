@@ -18,7 +18,10 @@ const deleteContextCommand = {
 
 			const commandName = message.interaction?.commandName;
 			if (
-				(commandName === 'bookmark' || commandName === 'names') &&
+				(commandName === 'bookmark' ||
+					commandName === 'names' ||
+					commandName === 'goto' ||
+					commandName === 'narrate') &&
 				message.interaction?.user.id === interaction.user.id
 			) {
 				// This was the bot's reply to a /bookmark or /names command interaction
@@ -53,6 +56,8 @@ const deleteContextCommand = {
 					'/bookmark'
 				)} command),\n` +
 				'- Quotes someone else created through me where you were quoted,\n' +
+				`- My reply to ${inlineCode('/goto')},\n` +
+				`- My reply to ${inlineCode('/narrate')},\n` +
 				`- My reply to ${inlineCode('/names')}.`,
 			ephemeral: true
 		});
