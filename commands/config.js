@@ -332,7 +332,11 @@ function getChannelsList(channelIds) {
 	// 			(guildChannel.parent ? `, parent: ${guildChannel.parent.name}` : '')
 	// 	);
 	// });
-	return channelIds.map(channelId => channelMention(channelId)).join('\n');
+	const channelsList = channelIds.map(channelId => channelMention(channelId)).join('\n');
+	if (channelsList.length > 0) {
+		return channelsList;
+	}
+	return '-';
 }
 
 async function updateCommandsAfterConfigChange(interaction) {
