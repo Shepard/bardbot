@@ -1,4 +1,4 @@
-import db from './database.js';
+import db, { registerDbInitialisedListener } from './database.js';
 
 export const MessageType = Object.freeze({
 	Bookmark: 'Bookmark',
@@ -6,24 +6,32 @@ export const MessageType = Object.freeze({
 	Arrival: 'Arrival'
 });
 
-const getMessageMetadataStatement = db.prepare(
-	'SELECT channel_id, guild_id, sent_timestamp, interacting_user_id, message_type FROM message_metadata WHERE message_id = ?'
-);
-const fetchRPMessageMetadataStatement = db.prepare(
-	'SELECT mm.message_id, mm.channel_id, mm.sent_timestamp, mm.message_type' +
-		' FROM message_metadata mm' +
-		' WHERE mm.interacting_user_id = ?' +
-		'  AND mm.guild_id = ?' +
-		"  AND mm.message_type = 'Arrival'" +
-		'  AND mm.channel_id IN' +
-		'   (SELECT grpc.role_play_channel_id FROM guild_role_play_channels grpc WHERE grpc.guild_id = mm.guild_id)' +
-		' ORDER BY mm.sent_timestamp DESC'
-);
-const addMessageMetadataStatement = db.prepare(
-	'INSERT INTO message_metadata(message_id, channel_id, guild_id, sent_timestamp, interacting_user_id, message_type) VALUES(?, ?, ?, ?, ?, ?)'
-);
-const deleteMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE message_id = ?');
-const deleteOutdatedMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE sent_timestamp < ?');
+let getMessageMetadataStatement = null;
+let fetchRPMessageMetadataStatement = null;
+let addMessageMetadataStatement = null;
+let deleteMessageMetadataStatement = null;
+let deleteOutdatedMessageMetadataStatement = null;
+
+registerDbInitialisedListener(() => {
+	getMessageMetadataStatement = db.prepare(
+		'SELECT channel_id, guild_id, sent_timestamp, interacting_user_id, message_type FROM message_metadata WHERE message_id = ?'
+	);
+	fetchRPMessageMetadataStatement = db.prepare(
+		'SELECT mm.message_id, mm.channel_id, mm.sent_timestamp, mm.message_type' +
+			' FROM message_metadata mm' +
+			' WHERE mm.interacting_user_id = ?' +
+			'  AND mm.guild_id = ?' +
+			"  AND mm.message_type = 'Arrival'" +
+			'  AND mm.channel_id IN' +
+			'   (SELECT grpc.role_play_channel_id FROM guild_role_play_channels grpc WHERE grpc.guild_id = mm.guild_id)' +
+			' ORDER BY mm.sent_timestamp DESC'
+	);
+	addMessageMetadataStatement = db.prepare(
+		'INSERT INTO message_metadata(message_id, channel_id, guild_id, sent_timestamp, interacting_user_id, message_type) VALUES(?, ?, ?, ?, ?, ?)'
+	);
+	deleteMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE message_id = ?');
+	deleteOutdatedMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE sent_timestamp < ?');
+});
 
 /**
  * Tries to find metadata for a given message id in the database.
