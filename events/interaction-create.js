@@ -9,16 +9,25 @@ const interactionCreateEvent = {
 };
 
 async function handleInteraction(interaction) {
-	if (interaction.isCommand() || interaction.isContextMenu()) {
+	if (interaction.isCommand() || interaction.isContextMenu() || interaction.isAutocomplete()) {
 		const command = interaction.client.commands.get(interaction.commandName);
-		if (command && isMatchingCommand(interaction, command)) {
-			const guildConfig = getGuildConfig(interaction.guildId);
-			if (!command.guard) {
-				await executeCommand(command, interaction, guildConfig);
-			} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
-				await executeCommand(command, interaction, guildConfig);
-			} else {
-				console.error('Command was called in guild that it should not apply to.');
+		if (command) {
+			if (isMatchingCommand(interaction, command)) {
+				const guildConfig = getGuildConfig(interaction.guildId);
+				if (!command.guard) {
+					await executeCommand(command, interaction, guildConfig);
+				} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
+					await executeCommand(command, interaction, guildConfig);
+				} else {
+					console.error('Command was called in guild that it should not apply to.');
+				}
+			} else if (
+				interaction.isAutocomplete() &&
+				command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT
+			) {
+				// We probably don't need to guard the autocomplete.
+				const guildConfig = getGuildConfig(interaction.guildId);
+				await autocompleteCommandOption(command, interaction, guildConfig);
 			}
 		}
 	}
@@ -48,6 +57,26 @@ async function executeCommand(command, interaction, guildConfig) {
 		} catch (innerError) {
 			console.error('Error while trying to tell user about the previous error:', innerError);
 		}
+	}
+}
+
+async function autocompleteCommandOption(command, interaction, guildConfig) {
+	if (command.autocomplete) {
+		try {
+			const options = await command.autocomplete(interaction, guildConfig);
+			await interaction.respond(options);
+			return;
+		} catch (error) {
+			console.error(`Error while running option autocomplete for command '${interaction.commandName}':`, error);
+		}
+	}
+	try {
+		await interaction.respond([]);
+	} catch (error) {
+		console.error(
+			`Error while trying to respond with empty options for autocomplete for command '${interaction.commandName}':`,
+			error
+		);
 	}
 }
 
