@@ -2,7 +2,7 @@ import { deleteMessageMetadata } from '../storage/message-metadata-dao.js';
 
 const messageDeleteEvent = {
 	name: 'messageDelete',
-	async execute(message) {
+	execute(message) {
 		// When a message gets deleted in Discord we need to check if it's one of ours
 		// and potentially delete metadata we were holding for it.
 		// This handles both the case that this bot triggered a delete of said message

@@ -3,22 +3,26 @@ import { getGuildConfig } from '../storage/guild-config-dao.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',
-	async execute(interaction) {
-		if (interaction.isCommand() || interaction.isContextMenu()) {
-			const command = interaction.client.commands.get(interaction.commandName);
-			if (command && isMatchingCommand(interaction, command)) {
-				const guildConfig = getGuildConfig(interaction.guildId);
-				if (!command.guard) {
-					await executeCommand(command, interaction, guildConfig);
-				} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
-					await executeCommand(command, interaction, guildConfig);
-				} else {
-					console.error('Command was called in guild that it should not apply to.');
-				}
+	execute(interaction) {
+		handleInteraction(interaction).catch(e => console.error(e));
+	}
+};
+
+async function handleInteraction(interaction) {
+	if (interaction.isCommand() || interaction.isContextMenu()) {
+		const command = interaction.client.commands.get(interaction.commandName);
+		if (command && isMatchingCommand(interaction, command)) {
+			const guildConfig = getGuildConfig(interaction.guildId);
+			if (!command.guard) {
+				await executeCommand(command, interaction, guildConfig);
+			} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
+				await executeCommand(command, interaction, guildConfig);
+			} else {
+				console.error('Command was called in guild that it should not apply to.');
 			}
 		}
 	}
-};
+}
 
 function isMatchingCommand(interaction, command) {
 	if (interaction.isCommand()) {
@@ -30,6 +34,7 @@ function isMatchingCommand(interaction, command) {
 			(interaction.targetType === 'MESSAGE' && command.configuration.type === Constants.ApplicationCommandTypes.MESSAGE)
 		);
 	}
+	return false;
 }
 
 async function executeCommand(command, interaction, guildConfig) {

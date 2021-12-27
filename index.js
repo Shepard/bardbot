@@ -48,4 +48,4 @@ async function getJSFilesInDir(path) {
 	return (await fsPromises.readdir(path)).filter(file => file.endsWith('.js'));
 }
 
-initApp();
+initApp().catch(e => console.error(e));
