@@ -1,5 +1,7 @@
+PRAGMA foreign_keys=ON;
+
 CREATE TABLE IF NOT EXISTS guild_config (
-	id TEXT PRIMARY KEY,
+	id TEXT PRIMARY KEY NOT NULL,
 	bookmarks_channel_id TEXT,
 	quotes_channel_id TEXT
 ) WITHOUT ROWID;
