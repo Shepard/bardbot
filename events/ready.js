@@ -1,5 +1,6 @@
 import process from 'process';
 import { updateCommandsForAllGuilds } from '../command-handling/update-commands.js';
+import { initMaintenanceJobs } from '../storage/maintenance-jobs.js';
 
 const readyEvent = {
 	name: 'ready',
@@ -14,6 +15,8 @@ async function handleReady(client) {
 
 	// Only update the commands when the client is ready so we know the guilds cache in the client is filled.
 	await updateCommandsForAllGuilds(client);
+
+	initMaintenanceJobs(client);
 
 	// This will only be defined if the process has been started a certain way (e.g. via pm2).
 	// We use it to tell pm2 that the application can be considered fully online.

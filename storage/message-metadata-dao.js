@@ -1,9 +1,11 @@
 import db, { registerDbInitialisedListener } from './database.js';
+import { addMonths } from '../util/helpers.js';
 
 export const MessageType = Object.freeze({
 	Bookmark: 'Bookmark',
 	Quote: 'Quote',
-	Arrival: 'Arrival'
+	Arrival: 'Arrival',
+	AltMessage: 'AltMessage'
 });
 
 let getMessageMetadataStatement = null;
@@ -14,23 +16,27 @@ let deleteOutdatedMessageMetadataStatement = null;
 
 registerDbInitialisedListener(() => {
 	getMessageMetadataStatement = db.prepare(
-		'SELECT channel_id, guild_id, sent_timestamp, interacting_user_id, message_type FROM message_metadata WHERE message_id = ?'
+		'SELECT channel_id, guild_id, sent_timestamp, interacting_user_id, message_type FROM message_metadata WHERE message_id = :messageId'
 	);
 	fetchRPMessageMetadataStatement = db.prepare(
 		'SELECT mm.message_id, mm.channel_id, mm.sent_timestamp, mm.message_type' +
 			' FROM message_metadata mm' +
-			' WHERE mm.interacting_user_id = ?' +
-			'  AND mm.guild_id = ?' +
-			"  AND mm.message_type = 'Arrival'" +
+			' WHERE mm.interacting_user_id = :interactingUserId' +
+			'  AND mm.guild_id = :guildId' +
+			"  AND (mm.message_type = 'Arrival'" +
+			"  OR mm.message_type = 'AltMessage')" +
 			'  AND mm.channel_id IN' +
-			'   (SELECT grpc.role_play_channel_id FROM guild_role_play_channels grpc WHERE grpc.guild_id = mm.guild_id)' +
+			'   (SELECT grpc.role_play_channel_id FROM guild_role_play_channel grpc WHERE grpc.guild_id = mm.guild_id)' +
 			' ORDER BY mm.sent_timestamp DESC'
 	);
 	addMessageMetadataStatement = db.prepare(
-		'INSERT INTO message_metadata(message_id, channel_id, guild_id, sent_timestamp, interacting_user_id, message_type) VALUES(?, ?, ?, ?, ?, ?)'
+		'INSERT INTO message_metadata(message_id, channel_id, guild_id, sent_timestamp, interacting_user_id, message_type)' +
+			' VALUES(:messageId, :channelId, :guildId, :sentTimestamp, :interactingUserId, :messageType)'
 	);
-	deleteMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE message_id = ?');
-	deleteOutdatedMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE sent_timestamp < ?');
+	deleteMessageMetadataStatement = db.prepare('DELETE FROM message_metadata WHERE message_id = :messageId');
+	deleteOutdatedMessageMetadataStatement = db.prepare(
+		'DELETE FROM message_metadata WHERE sent_timestamp < :sentTimestamp'
+	);
 });
 
 /**
@@ -40,7 +46,7 @@ registerDbInitialisedListener(() => {
  */
 export function getMessageMetadata(messageId) {
 	try {
-		const metadata = getMessageMetadataStatement.get(messageId);
+		const metadata = getMessageMetadataStatement.get({ messageId });
 		if (metadata) {
 			return {
 				messageId,
@@ -68,7 +74,7 @@ export function getMessageMetadata(messageId) {
 export function findNewestRPMessageMetadata(interactingUserId, guildId, channelIdsToSearch) {
 	try {
 		// First we query for all messages associated with this user in the RP channels of this guild.
-		const iterator = fetchRPMessageMetadataStatement.iterate(interactingUserId, guildId);
+		const iterator = fetchRPMessageMetadataStatement.iterate({ interactingUserId, guildId });
 		// Then we try to find one that was sent in one of the supplied channels.
 		// That way we can query the db efficiently without having to pass too many parameters (all channels to search).
 		for (const row of iterator) {
@@ -96,14 +102,14 @@ export function findNewestRPMessageMetadata(interactingUserId, guildId, channelI
 export function addMessageMetadata(message, interactingUserId, messageType) {
 	try {
 		// The timestamp is saved as an integer of the number of milliseconds since 1970.
-		addMessageMetadataStatement.run(
-			message.id,
-			message.channelId,
-			message.guildId,
-			message.createdTimestamp,
+		addMessageMetadataStatement.run({
+			messageId: message.id,
+			channelId: message.channelId,
+			guildId: message.guildId,
+			sentTimestamp: message.createdTimestamp,
 			interactingUserId,
 			messageType
-		);
+		});
 	} catch (e) {
 		console.error(`Error while trying to store metadata for message '${message.id}':`, e);
 	}
@@ -115,7 +121,7 @@ export function addMessageMetadata(message, interactingUserId, messageType) {
  * @throws Caller has to handle potential database errors.
  */
 export function deleteMessageMetadata(messageId) {
-	deleteMessageMetadataStatement.run(messageId);
+	deleteMessageMetadataStatement.run({ messageId });
 }
 
 /**
@@ -125,20 +131,8 @@ export function deleteMessageMetadata(messageId) {
  */
 export function deleteOutdatedMessageMetadata() {
 	const timestampHalfAYearAgo = addMonths(new Date(), -6).getTime();
-	const info = deleteOutdatedMessageMetadataStatement.run(timestampHalfAYearAgo);
+	const info = deleteOutdatedMessageMetadataStatement.run({ sentTimestamp: timestampHalfAYearAgo });
 	return info.changes;
-}
-
-function getDaysInMonth(year, month) {
-	return new Date(year, month, 0).getDate();
-}
-
-function addMonths(input, months) {
-	const date = new Date(input);
-	date.setDate(1);
-	date.setMonth(date.getMonth() + months);
-	date.setDate(Math.min(input.getDate(), getDaysInMonth(date.getFullYear(), date.getMonth() + 1)));
-	return date;
 }
 
 // TODO Method for cleaning all metadata held for a user? Or do that via an external script? Or maybe trigger with inter-process communication?

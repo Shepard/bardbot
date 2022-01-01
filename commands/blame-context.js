@@ -1,7 +1,7 @@
 import { userMention } from '@discordjs/builders';
 import { Constants } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
-import RandomMessageProvider from '../random-message-provider.js';
+import RandomMessageProvider from '../util/random-message-provider.js';
 
 export const blameMessages = new RandomMessageProvider()
 	.add(user => `${userMention(user)} told me to do it!`)

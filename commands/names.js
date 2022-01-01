@@ -1,5 +1,6 @@
 import { userMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
+import { chunk } from '../util/helpers.js';
 
 // Limit for characters in the description of an embed.
 // See https://discord.com/developers/docs/resources/channel#embed-limits
@@ -64,13 +65,5 @@ const namesCommand = {
 		}
 	}
 };
-
-function chunk(items, chunkSize) {
-	const chunked = [];
-	for (let i = 0; i < items.length; i += chunkSize) {
-		chunked.push(items.slice(i, i + chunkSize));
-	}
-	return chunked;
-}
 
 export default namesCommand;

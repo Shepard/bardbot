@@ -1,6 +1,6 @@
 import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
-import RandomMessageProvider from '../random-message-provider.js';
+import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 export const bookmarkMessages = new RandomMessageProvider()

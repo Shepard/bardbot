@@ -3,14 +3,11 @@ import fsPromises from 'fs/promises';
 import { Client, Collection, Intents } from 'discord.js';
 import schedule from 'node-schedule';
 import { initDatabase, closeDatabase } from './storage/database.js';
-import { initMaintenanceJobs } from './storage/maintenance-jobs.js';
 
 async function initApp() {
 	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
 
 	await initDatabase();
-
-	initMaintenanceJobs();
 
 	const client = new Client({
 		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES],

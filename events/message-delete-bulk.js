@@ -4,7 +4,7 @@ const messageDeleteBulkEvent = {
 	name: 'messageDeleteBulk',
 	execute(messages) {
 		messages.each(message => {
-			potentiallyDeleteMessageMetadata(message);
+			potentiallyDeleteMessageMetadata(message).catch(e => console.error(e));
 		});
 	}
 };

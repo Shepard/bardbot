@@ -1,4 +1,4 @@
-import { Constants, Permissions, MessageEmbed } from 'discord.js';
+import { Constants, Permissions, MessageEmbed, Webhook } from 'discord.js';
 import { channelMention, inlineCode, italic } from '@discordjs/builders';
 import {
 	getGuildConfig,
@@ -7,9 +7,13 @@ import {
 	setBookmarksChannel,
 	setQuotesChannel,
 	addRolePlayChannel,
-	removeRolePlayChannel
+	removeRolePlayChannel,
+	removeAllRolePlayChannels,
+	getWebhookIdForRolePlayChannel,
+	getWebhookIdsForRolePlayChannels
 } from '../storage/guild-config-dao.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
+import { createWebhook } from '../util/webhook-util.js';
 
 // Limit for characters in a field value of an embed.
 // See https://discord.com/developers/docs/resources/channel#embed-limits
@@ -60,6 +64,10 @@ const configCommand = {
 							{
 								name: 'all',
 								value: 'all'
+							},
+							{
+								name: 'role-play channels',
+								value: 'role-play-channels'
 							},
 							{
 								name: 'bookmarks channel',
@@ -225,9 +233,14 @@ async function setConfiguration(interaction) {
 
 async function resetConfiguration(interaction) {
 	const option = interaction.options.getString('option');
+	let webhookIds = null;
 	try {
 		if (option === 'all') {
+			webhookIds = getWebhookIdsForRolePlayChannels(interaction.guildId);
 			clearConfigurationValues(interaction.guildId);
+		} else if (option === 'role-play-channels') {
+			webhookIds = getWebhookIdsForRolePlayChannels(interaction.guildId);
+			removeAllRolePlayChannels(interaction.guildId);
 		} else if (option === 'bookmarks-channel') {
 			setBookmarksChannel(interaction.guildId, null);
 		} else if (option === 'quotes-channel') {
@@ -242,6 +255,20 @@ async function resetConfiguration(interaction) {
 		return;
 	}
 
+	// If all RP channels were reset, we need to remove all webhooks for them in Discord as well.
+	if (webhookIds) {
+		await Promise.allSettled(
+			webhookIds.map(webhookId => {
+				return new Webhook(interaction.client, { id: webhookId }).delete().catch(e => {
+					console.error(
+						`Error while trying to delete ${webhookId} in Discord in guild ${interaction.guildId} after clearing configuration values:`,
+						e
+					);
+				});
+			})
+		);
+	}
+
 	await interaction.reply({
 		content: 'Successfully reset options.',
 		ephemeral: true
@@ -251,16 +278,26 @@ async function resetConfiguration(interaction) {
 }
 
 async function handleAddRolePlayChannelInteraction(interaction) {
-	const channelId = getChannelId(interaction);
-	if (!channelId) {
+	const channel = getChannel(interaction);
+	if (!channel) {
 		await interaction.reply({
 			content: 'This will only work with text channels in a server.',
 			ephemeral: true
 		});
 		return;
 	}
+
 	try {
-		addRolePlayChannel(interaction.guildId, channelId);
+		const webhook = await createWebhook(channel, interaction.client);
+		if (webhook) {
+			addRolePlayChannel(interaction.guildId, channel.id, webhook.id);
+		} else {
+			await interaction.reply({
+				content: 'Adding the role-play channel failed.',
+				ephemeral: true
+			});
+			return;
+		}
 	} catch (e) {
 		console.error(`Database error while trying to add role-play channel for guild ${interaction.guildId}:`, e);
 		await interaction.reply({
@@ -279,16 +316,19 @@ async function handleAddRolePlayChannelInteraction(interaction) {
 }
 
 async function handleRemoveRolePlayChannelInteraction(interaction) {
-	const channelId = getChannelId(interaction);
-	if (!channelId) {
+	const channel = getChannel(interaction);
+	if (!channel) {
 		await interaction.reply({
 			content: 'This will only work with text channels in a server.',
 			ephemeral: true
 		});
 		return;
 	}
+
+	let webhookId = null;
 	try {
-		removeRolePlayChannel(interaction.guildId, channelId);
+		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, channel.id);
+		removeRolePlayChannel(interaction.guildId, channel.id);
 	} catch (e) {
 		console.error(`Database error while trying to remove role-play channel for guild ${interaction.guildId}:`, e);
 		await interaction.reply({
@@ -296,6 +336,17 @@ async function handleRemoveRolePlayChannelInteraction(interaction) {
 			ephemeral: true
 		});
 		return;
+	}
+
+	if (webhookId) {
+		try {
+			await new Webhook(interaction.client, { id: webhookId }).delete();
+		} catch (e) {
+			console.error(
+				`Could not delete webhook ${webhookId} in Discord after removing role-play channel ${channel.id} in guild ${interaction.guildId}:`,
+				e
+			);
+		}
 	}
 
 	await interaction.reply({
@@ -306,20 +357,20 @@ async function handleRemoveRolePlayChannelInteraction(interaction) {
 	await updateCommandsAfterConfigChange(interaction);
 }
 
-function getChannelId(interaction) {
+function getChannel(interaction) {
 	// Either get the channel from a provided option 'channel' or fall back to the channel the interaction was sent in.
 	const channel = interaction.options.getChannel('channel');
 	if (channel) {
 		// Other channel types should be prevented by the command configuration anyway but just to be safe...
 		if (channel.type === Constants.ChannelTypes[Constants.ChannelTypes.GUILD_TEXT]) {
-			return channel.id;
+			return channel;
 		}
 	}
 	// Make sure the user is using this command in a guild text channel.
 	// The check is a bit awkward because channel.type gives us the string version of the enum value
 	// which we have to fetch from the constants using the number version.
 	if (interaction.channel.type === Constants.ChannelTypes[Constants.ChannelTypes.GUILD_TEXT]) {
-		return interaction.channelId;
+		return interaction.channel;
 	}
 	return null;
 }
