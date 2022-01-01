@@ -59,7 +59,7 @@ const bookmarkCommand = {
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 		const bookmarkMessageEmbed = new MessageEmbed().setDescription(
-			`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n${eventMessageText}`
+			`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n\n${eventMessageText}`
 		);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
 		const bookmarkMessage = await bookmarksChannel.send({

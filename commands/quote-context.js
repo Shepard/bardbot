@@ -54,7 +54,7 @@ const quoteContextCommand = {
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const quoteMessageEmbed = new MessageEmbed().setDescription(
-				`${quoteMessages.any(message.author.id, message.url)}\n${quoteText}`
+				`${quoteMessages.any(message.author.id, message.url)}\n\n${quoteText}`
 			);
 			const quoteMessage = await quotesChannel.send({
 				embeds: [quoteMessageEmbed],
