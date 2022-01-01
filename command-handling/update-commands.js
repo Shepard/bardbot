@@ -72,3 +72,7 @@ function getMatchingRoles(guild, permissions) {
 export function areGuildCommandsUpdated(guildId) {
 	return updatedGuildsCache.has(guildId);
 }
+
+export function setGuildCommandsNotUpdated(guildId) {
+	updatedGuildsCache.delete(guildId);
+}
