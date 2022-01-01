@@ -184,7 +184,9 @@ async function handleAddAlt(interaction) {
 
 	// Tell user about successful creation and show the alt data off a bit.
 	const usableByMention = usableByType === UsableByType.User ? userMention(usableById) : roleMention(usableById);
-	const altEmbed = new MessageEmbed().setAuthor(name, avatarUrl).addField('Can be used by', usableByMention);
+	const altEmbed = new MessageEmbed()
+		.setAuthor({ name, iconURL: avatarUrl })
+		.addField('Can be used by', usableByMention);
 	await interaction.reply({
 		content: 'New alternate character was successfully created.',
 		embeds: [altEmbed],
@@ -245,7 +247,7 @@ async function handleEditAlt(interaction) {
 			? userMention(patchedAlt.usableById)
 			: roleMention(patchedAlt.usableById);
 	const altEmbed = new MessageEmbed()
-		.setAuthor(patchedAlt.name, patchedAlt.avatarUrl)
+		.setAuthor({ name: patchedAlt.name, iconURL: patchedAlt.avatarUrl })
 		.addField('Can be used by', usableByMention);
 	await interaction.reply({
 		content: 'Alternate character was successfully updated.',
@@ -308,7 +310,9 @@ async function handleShowAlts(interaction) {
 
 		const usableByMention =
 			alt.usableByType === UsableByType.User ? userMention(alt.usableById) : roleMention(alt.usableById);
-		const altEmbed = new MessageEmbed().setAuthor(alt.name, alt.avatarUrl).addField('Can be used by', usableByMention);
+		const altEmbed = new MessageEmbed()
+			.setAuthor({ name: alt.name, iconURL: alt.avatarUrl })
+			.addField('Can be used by', usableByMention);
 		await interaction.reply({
 			embeds: [altEmbed],
 			ephemeral: true

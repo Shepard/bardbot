@@ -20,7 +20,7 @@ const blameContextCommand = {
 	// Handler for when the command is used
 	async execute(interaction) {
 		// Get message that the context menu command was used on.
-		const message = interaction.options.getMessage('message');
+		const message = interaction.targetMessage;
 		if (message) {
 			if (message.interaction) {
 				// While this might seem superfluous because the user of an interaction reply is clearly shown in Discord,

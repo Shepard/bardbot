@@ -14,7 +14,7 @@ const deleteContextCommand = {
 	// Handler for when the command is used
 	async execute(interaction) {
 		// Get the message that the context menu command was used on.
-		const message = interaction.options.getMessage('message');
+		const message = interaction.targetMessage;
 		if (message) {
 			if (isMessageAuthoredByBot(message)) {
 				// This is a message that was created by this bot's user.
