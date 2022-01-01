@@ -101,7 +101,11 @@ async function findNewestUserMessage(userToFind, channelsToSearch, newestMessage
 	do {
 		// matchDataPerChannel will be of the shape [[channel, match or undefined, oldest message id], ...]
 		const matchDataPerChannel = await findInBatch(userToFind, channelsToSearchAndOldestMessageIds);
-		channelsToSearchAndOldestMessageIds = matchDataPerChannel.map(matchData => [matchData[0], matchData[2]]);
+		channelsToSearchAndOldestMessageIds = matchDataPerChannel
+			// While the first round explicitly puts nulls for the oldest messages ids (because we don't know any yet),
+			// after the first search result this means the channel didn't have any messages, so we're filtering it out.
+			.filter(matchData => !!matchData[2])
+			.map(matchData => [matchData[0], matchData[2]]);
 		matchDataPerChannel
 			.map(matchData => matchData[1])
 			.forEach(message => {
@@ -157,7 +161,7 @@ async function findInBatchInChannel(userToFind, channel, oldestMessageId) {
 		message => message.author.id === userToFind.id || message.interaction?.user.id === userToFind.id
 	);
 
-	const newOldestMessageId = messageBatch.last().id;
+	const newOldestMessageId = messageBatch.last()?.id;
 
 	return [channel, matchingMessage, newOldestMessageId];
 }
