@@ -5,7 +5,7 @@ A Discord bot for supporting roleplaying servers.
 ## Running the bot yourself
 
 - Create a Discord application and bot. You can [follow this tutorial](https://discordjs.guide/preparations/setting-up-a-bot-application.html).
-- Add your bot to at least one server. [There's a tutorial](https://discordjs.guide/preparations/adding-your-bot-to-servers.html) for that too.
+- Add your bot to at least one server. [There's a tutorial](https://discordjs.guide/preparations/adding-your-bot-to-servers.html) for that too. The permissions I used in the invite link are 535263968320. Those are not the minimal permissions needed but they work.
 - Make sure to have at least Node v16.6.0 or higher installed. Also your NPM version needs to be at least 7 (should come with Node).
 - Clone this repository.
 - In a terminal in the main directory run `npm install --no-save` initially and every time you pull new changes from this repository.
@@ -13,7 +13,7 @@ A Discord bot for supporting roleplaying servers.
 - Set up a config file (see below).
 - To start the bot, run `npm run start`.
   - For a more permanent setup for starting and managing the bot I recommend using a Node process manager like [pm2](https://pm2.keymetrics.io/).
-- Configure the bot on your server using the `/config` command.
+- [Configure the bot on your server](https://github.com/Shepard/bardbot/wiki/Overview#configuring-the-bot-on-a-server) using the `/config` command.
 
 ### Setting up a config file
 
