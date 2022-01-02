@@ -1,5 +1,6 @@
 import { Constants } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
+import { commands } from './command-registry.js';
 
 const updatedGuildsCache = new Set();
 
@@ -23,7 +24,7 @@ export async function updateCommandsForSingleGuild(client, guild) {
 	const guildConfig = getGuildConfig(guild.id);
 
 	const guildCommands = [];
-	client.commands.each(command => {
+	commands.each(command => {
 		// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
 		if (!command.guard || command.guard(client, guild, guildConfig)) {
 			const commandConfiguration = {
@@ -42,7 +43,7 @@ export async function updateCommandsForSingleGuild(client, guild) {
 
 	const fullPermissions = remoteCommands
 		.map(remoteCommand => {
-			const matchingLocalCommand = client.commands.find(
+			const matchingLocalCommand = commands.find(
 				localCommand => localCommand.configuration.name === remoteCommand.name
 			);
 			if (matchingLocalCommand?.permissions) {

@@ -1,5 +1,6 @@
 import { Constants } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
+import { commands } from '../command-handling/command-registry.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',
@@ -10,7 +11,7 @@ const interactionCreateEvent = {
 
 async function handleInteraction(interaction) {
 	if (interaction.isCommand() || interaction.isContextMenu() || interaction.isAutocomplete()) {
-		const command = interaction.client.commands.get(interaction.commandName);
+		const command = commands.get(interaction.commandName);
 		if (command) {
 			if (isMatchingCommand(interaction, command)) {
 				const guildConfig = getGuildConfig(interaction.guildId);

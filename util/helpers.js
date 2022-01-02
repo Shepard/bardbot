@@ -1,3 +1,5 @@
+import fsPromises from 'fs/promises';
+
 export function chunk(items, chunkSize) {
 	const chunked = [];
 	for (let i = 0; i < items.length; i += chunkSize) {
@@ -25,4 +27,8 @@ export function codePointLength(s) {
 		i++;
 	}
 	return i;
+}
+
+export async function getJSFilesInDir(path) {
+	return (await fsPromises.readdir(path)).filter(file => file.endsWith('.js'));
 }
