@@ -11,7 +11,8 @@ export async function createWebhook(channel, client) {
 }
 
 export async function getWebhookForMessageIfCreatedByBot(message) {
-	if (message.webhookId) {
+	// When the webhookId is the applicationId then this is actually an interaction reply and not a webhook we can fetch.
+	if (message.webhookId && message.webhookId !== message.applicationId) {
 		try {
 			const webhook = await message.fetchWebhook();
 			if (webhook?.owner.id === message.client.user.id) {

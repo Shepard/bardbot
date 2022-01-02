@@ -28,7 +28,7 @@ export async function potentiallyDeleteMessageMetadata(message) {
 }
 
 async function isCreatedByBot(message) {
-	const authoredByBot = message.author.id === message.client.user.id;
+	const authoredByBot = message.author?.id === message.client.user.id;
 	if (authoredByBot) {
 		return true;
 	}
