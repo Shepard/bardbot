@@ -14,8 +14,12 @@ function handleGuildDelete(guild) {
 		setGuildCommandsNotUpdated(guild.id);
 	}
 
-	// TODO Could register a time in the guild_config (create if not exists?)
-	//  and then add a clean-up task to remove guild config (including RP channels) after some time.
+	// TODO Register a time in the guild_config (create if not exists?)
+	//  and then add a clean-up task to remove guild config (including RP channels), alts and message metadata after some time.
+	//  Aligns with Discord Developer Policy: https://discord.com/developers/docs/policy
+	//  "You may not use the APIs in any way to: [...] retain data any longer than necessary for the operation of your application"
+	//  The time needs to be short enough to be considered complying with this policy
+	//  and long enough that it won't make the bot useless in cases where it only gets removed temporarily (e.g. when trying to add permissions).
 }
 
 export default guildDeleteEvent;
