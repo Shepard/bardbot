@@ -3,6 +3,7 @@ import { inlineCode, userMention, roleMention } from '@discordjs/builders';
 import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../storage/alt-dao.js';
 import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
+import { updateCommandsAfterConfigChange } from './config.js';
 
 const configAltCommand = {
 	// Configuration for registering the command
@@ -192,6 +193,8 @@ async function handleAddAlt(interaction) {
 		embeds: [altEmbed],
 		ephemeral: true
 	});
+
+	await updateCommandsAfterConfigChange(interaction);
 }
 
 async function handleEditAlt(interaction) {
@@ -254,6 +257,8 @@ async function handleEditAlt(interaction) {
 		embeds: [altEmbed],
 		ephemeral: true
 	});
+
+	await updateCommandsAfterConfigChange(interaction);
 }
 
 async function handleDeleteAlt(interaction) {
@@ -268,6 +273,8 @@ async function handleDeleteAlt(interaction) {
 				content: `The alternate character with the name "${name}" was successfully deleted.`,
 				ephemeral: true
 			});
+
+			await updateCommandsAfterConfigChange(interaction);
 		} else {
 			await interaction.reply({
 				content: `There is no alternate character by the name "${name}".`,

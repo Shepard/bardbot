@@ -392,7 +392,7 @@ function getChannelsList(channelIds) {
 	return '-';
 }
 
-async function updateCommandsAfterConfigChange(interaction) {
+export async function updateCommandsAfterConfigChange(interaction) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {

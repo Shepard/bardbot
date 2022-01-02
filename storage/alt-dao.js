@@ -13,6 +13,7 @@ let addAltStatement = null;
 let getAltStatement = null;
 let getAltsStatement = null;
 let findMatchingAltsStatement = null;
+let countAltsStatement = null;
 let editAltStatement = null;
 let deleteAltStatement = null;
 
@@ -37,6 +38,7 @@ registerDbInitialisedListener(() => {
 	findMatchingAltsStatement = db.prepare(
 		"SELECT name, usable_by_id, usable_by_type FROM alt WHERE guild_id = :guildId AND name LIKE :pattern ESCAPE '#' ORDER BY name"
 	);
+	countAltsStatement = db.prepare('SELECT count(id) AS number FROM alt WHERE guild_id = :guildId');
 	editAltStatement = db.prepare(
 		'UPDATE alt SET name = :name, usable_by_id = :usableById, usable_by_type = :usableByType, avatar_url = :avatarUrl WHERE id = :id'
 	);
@@ -122,6 +124,21 @@ export function findMatchingAlts(guildId, searchInput) {
 	} catch (e) {
 		console.error(e);
 		return [];
+	}
+}
+
+/**
+ * Counts the number of alternate characters that exist in a guild.
+ * @param {string} guildId The id of the guild to search.
+ * @returns {number} The number of alts that exist. 0 if there are none or if an error occurred during the database fetching.
+ */
+export function getNumberOfAlts(guildId) {
+	try {
+		const result = countAltsStatement.get({ guildId });
+		return result?.number ?? 0;
+	} catch (e) {
+		console.error(e);
+		return 0;
 	}
 }
 

@@ -1,7 +1,7 @@
 import { Constants } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
-import { findMatchingAlts, getAlt, UsableByType } from '../storage/alt-dao.js';
+import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../storage/alt-dao.js';
 
 const altCommand = {
 	// Configuration for registering the command
@@ -24,6 +24,10 @@ const altCommand = {
 				required: true
 			}
 		]
+	},
+	// Test function to check if the command should apply to a guild
+	guard(client, guild, guildConfig) {
+		return guildConfig?.rolePlayChannels?.length && getNumberOfAlts(guild.id) > 0;
 	},
 	// Handler for when the command is used
 	async execute(interaction) {
