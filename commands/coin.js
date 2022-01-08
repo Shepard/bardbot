@@ -3,8 +3,8 @@ import { Constants } from 'discord.js';
 const cointossCommand = {
 	// Configuration for registering the command
 	configuration: {
-		name: 'cointoss',
-		description: 'Toss a coin and see what side it lands on',
+		name: 'coin',
+		description: 'Toss a coin and see which side it lands on',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT
 	},
 	// Handler for when the command is used
