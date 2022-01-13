@@ -114,8 +114,7 @@ const altCommand = {
 	async autocomplete(interaction) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'name') {
-			// Once we can get user locales from interactions, we can use those instead.
-			const collator = new Intl.Collator('en');
+			const collator = new Intl.Collator(interaction.locale);
 			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value);
 			return (
 				matchingAlts
