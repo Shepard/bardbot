@@ -1,6 +1,6 @@
 # Bard Bot
 
-A Discord bot for supporting roleplaying servers.
+A Discord bot for supporting role-playing servers.
 
 ## Running the bot yourself
 
