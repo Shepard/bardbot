@@ -14,7 +14,7 @@ const namesCommand = {
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT
 	},
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		// Defer reply for now so we get more time to reply in case fetching the member list takes an unusual amount of time.
 		await interaction.deferReply();
 
@@ -42,9 +42,7 @@ const namesCommand = {
 		// Send member list as messages with embeds. The initial message contains a title and the first batch of names and edits the original deferred reply.
 
 		const embeds = messageTexts.map(text => new MessageEmbed().setDescription(text));
-		embeds[0].setTitle(
-			`When we turn back the pages, the members of ${interaction.guild.name} had the following names:`
-		);
+		embeds[0].setTitle(t.guild('reply.title', { guildName: interaction.guild.name }));
 
 		// We can send up to ten embeds per message: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-messages
 		const embedChunks = chunk(embeds, 10);

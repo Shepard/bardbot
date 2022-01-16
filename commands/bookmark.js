@@ -1,21 +1,15 @@
-import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 export const bookmarkMessages = new RandomMessageProvider()
-	.add((url, channel) => `A ${hyperlink('new chapter', url)} was written in ${channelMention(channel)}.`)
-	.add((url, channel) => `Something ${hyperlink('new happened', url)} in ${channelMention(channel)}!`)
-	.add((url, channel) => `The ${hyperlink('story continued', url)} in ${channelMention(channel)}.`)
-	.add(
-		(url, channel) =>
-			`The ${hyperlink('pen touched the paper', url)} and the pages turned; find out what happened in ${channelMention(
-				channel
-			)}.`
-	)
-	.add((url, channel) => `Little by little, ${hyperlink('developments were made', url)} in ${channelMention(channel)}.`)
-	.add((url, channel) => `Let's see ${hyperlink('what happened', url)} in ${channelMention(channel)}!`)
-	.add((url, channel) => `Another key event ${hyperlink('took place', url)} in ${channelMention(channel)}!`);
+	.add((url, channel, t) => t('reply.header1', { url, channel }))
+	.add((url, channel, t) => t('reply.header2', { url, channel }))
+	.add((url, channel, t) => t('reply.header3', { url, channel }))
+	.add((url, channel, t) => t('reply.header4', { url, channel }))
+	.add((url, channel, t) => t('reply.header5', { url, channel }))
+	.add((url, channel, t) => t('reply.header6', { url, channel }))
+	.add((url, channel, t) => t('reply.header7', { url, channel }));
 
 const bookmarkCommand = {
 	// Configuration for registering the command
@@ -43,7 +37,7 @@ const bookmarkCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, guildConfig) {
+	async execute(interaction, t, guildConfig) {
 		// First send a message in the channel where the user used the command,
 		// as a reply to their command call, showing the text they entered with the command.
 		const eventMessageText = interaction.options.getString('event');
@@ -59,7 +53,7 @@ const bookmarkCommand = {
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 		const bookmarkMessageEmbed = new MessageEmbed().setDescription(
-			`${bookmarkMessages.any(eventMessage.url, interaction.channelId)}\n\n${eventMessageText}`
+			`${bookmarkMessages.any(eventMessage.url, interaction.channelId, t.guild)}\n\n${eventMessageText}`
 		);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);
 		const bookmarkMessage = await bookmarksChannel.send({

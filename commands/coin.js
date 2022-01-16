@@ -8,10 +8,10 @@ const cointossCommand = {
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT
 	},
 	// Handler for when the command is used
-	async execute(interaction) {
-		const result = Math.floor(Math.random() * 2) == 0 ? 'heads' : 'tails';
+	async execute(interaction, t) {
+		const result = Math.floor(Math.random() * 2) == 0 ? t.guild('heads') : t.guild('tails');
 		await interaction.reply({
-			content: `${interaction.member.displayName} tosses a coin. It lands on… ${result}!`
+			content: t.guild('reply', { member: interaction.member.displayName, result })
 		});
 	}
 };

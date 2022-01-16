@@ -30,11 +30,11 @@ const altCommand = {
 		return guildConfig?.rolePlayChannels?.length && getNumberOfAlts(guild.id) > 0;
 	},
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		const altName = interaction.options.getString('name');
 		const messageText = interaction.options.getString('message');
 
-		const webhook = await getWebhook(interaction);
+		const webhook = await getWebhook(interaction, t);
 		if (!webhook) {
 			// getWebhook already handled telling the user about it.
 			return;
@@ -46,35 +46,22 @@ const altCommand = {
 				alt = getAlt(interaction.guildId, altName);
 			} catch (e) {
 				console.error('Error while trying to fetch alt from db:', e);
-				await interaction.reply({
-					content:
-						'An error occurred while trying to find the alternate character in the database. Please try again later.',
-					ephemeral: true
-				});
+				await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 				return;
 			}
 			if (!alt) {
-				await interaction.reply({
-					content: `There is no alternate character by the name "${altName}".`,
-					ephemeral: true
-				});
+				await t.privateReplyShared(interaction, 'no-alt-with-name', { altName });
 				return;
 			}
 			if (!isUsableByUser(alt, interaction)) {
-				await interaction.reply({
-					content: `The alternate character "${altName}" cannot be used for role-play by you.`,
-					ephemeral: true
-				});
+				await t.privateReply(interaction, 'reply.alt-not-usable', { altName });
 				return;
 			}
 
 			// Channels not viewable by the bot can cause problems so we don't allow alts to be used there.
 			// The webhook can send the message but we don't get messageDelete events for it and /where currently excludes such channels as well.
 			if (!interaction.channel.viewable) {
-				await interaction.reply({
-					content: 'This is not a place I can see, unfortunately. So you cannot use alternate characters here.',
-					ephemeral: true
-				});
+				await t.privateReply(interaction, 'reply.channel-not-viewable');
 				return;
 			}
 
@@ -93,7 +80,7 @@ const altCommand = {
 				// We need to reply to the interaction as well, otherwise it will be shown as pending and eventually failed.
 				// Since we don't really want to show a reply every time an alt message was sent, we send it and immediately delete it again.
 				await interaction.reply({
-					content: 'Alt message posted.'
+					content: t.guild('reply.alt-message-success')
 					// Can't be ephemeral because then it can't be deleted.
 				});
 				await interaction.deleteReply();
@@ -105,10 +92,7 @@ const altCommand = {
 			addMessageMetadata(altMessage, interaction.user.id, MessageType.AltMessage);
 		} catch (e) {
 			console.error('Error while trying to send alt message:', e);
-			await interaction.reply({
-				content: 'Sending message using alt failed.',
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.alt-message-failure');
 		}
 	},
 	async autocomplete(interaction) {
@@ -129,7 +113,7 @@ const altCommand = {
 	}
 };
 
-async function getWebhook(interaction) {
+async function getWebhook(interaction, t) {
 	let webhookId = null;
 	try {
 		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, interaction.channelId);
@@ -138,10 +122,7 @@ async function getWebhook(interaction) {
 			`Loading webhook id from database for channel ${interaction.channelId} in guild ${interaction.guildId} failed:`,
 			e
 		);
-		await interaction.reply({
-			content: 'Sending message using alt failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.alt-message-failure');
 		return null;
 	}
 	if (webhookId) {
@@ -149,16 +130,10 @@ async function getWebhook(interaction) {
 			return interaction.client.fetchWebhook(webhookId);
 		} catch (e) {
 			console.error('Fetching webhook failed:', e);
-			await interaction.reply({
-				content: 'Sending message using alt failed.',
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.alt-message-failure');
 		}
 	} else {
-		await interaction.reply({
-			content: 'This is not a role-play channel. You cannot use alternate characters here.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.not-role-play-channel');
 	}
 	return null;
 }

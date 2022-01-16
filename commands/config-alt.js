@@ -1,5 +1,5 @@
 import { Constants, Permissions, MessageEmbed } from 'discord.js';
-import { inlineCode, userMention, roleMention } from '@discordjs/builders';
+import { userMention, roleMention } from '@discordjs/builders';
 import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../storage/alt-dao.js';
 import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
@@ -104,21 +104,18 @@ const configAltCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'add') {
-			await handleAddAlt(interaction);
+			await handleAddAlt(interaction, t);
 		} else if (subcommand === 'edit') {
-			await handleEditAlt(interaction);
+			await handleEditAlt(interaction, t);
 		} else if (subcommand === 'delete') {
-			await handleDeleteAlt(interaction);
+			await handleDeleteAlt(interaction, t);
 		} else if (subcommand === 'show') {
-			await handleShowAlts(interaction);
+			await handleShowAlts(interaction, t);
 		} else {
-			await interaction.reply({
-				content: 'Unknown command',
-				ephemeral: true
-			});
+			await t.privateReplyShared(interaction, 'unknown-command');
 		}
 	},
 	async autocomplete(interaction) {
@@ -138,16 +135,13 @@ const configAltCommand = {
 	}
 };
 
-async function handleAddAlt(interaction) {
+async function handleAddAlt(interaction, t) {
 	const guildId = interaction.guildId;
 
 	const name = interaction.options.getString('name', true).trim();
-	const errorMessage = validateWebhookName(name);
-	if (errorMessage) {
-		await interaction.reply({
-			content: errorMessage,
-			ephemeral: true
-		});
+	const errorMessageKey = validateWebhookName(name);
+	if (errorMessageKey) {
+		await t.privateReplyShared(interaction, errorMessageKey);
 		return;
 	}
 
@@ -166,18 +160,10 @@ async function handleAddAlt(interaction) {
 		console.debug(`An alt with the id ${id} and the name "${name}" was created in guild ${guildId}.`);
 	} catch (e) {
 		if (e.message?.includes('UNIQUE constraint failed')) {
-			await interaction.reply({
-				content: `An alternate character with the name "${name}" already exists. If you want to adjust it, use the ${inlineCode(
-					'/config-alt edit'
-				)} command.`,
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.alt-exists', { name });
 		} else {
 			console.error('Error while trying to create alt in db:', e);
-			await interaction.reply({
-				content: 'Adding the alternate character failed.',
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.add-failure');
 		}
 		return;
 	}
@@ -186,17 +172,17 @@ async function handleAddAlt(interaction) {
 	const usableByMention = usableByType === UsableByType.User ? userMention(usableById) : roleMention(usableById);
 	const altEmbed = new MessageEmbed()
 		.setAuthor({ name, iconURL: avatarUrl })
-		.addField('Can be used by', usableByMention);
+		.addField(t.user('field-usable-by'), usableByMention);
 	await interaction.reply({
-		content: 'New alternate character was successfully created.',
+		content: t.user('reply.add-success'),
 		embeds: [altEmbed],
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
-async function handleEditAlt(interaction) {
+async function handleEditAlt(interaction, t) {
 	const guildId = interaction.guildId;
 
 	// Try to find the existing alt by the provided name.
@@ -206,23 +192,16 @@ async function handleEditAlt(interaction) {
 		alt = getAlt(guildId, name);
 	} catch (e) {
 		console.error('Error while trying to fetch alt from db:', e);
-		await interaction.reply({
-			content:
-				'An error occurred while trying to find the alternate character in the database. Please try again later.',
-			ephemeral: true
-		});
+		await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 		return;
 	}
 	if (!alt) {
-		await interaction.reply({
-			content: `There is no alternate character by the name "${name}".`,
-			ephemeral: true
-		});
+		await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
 		return;
 	}
 
 	// Get an updated object to store in the database.
-	const patchedAlt = await getPatchedAlt(alt, interaction);
+	const patchedAlt = await getPatchedAlt(alt, interaction, t);
 	if (!patchedAlt) {
 		// getPatchedAlt already handled telling the user about it.
 		return;
@@ -237,10 +216,7 @@ async function handleEditAlt(interaction) {
 		}
 	} catch (e) {
 		console.error('Error while trying to edit alt in db:', e);
-		await interaction.reply({
-			content: 'Updating the alternate character failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.edit-failure');
 		return;
 	}
 
@@ -250,17 +226,17 @@ async function handleEditAlt(interaction) {
 			: roleMention(patchedAlt.usableById);
 	const altEmbed = new MessageEmbed()
 		.setAuthor({ name: patchedAlt.name, iconURL: patchedAlt.avatarUrl })
-		.addField('Can be used by', usableByMention);
+		.addField(t.user('field-usable-by'), usableByMention);
 	await interaction.reply({
-		content: 'Alternate character was successfully updated.',
+		content: t.user('reply.edit-success'),
 		embeds: [altEmbed],
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
-async function handleDeleteAlt(interaction) {
+async function handleDeleteAlt(interaction, t) {
 	const guildId = interaction.guildId;
 	const name = interaction.options.getString('name', true);
 
@@ -268,28 +244,19 @@ async function handleDeleteAlt(interaction) {
 		const deleted = deleteAlt(guildId, name);
 		if (deleted) {
 			console.debug(`An alt with the name "${name}" was deleted in guild ${guildId}.`);
-			await interaction.reply({
-				content: `The alternate character with the name "${name}" was successfully deleted.`,
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.delete-success', { name });
 
-			await updateCommandsAfterConfigChange(interaction);
+			await updateCommandsAfterConfigChange(interaction, t);
 		} else {
-			await interaction.reply({
-				content: `There is no alternate character by the name "${name}".`,
-				ephemeral: true
-			});
+			await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
 		}
 	} catch (e) {
 		console.error(e);
-		await interaction.reply({
-			content: `Could not delete alternate character by the name "${name}".`,
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.delete-failure', { name });
 	}
 }
 
-async function handleShowAlts(interaction) {
+async function handleShowAlts(interaction, t) {
 	const guildId = interaction.guildId;
 	const name = interaction.options.getString('name');
 
@@ -299,18 +266,11 @@ async function handleShowAlts(interaction) {
 			alt = getAlt(guildId, name);
 		} catch (e) {
 			console.error('Error while trying to fetch alt from db:', e);
-			await interaction.reply({
-				content:
-					'An error occurred while trying to find the alternate character in the database. Please try again later.',
-				ephemeral: true
-			});
+			await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 			return;
 		}
 		if (!alt) {
-			await interaction.reply({
-				content: `There is no alternate character by the name "${name}".`,
-				ephemeral: true
-			});
+			await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
 			return;
 		}
 
@@ -318,7 +278,7 @@ async function handleShowAlts(interaction) {
 			alt.usableByType === UsableByType.User ? userMention(alt.usableById) : roleMention(alt.usableById);
 		const altEmbed = new MessageEmbed()
 			.setAuthor({ name: alt.name, iconURL: alt.avatarUrl })
-			.addField('Can be used by', usableByMention);
+			.addField(t.user('field-usable-by'), usableByMention);
 		await interaction.reply({
 			embeds: [altEmbed],
 			ephemeral: true
@@ -329,11 +289,7 @@ async function handleShowAlts(interaction) {
 			alts = getAlts(guildId);
 		} catch (e) {
 			console.error('Error while trying to fetch alts from db:', e);
-			await interaction.reply({
-				content:
-					'An error occurred while trying to find the alternate characters of this server in the database. Please try again later.',
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.show-alts-failure');
 			return;
 		}
 		const collator = new Intl.Collator(interaction.locale);
@@ -343,27 +299,21 @@ async function handleShowAlts(interaction) {
 			.sort(collator.compare)
 			.join('\n');
 		await interaction.reply({
-			content:
-				`The following alternate characters currently exist. Use ${inlineCode(
-					'/config-alt show <name>'
-				)} to find out details about a particular alternate character.\n\n` + altNameList,
+			content: t.user('reply.show-alts') + '\n\n' + altNameList,
 			ephemeral: true
 		});
 	}
 }
 
-async function getPatchedAlt(alt, interaction) {
+async function getPatchedAlt(alt, interaction, t) {
 	const patchedAlt = { ...alt };
 
 	let newName = interaction.options.getString('new-name');
 	if (newName) {
 		newName = newName.trim();
-		const errorMessage = validateWebhookName(newName);
-		if (errorMessage) {
-			await interaction.reply({
-				content: errorMessage,
-				ephemeral: true
-			});
+		const errorMessageKey = validateWebhookName(newName);
+		if (errorMessageKey) {
+			await t.privateReplyShared(interaction, errorMessageKey);
 			return null;
 		}
 

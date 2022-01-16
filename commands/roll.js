@@ -1,7 +1,8 @@
-import { hyperlink } from '@discordjs/builders';
 import { Constants } from 'discord.js';
 
-const notationExpression = /^\s*([1-9]\d*)?d(2|4|6|8|10|12|20)\s*$/i;
+// For now this notation is localised for English and German by allowing "d" and "w" as the dice type prefix.
+// More letters can be added for other languages in the future (e.g. "t" for Swedish?).
+const notationExpression = /^\s*([1-9]\d*)?(d|w)(2|4|6|8|10|12|20)\s*$/i;
 const MAX_NUMBER_OF_DICE = 20;
 
 const rollCommand = {
@@ -13,25 +14,21 @@ const rollCommand = {
 		options: [
 			{
 				name: 'notation',
-				description: `Describe which and how many dice to roll, using D&D dice notation. E.g. "d4" or "3d20".`,
+				description: 'Describe which and how many dice to roll, using D&D dice notation. E.g. "d4" or "3d20".',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}
 		]
 	},
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		const notation = interaction.options.getString('notation');
 		const matches = notation.match(notationExpression);
 
 		if (matches === null) {
 			await interaction.reply({
 				content:
-					'Could not recognise your input.\n' +
-					` This command uses ${hyperlink('dice notation', 'https://en.wikipedia.org/wiki/Dice_notation')}` +
-					' as used by many tabletop games, but only basic versions of it like "d6" or "3d20".' +
-					' The dice available are the standard Dungeons & Dragons ones: d2, d4, d6, d8, d10, d12 and d20.' +
-					' You can roll up to 20 dice at a time. You cannot roll multiple dice with different numbers of faces at once.',
+					t.user('reply.invalid-notation') + '\n' + t.user('reply.notation-explanation', { count: MAX_NUMBER_OF_DICE }),
 				ephemeral: true
 			});
 		} else {
@@ -40,29 +37,25 @@ const rollCommand = {
 				numberOfDiceString = '1';
 			}
 			const numberOfDice = parseInt(numberOfDiceString);
-			const numberOfFaces = parseInt(matches[2]);
+			const numberOfFaces = parseInt(matches[3]);
 			if (isNaN(numberOfDice) || isNaN(numberOfFaces)) {
 				// This should be prevented by the regular expression really...
-				await interaction.reply({
-					content: 'Number of dice or number or faces is not a valid number.',
-					ephemeral: true
-				});
+				await t.privateReply(interaction, 'reply.invalid-number');
 			} else if (numberOfDice > MAX_NUMBER_OF_DICE) {
-				await interaction.reply({
-					content: `Unfortunately you can only roll up to ${MAX_NUMBER_OF_DICE} dice at a time.`,
-					ephemeral: true
-				});
+				await t.privateReply(interaction, 'reply.too-many-dice', { count: MAX_NUMBER_OF_DICE });
 			} else {
 				const result = diceRoll(numberOfDice, numberOfFaces);
 
-				let message;
+				let message =
+					t.guild('reply.roll', {
+						member: interaction.member.displayName,
+						count: numberOfDice,
+						numberOfFaces
+					}) + '\n';
 				if (numberOfDice === 1) {
-					message =
-						`${interaction.member.displayName} rolls a ${numberOfFaces}-sided dice.\n` + `The result is: ${result[0]}`;
+					message += t.guild('reply.result-single', { result: result[0] });
 				} else {
-					message =
-						`${interaction.member.displayName} rolls ${numberOfDice} ${numberOfFaces}-sided dice.\n` +
-						`The result is: ${result.join(' + ')} = ${sum(result)}`;
+					message += t.guild('reply.result-sum', { results: result.join(t.guild('reply.addition')), sum: sum(result) });
 				}
 
 				await interaction.reply({

@@ -1,0 +1,162 @@
+{
+	interaction: {
+		error: 'Beim Ausführen dieses Befehls ist ein Fehler aufgetreten!'
+	},
+	shared: {
+		'alt-db-fetch-error': 'Ein Fehler ist beim Versuch, den alternativen Charakter in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
+		'no-alt-with-name': 'Es gibt keinen alternativen Charakter mit dem Namen "{{altName}}".',
+		'webhook-validation-error': {
+			'name-length': 'Name muss zwischen 1 und 80 Zeichen lang sein.',
+			clyde: "Das Wort 'clyde' ist von Discord reserviert und darf nirgendwo im Namen vorkommen, egal in welcher Groß- oder Kleinschreibung."
+		},
+		'unknown-command': 'Unbekannter Befehl',
+		'commands-update-failure1': 'Die Konfiguration wurde geändert, aber die Befehle konnten nicht auf dem Server aktualisiert werden.',
+		'commands-update-failure2': 'Es könnte sich um ein temporäres Problem handeln. Du kannst versuchen, sie später mittels des Befehls `/refresh-commands` selbst nochmal zu aktualisieren.'
+	},
+	commands: {
+		alt: {
+			reply: {
+				'alt-not-usable': 'Der alternative Charakter "{{altName}}" darf von Dir nicht zum Rollenspielen benutzt werden.',
+				'channel-not-viewable': 'Dies ist leider kein Ort, den ich sehen darf. Daher kannst Du hier alternative Charaktere nicht benutzen.',
+				'not-role-play-channel': 'Dies ist kein Rollenspiel-Kanal. Du kannst hier keine alternativen Charaktere benutzen.',
+				'alt-message-failure': 'Versenden der Nachricht über den Alt fehlgeschlagen.',
+				'alt-message-success': 'Alt-Nachricht geschickt.'
+			}
+		},
+		'blame-context': {
+			reply: {
+				blame1: "{{user, usermention}} hat mir gesagt, ich soll's machen!",
+				blame2: '{{user, usermention}} hat mich dazu gezwungen!',
+				blame3: '{{user, usermention}} ist schuld!',
+				blame4: 'Frag doch nicht mich, sondern {{user, usermention}}!',
+				blame5: '{{user, usermention}} da drüben sieht mir ganz schön verdächtig aus…',
+				blame6: 'Es kann doch nicht etwa {{user, usermention}} gewesen sein, oder?',
+				'user-unknown': 'Tut mir leid, ich kann mich nicht erinnern.',
+				'message-not-found': 'Konnte Nachricht nicht finden, um darauf diesen Befehl auszuführen.'
+			}
+		},
+		bookmark: {
+			reply: {
+				header1: 'Ein [neues Kapitel]({{url}}) wurde in {{channel, channelmention}} geschrieben.',
+				header2: '[Etwas Neues]({{url}}) ist in {{channel, channelmention}} passiert!',
+				header3: 'Die [Geschichte geht weiter]({{url}}) in {{channel, channelmention}}.',
+				header4: 'Der [Stift berührte das Papier]({{url}}) und das Blatt wurde gewendet; finde heraus, was in {{channel, channelmention}} passiert ist.',
+				header5: 'Stück um Stück [geht es weiter]({{url}}) in {{channel, channelmention}}.',
+				header6: 'Mal sehen, was in {{channel, channelmention}} [passiert ist]({{url}})!',
+				header7: 'Ein weiteres [Schlüsselereignis]({{url}}) fand in {{channel, channelmention}} statt!',
+				success: '[Dein Lesezeichen]({{url}}) wurde erfolgreich in {{channel, channelmention}} erstellt!',
+				'no-bookmarkable-content': 'Diese Nachricht hat keinen Inhalt, der für ein Lesezeichen verwendet werden kann.'
+			}
+		},
+		coin: {
+			heads: 'Kopf',
+			tails: 'Zahl',
+			reply: '{{member}} wirft eine Münze. Sie landet auf… {{result}}!'
+		},
+		'config-alt': {
+			'field-usable-by': 'Kann verwendet werden von',
+			reply: {
+				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl `/config-alt edit`.',
+				'add-failure': 'Hinzufügen des alternativen Charakters ist fehlgeschlagen.',
+				'add-success': 'Neuer alternativer Charakter wurde erfolgreich erstellt.',
+				'edit-failure': 'Aktualisieren des alternativen Charakters ist fehlgeschlagen.',
+				'edit-success': 'Alternativer Charakter wurde erfolgreich erstellt.',
+				'delete-failure': 'Der alternative Charakter mit dem Namen "{{name}}" wurde erfolgreich gelöscht.',
+				'delete-success': 'Konnte alternativen Charakter mit dem Namen "${name}" nicht löschen.',
+				'show-alts-failure': 'Ein Fehler ist beim Versuch, die alternativen Charaktere dieses Servers in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
+				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Benutze `/config-alt show <name>`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
+			}
+		},
+		config: {
+			'show-title': 'Konfiguration',
+			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config set`.',
+			'show-field-bookmarks-channel': 'Lesezeichen-Kanal',
+			'show-field-quotes-channel': 'Zitate-Kanal',
+			'show-field-role-play-channels': 'Rollenspiel-Kanäle',
+			'show-value-none': 'keiner',
+			reply: {
+				'missing-option': 'Bitte gib eine Einstellung an, die Du setzen möchtest.',
+				'set-failure': 'Ändern der Konfiguration fehlgeschlagen.',
+				'set-success': 'Konfiguration erfolgreich geändert.',
+				'reset-failure': 'Einstellungen zurücksetzen fehlgeschlagen.',
+				'reset-success': 'Einstellungen erfolgreich zurückgesetzt.',
+				'wrong-channel-type': 'Das funktioniert nur mit Text-Kanälen in einem Server.',
+				'add-failure': 'Hinzufügen des Rollenspiel-Kanals fehlgeschlagen.',
+				'add-success': 'Rollenspiel-Kanal erfolgreich hinzugefügt.',
+				'remove-failure': 'Entfernen des Rollenspiel-Kanals fehlgeschlagen.',
+				'remove-success': 'Rollenspiel-Kanal erfolgreich entfernt.'
+			}
+		},
+		'delete-context': {
+			reply: {
+				'not-deletable1': 'Das ist keine Nachricht, die Du löschen kannst. Dieser Befehl funktioniert nur bei:',
+				'not-deletable2': '- Zitaten und Lesezeichen, die Du durch mich erstellt hast (inklusive meiner Antwort auf den Befehl `/bookmark`),',
+				'not-deletable3': '- Zitaten, die jemand anders durch mich erstellt hat, bei denen Du zitiert wurdest,',
+				'not-deletable4': '- Meiner Antwort auf `/goto` und die zugehörige Nachricht im Zielkanal,',
+				'not-deletable5': '- Meiner Antwort auf `/narrate`,',
+				'not-deletable6': '- Meiner Antwort auf `/names`,',
+				'not-deletable7': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
+				'delete-failure': 'Beim Versuch, die Nachricht zu löschen, ist ein Fehler aufgetreten.',
+				'delete-success': 'Nachricht wurde erfolgreich gelöscht.'
+			}
+		},
+		goto: {
+			reply: {
+				'origin-message-unlinked': 'Die Geschichte geht in {{channel, channelmention}} weiter.',
+				'origin-message-linked': 'Die [Geschichte]({{url}}) geht in {{channel, channelmention}} weiter.',
+				'destination-message': 'Nach [den Ereignissen]({{url}}) in {{channel, channelmention}}…'
+			}
+		},
+		names: {
+			reply: {
+				title: 'Wenn wir zurückschauen, hatten die Mitglieder von {{guildName}} die folgenden Namen:'
+			}
+		},
+		'quote-context': {
+			reply: {
+				gossip1: 'Habt ihr gehört, was {{author, usermention}} [gerade gesagt hat]({{url}})?',
+				gossip2: 'Ich kann nicht glauben, dass {{author, usermention}} [das gesagt hat]({{url}}).',
+				gossip3: '[Was war das]({{url}}), {{author, usermention}}?',
+				gossip4: 'Hat {{author, usermention}} das *wirklich* [gerade gesagt]({{url}})?',
+				gossip5: '{{author, usermention}}, hast Du das wirklich [gerade gesagt]({{url}})?',
+				gossip6: '{{author, usermention}} [sagt auch einfach]({{url}}) was gerade so in den Kopf kommt!',
+				gossip7: 'Also [das]({{url}}) ist ja mal ein Zitat wert, {{author, usermention}}!',
+				gossip8: "Ich mach mir nur gerade mal 'ne Notiz davon, was {{author, usermention}} [gesagt hat]({{url}}).",
+				gossip9: 'Hey, das waren {{author, usermention}}s [Worte]({{url}}), nicht meine!',
+				gossip10: 'Also [sagen wir jetzt]({{url}}) so Sachen einfach, oder was, {{author, usermention}}?',
+				success: '[Ein Zitat]({{url}}) wurde erfolgreich in {{channel, channelmention}} erstellt!',
+				'not-quotable': 'Diese Nachricht hat keinen zitierbaren Inhalt.'
+			}
+		},
+		'refresh-commands': {
+			reply: {
+				failure: 'Befehle konnten nicht neu geladen werden. Es könnte sich um ein temporäres Problem handeln. Bitte versuch es später nochmal.',
+				success: 'Befehle erfolgreich neu geladen.'
+			}
+		},
+		roll: {
+			reply: {
+				'invalid-notation': 'Konnte Deine Eingabe nicht verstehen.',
+				'notation-explanation_other': 'Dieser Befehl benutzt [Würfel-Notation](https://en.wikipedia.org/wiki/Dice_notation), \
+wie man sie aus vielen Pen-&-Paper-Rollenspielen kennt, allerdings nur einfache Varianten davon wie "W6" oder "3W20". \
+Zur Verfügung stehen die Standardwürfel von Dungeons & Dragons: W2, W4, W6, W8, W10, W12 und W20. \
+Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere Würfel mit unterschiedlichen Seitenzahlen auf einmal werfen.',
+				'invalid-number': 'Anzahl Würfel oder Anzahl Seiten ist keine gültige Zahl.',
+				'too-many-dice_other': 'Leider kannst Du nur bis zu {{count}} Würfel auf einmal werfen.',
+				roll_one: '{{member}} wirft einen {{numberOfFaces}}-seitigen Würfel.',
+				roll_other: '{{member}} wirft {{count}} {{numberOfFaces}}-seitige Würfel.',
+				'result-single': 'Das Ergebnis ist: {{result}}',
+				'result-sum': 'Das Ergebnis ist: {{results}} = {{sum}}',
+				addition: ' + '
+			}
+		},
+		where: {
+			reply: {
+				'you-last-seen': 'Du wurdest zuletzt in {{channel, channelmention}} beim Rollenspielen [gesehen]({{url}}).',
+				'user-last-seen': '{{user, usermention}} wurde zuletzt in {{channel, channelmention}} beim Rollenspielen [gesehen]({{url}}).',
+				'you-not-found': 'Konnte keine Nachricht von Dir aus der letzten Zeit in irgendeinem der Rollenspiel-Kanäle finden. Entweder liegt Dein letztes Rollenspiel schon eine Weile zurück, oder Du hast bisher noch nicht am Rollenspiel teilgenommen!',
+				'user-not-found': 'Konnte keine Nachricht von {{user, usermention}} aus der letzten Zeit in irgendeinem der Rollenspiel-Kanäle finden. Entweder liegt das letzte Rollenspiel dieser Person schon eine Weile zurück, oder sie hat bisher noch nicht am Rollenspiel teilgenommen!'
+			}
+		}
+	}
+}

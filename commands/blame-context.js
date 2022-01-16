@@ -1,15 +1,14 @@
-import { userMention } from '@discordjs/builders';
 import { Constants } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 
 export const blameMessages = new RandomMessageProvider()
-	.add(user => `${userMention(user)} told me to do it!`)
-	.add(user => `${userMention(user)} made me do it!`)
-	.add(user => `I blame ${userMention(user)}...`)
-	.add(user => `Ask ${userMention(user)}, not me!`)
-	.add(user => `${userMention(user)} looks awfully suspicious over there...`)
-	.add(user => `Couldn't be ${userMention(user)}, could it?`);
+	.add((user, t) => t('reply.blame1', { user }))
+	.add((user, t) => t('reply.blame2', { user }))
+	.add((user, t) => t('reply.blame3', { user }))
+	.add((user, t) => t('reply.blame4', { user }))
+	.add((user, t) => t('reply.blame5', { user }))
+	.add((user, t) => t('reply.blame6', { user }));
 
 const blameContextCommand = {
 	// Configuration for registering the command
@@ -17,35 +16,33 @@ const blameContextCommand = {
 		name: 'Who dunnit?',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
+	i18nKeyPrefix: 'blame-context',
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		// Get message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		if (message) {
 			if (message.interaction) {
 				// While this might seem superfluous because the user of an interaction reply is clearly shown in Discord,
 				// it would be even weirder for the bot to go "I don't know.". So it's just for the sake of completeness.
-				await replyWithUser(interaction, message.interaction.user.id);
+				await replyWithUser(interaction, message.interaction.user.id, t.user);
 			} else {
 				const metadata = getMessageMetadata(message.id);
 				if (metadata) {
-					await replyWithUser(interaction, metadata.interactingUserId);
+					await replyWithUser(interaction, metadata.interactingUserId, t.user);
 				} else {
-					await interaction.reply({
-						content: "Sorry, I don't remember.",
-						ephemeral: true
-					});
+					await t.privateReply(interaction, 'reply.user-unknown');
 				}
 			}
 		} else {
-			await interaction.reply({ content: 'Could not find message to execute command on.', ephemeral: true });
+			await t.privateReply(interaction, 'reply.message-not-found');
 		}
 	}
 };
 
-async function replyWithUser(interaction, userId) {
+async function replyWithUser(interaction, userId, t) {
 	await interaction.reply({
-		content: blameMessages.any(userId),
+		content: blameMessages.any(userId, t),
 		ephemeral: true
 	});
 }

@@ -1,4 +1,3 @@
-import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import { bookmarkMessages } from './bookmark.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
@@ -9,6 +8,7 @@ const bookmarkContextCommand = {
 		name: 'Bookmark',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
+	i18nKeyPrefix: 'bookmark',
 	// Test function to check if the command should apply to a guild
 	guard(client, guild, guildConfig) {
 		if (guildConfig?.bookmarksChannel) {
@@ -20,7 +20,7 @@ const bookmarkContextCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, guildConfig) {
+	async execute(interaction, t, guildConfig) {
 		// Get message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		// The bookmark command will only work with text-based messages, not e.g. embeds.
@@ -30,7 +30,7 @@ const bookmarkContextCommand = {
 			// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const bookmarkMessageEmbed = new MessageEmbed().setDescription(
-				`${bookmarkMessages.any(message.url, interaction.channelId)}\n\n${message.content}`
+				`${bookmarkMessages.any(message.url, interaction.channelId, t.guild)}\n\n${message.content}`
 			);
 			const bookmarkMessage = await bookmarksChannel.send({
 				embeds: [bookmarkMessageEmbed],
@@ -42,16 +42,11 @@ const bookmarkContextCommand = {
 
 			// Some positive feedback for the user who used the command (only visible to them).
 			// If we don't send any reply, discord will show the command as failed after a while.
-			await interaction.reply({
-				content: `${hyperlink('Your bookmark', bookmarkMessage.url)} was successfully created in ${channelMention(
-					bookmarksChannel.id
-				)}!`,
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.success', { url: bookmarkMessage.url, channel: bookmarksChannel.id });
 
 			addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark);
 		} else {
-			await interaction.reply({ content: 'This message does not have any bookmarkable content.', ephemeral: true });
+			await t.privateReply(interaction, 'reply.no-bookmarkable-content');
 		}
 	}
 };

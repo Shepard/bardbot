@@ -1,5 +1,5 @@
 import { Constants, Permissions, MessageEmbed, Webhook } from 'discord.js';
-import { channelMention, inlineCode, italic } from '@discordjs/builders';
+import { channelMention, italic } from '@discordjs/builders';
 import {
 	getGuildConfig,
 	setConfigurationValues,
@@ -130,55 +130,47 @@ const configCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		const subcommandGroup = interaction.options.getSubcommandGroup(false);
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'show') {
-			await showConfiguration(interaction);
+			await showConfiguration(interaction, t);
 		} else if (subcommand === 'set') {
-			await setConfiguration(interaction);
+			await setConfiguration(interaction, t);
 		} else if (subcommand === 'reset') {
-			await resetConfiguration(interaction);
+			await resetConfiguration(interaction, t);
 		} else if (subcommand === 'role-play-channel') {
 			if (subcommandGroup === 'add') {
-				await handleAddRolePlayChannelInteraction(interaction);
+				await handleAddRolePlayChannelInteraction(interaction, t);
 			} else if (subcommandGroup === 'remove') {
-				await handleRemoveRolePlayChannelInteraction(interaction);
+				await handleRemoveRolePlayChannelInteraction(interaction, t);
 			} else {
-				await interaction.reply({
-					content: 'Unknown command',
-					ephemeral: true
-				});
+				await t.privateReplyShared(interaction, 'unknown-command');
 			}
 		} else {
-			await interaction.reply({
-				content: 'Unknown command',
-				ephemeral: true
-			});
+			await t.privateReplyShared(interaction, 'unknown-command');
 		}
 	}
 };
 
-async function showConfiguration(interaction) {
+async function showConfiguration(interaction, t) {
 	const guildConfig = getGuildConfig(interaction.guildId);
 	const bookmarksChannelValue = guildConfig.bookmarksChannel
 		? channelMention(guildConfig.bookmarksChannel)
-		: italic('none');
-	const quotesChannelValue = guildConfig.quotesChannel ? channelMention(guildConfig.quotesChannel) : italic('none');
+		: italic(t.user('show-value-none'));
+	const quotesChannelValue = guildConfig.quotesChannel
+		? channelMention(guildConfig.quotesChannel)
+		: italic(t.user('show-value-none'));
 
 	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannels);
 
 	const configurationValuesEmbed = new MessageEmbed()
-		.setTitle('Configuration')
-		.setDescription(
-			`This is the current configuration of the bot in this server. To change any options, use the ${inlineCode(
-				'/config set'
-			)} command.`
-		)
-		.addField('Bookmarks channel', bookmarksChannelValue)
-		.addField('Quotes channel', quotesChannelValue);
+		.setTitle(t.user('show-title'))
+		.setDescription(t.user('show-description'))
+		.addField(t.user('show-field-bookmarks-channel'), bookmarksChannelValue)
+		.addField(t.user('show-field-quotes-channel'), quotesChannelValue);
 	if (rolePlayChannelsList.length <= FIELD_VALUE_CHARACTER_LIMIT) {
-		configurationValuesEmbed.addField('Role-play channels', rolePlayChannelsList);
+		configurationValuesEmbed.addField(t.user('show-field-role-play-channels'), rolePlayChannelsList);
 	}
 	await interaction.reply({
 		embeds: [configurationValuesEmbed],
@@ -188,7 +180,7 @@ async function showConfiguration(interaction) {
 	// send it in the description of a follow-up embed instead.
 	if (rolePlayChannelsList.length > FIELD_VALUE_CHARACTER_LIMIT) {
 		const rolePlayChannelsListEmbed = new MessageEmbed()
-			.setTitle('Role-play channels')
+			.setTitle(t.user('show-field-role-play-channels'))
 			.setDescription(rolePlayChannelsList);
 		await interaction.followUp({
 			embeds: [rolePlayChannelsListEmbed],
@@ -197,15 +189,12 @@ async function showConfiguration(interaction) {
 	}
 }
 
-async function setConfiguration(interaction) {
+async function setConfiguration(interaction, t) {
 	const bookmarksChannel = interaction.options.getChannel('bookmarks-channel');
 	const quotesChannel = interaction.options.getChannel('quotes-channel');
 
 	if (!bookmarksChannel && !quotesChannel) {
-		await interaction.reply({
-			content: 'Please specify an option to set.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.missing-option');
 		return;
 	}
 
@@ -216,22 +205,16 @@ async function setConfiguration(interaction) {
 		});
 	} catch (e) {
 		console.error(`Database error while trying to set configuration values for guild ${interaction.guildId}:`, e);
-		await interaction.reply({
-			content: 'Changing configuration failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.set-failure');
 		return;
 	}
 
-	await interaction.reply({
-		content: 'Successfully changed configuration.',
-		ephemeral: true
-	});
+	await t.privateReply(interaction, 'reply.set-success');
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
-async function resetConfiguration(interaction) {
+async function resetConfiguration(interaction, t) {
 	const option = interaction.options.getString('option');
 	let webhookIds = null;
 	try {
@@ -248,10 +231,7 @@ async function resetConfiguration(interaction) {
 		}
 	} catch (e) {
 		console.error(`Database error while trying to clear options for guild ${interaction.guildId}:`, e);
-		await interaction.reply({
-			content: 'Resetting options failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.reset-failure');
 		return;
 	}
 
@@ -269,21 +249,15 @@ async function resetConfiguration(interaction) {
 		);
 	}
 
-	await interaction.reply({
-		content: 'Successfully reset options.',
-		ephemeral: true
-	});
+	await t.privateReply(interaction, 'reply.reset-success');
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
-async function handleAddRolePlayChannelInteraction(interaction) {
+async function handleAddRolePlayChannelInteraction(interaction, t) {
 	const channel = getChannel(interaction);
 	if (!channel) {
-		await interaction.reply({
-			content: 'This will only work with text channels in a server.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.wrong-channel-type');
 		return;
 	}
 
@@ -292,36 +266,24 @@ async function handleAddRolePlayChannelInteraction(interaction) {
 		if (webhook) {
 			addRolePlayChannel(interaction.guildId, channel.id, webhook.id);
 		} else {
-			await interaction.reply({
-				content: 'Adding the role-play channel failed.',
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.add-failure');
 			return;
 		}
 	} catch (e) {
 		console.error(`Database error while trying to add role-play channel for guild ${interaction.guildId}:`, e);
-		await interaction.reply({
-			content: 'Adding the role-play channel failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.add-failure');
 		return;
 	}
 
-	await interaction.reply({
-		content: 'Successfully added role-play channel.',
-		ephemeral: true
-	});
+	await t.privateReply(interaction, 'reply.add-success');
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
-async function handleRemoveRolePlayChannelInteraction(interaction) {
+async function handleRemoveRolePlayChannelInteraction(interaction, t) {
 	const channel = getChannel(interaction);
 	if (!channel) {
-		await interaction.reply({
-			content: 'This will only work with text channels in a server.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.wrong-channel-type');
 		return;
 	}
 
@@ -331,10 +293,7 @@ async function handleRemoveRolePlayChannelInteraction(interaction) {
 		removeRolePlayChannel(interaction.guildId, channel.id);
 	} catch (e) {
 		console.error(`Database error while trying to remove role-play channel for guild ${interaction.guildId}:`, e);
-		await interaction.reply({
-			content: 'Removing the role-play channel failed.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.remove-failure');
 		return;
 	}
 
@@ -349,12 +308,9 @@ async function handleRemoveRolePlayChannelInteraction(interaction) {
 		}
 	}
 
-	await interaction.reply({
-		content: 'Successfully removed role-play channel.',
-		ephemeral: true
-	});
+	await t.privateReply(interaction, 'reply.remove-success');
 
-	await updateCommandsAfterConfigChange(interaction);
+	await updateCommandsAfterConfigChange(interaction, t);
 }
 
 function getChannel(interaction) {
@@ -392,7 +348,7 @@ function getChannelsList(channelIds) {
 	return '-';
 }
 
-export async function updateCommandsAfterConfigChange(interaction) {
+export async function updateCommandsAfterConfigChange(interaction, t) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {
@@ -401,11 +357,7 @@ export async function updateCommandsAfterConfigChange(interaction) {
 			e
 		);
 		await interaction.followUp({
-			content:
-				'Configuration was changed but commands could not be updated on the server.\n' +
-				`This could be a temporary problem. You can try updating them yourself later by using ${inlineCode(
-					'/refresh-commands'
-				)}.`,
+			content: t.userShared('commands-update-failure1') + '\n' + t.userShared('commands-update-failure2'),
 			ephemeral: true
 		});
 	}

@@ -1,24 +1,19 @@
-import { hyperlink, userMention, channelMention, quote, italic } from '@discordjs/builders';
+import { quote } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
 const quoteMessages = new RandomMessageProvider()
-	.add((author, url) => `Did you hear what ${userMention(author)} ${hyperlink('just said', url)}?`)
-	.add((author, url) => `I can't believe ${userMention(author)} ${hyperlink('said that', url)}.`)
-	.add((author, url) => `${hyperlink('What was that', url)}, ${userMention(author)}?`)
-	.add((author, url) => `Did ${userMention(author)} ${italic('really')} ${hyperlink('say that', url)}?`)
-	.add((author, url) => `${userMention(author)}, did you actually just ${hyperlink('say that', url)}?`)
-	.add(
-		(author, url) =>
-			`Look at ${userMention(author)} just ${hyperlink('saying things', url)} without a care in the world!`
-	)
-	.add((author, url) => `Now ${hyperlink("that's something quotable", url)}, ${userMention(author)}!`)
-	.add(
-		(author, url) => `Don't mind me, just making a note of what ${userMention(author)} ${hyperlink('just said', url)}.`
-	)
-	.add((author, url) => `Hey, those were ${userMention(author)}'s ${hyperlink('words', url)}, not mine!`)
-	.add((author, url) => `So, we're ${hyperlink('saying that', url)} now, are we, ${userMention(author)}?`);
+	.add((author, url, t) => t('reply.gossip1', { author, url }))
+	.add((author, url, t) => t('reply.gossip2', { author, url }))
+	.add((author, url, t) => t('reply.gossip3', { author, url }))
+	.add((author, url, t) => t('reply.gossip4', { author, url }))
+	.add((author, url, t) => t('reply.gossip5', { author, url }))
+	.add((author, url, t) => t('reply.gossip6', { author, url }))
+	.add((author, url, t) => t('reply.gossip7', { author, url }))
+	.add((author, url, t) => t('reply.gossip8', { author, url }))
+	.add((author, url, t) => t('reply.gossip9', { author, url }))
+	.add((author, url, t) => t('reply.gossip10', { author, url }));
 
 const quoteContextCommand = {
 	// Configuration for registering the command
@@ -26,6 +21,7 @@ const quoteContextCommand = {
 		name: 'Quote',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
+	i18nKeyPrefix: 'quote-context',
 	// Test function to check if the command should apply to a guild
 	guard(client, guild, guildConfig) {
 		if (guildConfig?.quotesChannel) {
@@ -37,7 +33,7 @@ const quoteContextCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, guildConfig) {
+	async execute(interaction, t, guildConfig) {
 		// Get message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		// The quote command will only work with text-based messages, not e.g. embeds.
@@ -54,7 +50,7 @@ const quoteContextCommand = {
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
 			const quoteMessageEmbed = new MessageEmbed().setDescription(
-				`${quoteMessages.any(message.author.id, message.url)}\n\n${quoteText}`
+				`${quoteMessages.any(message.author.id, message.url, t.guild)}\n\n${quoteText}`
 			);
 			const quoteMessage = await quotesChannel.send({
 				embeds: [quoteMessageEmbed],
@@ -66,16 +62,11 @@ const quoteContextCommand = {
 
 			// Some positive feedback for the user who used the command (only visible to them).
 			// If we don't send any reply, discord will show the command as failed after a while.
-			await interaction.reply({
-				content: `${hyperlink('A quote', quoteMessage.url)} was successfully created in ${channelMention(
-					quotesChannel.id
-				)}!`,
-				ephemeral: true
-			});
+			await t.privateReply(interaction, 'reply.success', { url: quoteMessage.url, channel: quotesChannel.id });
 
 			addMessageMetadata(quoteMessage, interaction.user.id, MessageType.Quote);
 		} else {
-			await interaction.reply({ content: 'This message does not have any quotable content.', ephemeral: true });
+			await t.privateReply(interaction, 'reply.not-quotable');
 		}
 	}
 };

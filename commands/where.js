@@ -1,4 +1,3 @@
-import { hyperlink, channelMention, userMention } from '@discordjs/builders';
 import { Constants, Permissions, MessageEmbed } from 'discord.js';
 import { findNewestRPMessageMetadata } from '../storage/message-metadata-dao.js';
 
@@ -27,7 +26,7 @@ const whereCommand = {
 		return guildConfig?.rolePlayChannels?.length;
 	},
 	// Handler for when the command is used
-	async execute(interaction, guildConfig) {
+	async execute(interaction, t, guildConfig) {
 		// Defer reply for now so we get more time to reply because fetching all the messages can take some time.
 		await interaction.deferReply({ ephemeral: true });
 
@@ -64,22 +63,19 @@ const whereCommand = {
 
 		if (newestUserMessage) {
 			const messageText = findingCurrentUser
-				? `You were ${hyperlink('last seen', newestUserMessage.url)} role-playing in ${channelMention(
-						newestUserMessage.channelId
-				  )}.`
-				: `${userMention(userToFind.id)} was ${hyperlink(
-						'last seen',
-						newestUserMessage.url
-				  )} role-playing in ${channelMention(newestUserMessage.channelId)}.`;
+				? t.user('you-last-seen', { url: newestUserMessage.url, channel: newestUserMessage.channelId })
+				: t.user('user-last-seen', {
+						user: userToFind.id,
+						url: newestUserMessage.url,
+						channel: newestUserMessage.channelId
+				  });
 			await interaction.editReply({
 				embeds: [new MessageEmbed().setDescription(messageText)]
 			});
 		} else {
 			const messageText = findingCurrentUser
-				? "Could not find a recent message by you in any of the role-play channels. Your last role-play must have been a while back or you haven't role-played yet!"
-				: `Could not find a recent message by ${userMention(
-						userToFind.id
-				  )} in any of the role-play channels. Their last role-play must have been a while back or they haven't role-played yet!`;
+				? t.user('you-not-found')
+				: t.user('user-not-found', { user: userToFind.id });
 			await interaction.editReply({ content: messageText });
 		}
 	}

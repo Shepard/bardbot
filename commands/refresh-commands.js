@@ -13,7 +13,7 @@ const refreshCommandsCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		// Updating commands can take some time. So register a reply early on.
 		await interaction.deferReply({ ephemeral: true });
 
@@ -22,14 +22,14 @@ const refreshCommandsCommand = {
 		} catch (e) {
 			console.error(`Error while trying to update commands for guild ${interaction.guildId}:`, e);
 			await interaction.editReply({
-				content: 'Commands could not be refreshed. This might be a temporary problem. Please try again later.',
+				content: t.user('reply.failure'),
 				ephemeral: true
 			});
 			return;
 		}
 
 		await interaction.editReply({
-			content: 'Commands successfully refreshed.',
+			content: t.user('reply.success'),
 			ephemeral: true
 		});
 	}

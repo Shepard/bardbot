@@ -5,10 +5,10 @@ import schedule from 'node-schedule';
 import { initDatabase, closeDatabase } from './storage/database.js';
 import { getJSFilesInDir } from './util/helpers.js';
 import { loadCommands } from './command-handling/command-registry.js';
+import { initI18n } from './util/i18n.js';
 
 async function initApp() {
-	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
-
+	await initI18n();
 	await initDatabase();
 	await loadCommands();
 
@@ -28,6 +28,7 @@ async function initApp() {
 		}
 	}
 
+	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
 	await client.login(token);
 
 	// Gracefully shut down when process is requested to terminate.

@@ -1,4 +1,3 @@
-import { hyperlink, channelMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 
@@ -24,7 +23,7 @@ const gotoCommand = {
 		]
 	},
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		const sourceChannel = interaction.channel;
 		const destinationChannel = interaction.options.getChannel('destination');
 		let actionMessageText = interaction.options.getString('action');
@@ -38,7 +37,7 @@ const gotoCommand = {
 		// pointing people to the channel where the action continues. If the user entered some action text,
 		// preprend that to the message.
 		const sourceMessage = await interaction.reply({
-			content: actionMessageText + `The story continues in ${channelMention(destinationChannel.id)}.`,
+			content: actionMessageText + t.guild('reply.origin-message-unlinked', { channel: destinationChannel.id }),
 			fetchReply: true,
 			// We could try to find out which roles the member is allowed to ping in a complicated way but it's easier to just restrict it to none.
 			allowed_mentions: {
@@ -55,7 +54,7 @@ const gotoCommand = {
 		// to a specific message in a channel, the app will just jump to the end of the channel. Links embedded in messages on the
 		// other hand work some of the time.
 		const destinationMessageEmbed = new MessageEmbed().setDescription(
-			`Following ${hyperlink('the events', sourceMessage.url)} from ${channelMention(sourceChannel.id)}…`
+			t.guild('reply.destination-message', { url: sourceMessage.url, channel: sourceChannel.id })
 		);
 		const destinationMessage = await destinationChannel.send({
 			embeds: [destinationMessageEmbed]
@@ -65,7 +64,7 @@ const gotoCommand = {
 		// destination channel and we'll use it to create a link in this original message, pointing at the other message.
 		await interaction.editReply(
 			actionMessageText +
-				`The ${hyperlink('story continues', destinationMessage.url)} in ${channelMention(destinationChannel.id)}.`
+				t.guild('reply.origin-message-linked', { url: destinationMessage.url, channel: destinationChannel.id })
 		);
 
 		addMessageMetadata(destinationMessage, interaction.user.id, MessageType.Arrival);

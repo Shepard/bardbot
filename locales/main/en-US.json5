@@ -1,0 +1,18 @@
+{
+	shared: {
+		'webhook-validation-error': {
+			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalization."
+		}
+	},
+	commands: {
+		roll: {
+			reply: {
+				'invalid-notation': 'Could not recognize your input.',
+				'notation-explanation_other': 'This command uses [dice notation](https://en.wikipedia.org/wiki/Dice_notation) \
+as used by many tabletop games, but only basic versions of it like "d6" or "3d20". \
+The dice available are the standard Dungeons & Dragons ones: d2, d4, d6, d8, d10, d12, and d20. \
+You can roll up to {{count}} dice at a time. You cannot roll multiple dice with different numbers of faces at once.'
+			}
+		}
+	}
+}

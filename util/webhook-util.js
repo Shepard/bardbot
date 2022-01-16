@@ -30,21 +30,21 @@ export async function getWebhookForMessageIfCreatedByBot(message) {
  * @see {@link https://discord.com/developers/docs/resources/user#usernames-and-nicknames|Rules for names in general}
  * @see {@link https://discord.com/developers/docs/resources/webhook#create-webhook|Additional restrictions and different name length for webhooks}
  * @param {string} name The name to validate
- * @returns {string} A human-readable error message if the name failed validation, providing the specific reason why it failed. Or null if the name is valid.
+ * @returns {string} A translation key for a human-readable error message if the name failed validation,
+ * 	providing the specific reason why it failed. Or null if the name is valid.
  */
 export function validateWebhookName(name) {
-	let errorMessage = null;
+	let errorMessageKey = null;
 	// Based on some simple testing, Discord seems to be counting Unicode code points,
 	// not UTF-16 characters like JavaScript would do with "name.length".
 	const nameLength = codePointLength(name);
 	if (nameLength < 1 || nameLength > 80) {
-		errorMessage = 'Name must be between 1 and 80 characters long.';
+		errorMessageKey = 'webhook-validation-error.name-length';
 	}
 	// Testing revealed that, contrary to the documentation and unlike the other forbidden words,
 	// 'clyde' is actually checked as a case-insensitive substring on Discord's side.
 	if (name.toLowerCase().includes('clyde')) {
-		errorMessage =
-			"The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalisation.";
+		errorMessageKey = 'webhook-validation-error.clyde';
 	}
 	// Testing also revealed that these reserved strings, which are listed as not being allowed in usernames,
 	// are not actually disallowed in webhook names.
@@ -56,7 +56,7 @@ export function validateWebhookName(name) {
 	/*if (name.includes('@') || name.includes('#') || name.includes('```')) {
 		errorMessage = "Name may not contain '@', '#' or '```'.";
 	}*/
-	return errorMessage;
+	return errorMessageKey;
 }
 
 /**

@@ -1,5 +1,4 @@
 import { Constants } from 'discord.js';
-import { inlineCode } from '@discordjs/builders';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
 
@@ -11,8 +10,9 @@ const deleteContextCommand = {
 		name: 'Delete',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
+	i18nKeyPrefix: 'delete-context',
 	// Handler for when the command is used
-	async execute(interaction) {
+	async execute(interaction, t) {
 		// Get the message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		if (message) {
@@ -29,7 +29,7 @@ const deleteContextCommand = {
 				) {
 					// This was the bot's reply to a command interaction
 					// and it was used by the current user so we allow it to be deleted.
-					await deleteMessage(message, interaction);
+					await deleteMessage(message, interaction, t);
 					return;
 				} else if (message.embeds?.length && message.embeds[0].description && commandName !== 'names') {
 					// We're excluding interaction replies to /names here so that the last line of the embed description
@@ -48,7 +48,7 @@ const deleteContextCommand = {
 					// Or they're the creator of the quote or bookmark (last line)
 					// and thus definitely should be able to remove it.
 					if (isUserMentioned(firstLine, interaction.user.id) || isUserMentioned(lastLine, interaction.user.id)) {
-						await deleteMessage(message, interaction);
+						await deleteMessage(message, interaction, t);
 						return;
 					}
 				}
@@ -59,12 +59,12 @@ const deleteContextCommand = {
 			const messageMetadata = getMessageMetadata(message.id);
 			if (messageMetadata?.interactingUserId === interaction.user.id) {
 				if (isMessageAuthoredByBot(message)) {
-					await deleteMessage(message, interaction);
+					await deleteMessage(message, interaction, t);
 					return;
 				}
 				const webhook = await getWebhookForMessageIfCreatedByBot(message);
 				if (webhook) {
-					await deleteMessage(message, interaction, webhook);
+					await deleteMessage(message, interaction, t, webhook);
 					return;
 				}
 			}
@@ -72,16 +72,19 @@ const deleteContextCommand = {
 
 		await interaction.reply({
 			content:
-				'This is not a message you can delete. ' +
-				'This command will only work on:\n' +
-				`- Quotes or bookmarks you created through me (including my reply to the ${inlineCode(
-					'/bookmark'
-				)} command),\n` +
-				'- Quotes someone else created through me where you were quoted,\n' +
-				`- My reply to ${inlineCode('/goto')} and the corresponding message in the destination channel,\n` +
-				`- My reply to ${inlineCode('/narrate')},\n` +
-				`- My reply to ${inlineCode('/names')},\n` +
-				`- Messages of alternate characters sent through me.`,
+				t.user('reply.not-deletable1') +
+				'\n' +
+				t.user('reply.not-deletable2') +
+				'\n' +
+				t.user('reply.not-deletable3') +
+				'\n' +
+				t.user('reply.not-deletable4') +
+				'\n' +
+				t.user('reply.not-deletable5') +
+				'\n' +
+				t.user('reply.not-deletable6') +
+				'\n' +
+				t.user('reply.not-deletable7'),
 			ephemeral: true
 		});
 	}
@@ -100,7 +103,7 @@ function isMessageAuthoredByBot(message) {
 	return message.author.id === message.client.user.id;
 }
 
-async function deleteMessage(message, interaction, webhook) {
+async function deleteMessage(message, interaction, t, webhook) {
 	try {
 		if (webhook) {
 			await webhook.deleteMessage(message);
@@ -112,16 +115,10 @@ async function deleteMessage(message, interaction, webhook) {
 		// We will receive a messageDelete event in which we do that.
 	} catch (e) {
 		console.error('Error while trying to delete message:', e);
-		await interaction.reply({
-			content: 'There was an error trying to delete the message.',
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.delete-failure');
 		return;
 	}
-	await interaction.reply({
-		content: 'Message was successfully deleted.',
-		ephemeral: true
-	});
+	await t.privateReply(interaction, 'reply.delete-success');
 }
 
 export default deleteContextCommand;

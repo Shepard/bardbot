@@ -1,0 +1,162 @@
+{
+	interaction: {
+		error: 'There was an error while executing this command!'
+	},
+	shared: {
+		'alt-db-fetch-error': 'An error occurred while trying to find the alternate character in the database. Please try again later.',
+		'no-alt-with-name': 'There is no alternate character by the name "{{altName}}".',
+		'webhook-validation-error': {
+			'name-length': 'Name must be between 1 and 80 characters long.',
+			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalisation."
+		},
+		'unknown-command': 'Unknown command',
+		'commands-update-failure1': 'Configuration was changed but commands could not be updated on the server.',
+		'commands-update-failure2': 'This could be a temporary problem. You can try updating them yourself later by using `/refresh-commands`.'
+	},
+	commands: {
+		alt: {
+			reply: {
+				'alt-not-usable': 'The alternate character "{{altName}}" cannot be used for role-play by you.',
+				'channel-not-viewable': 'This is not a place I can see, unfortunately. So you cannot use alternate characters here.',
+				'not-role-play-channel': 'This is not a role-play channel. You cannot use alternate characters here.',
+				'alt-message-failure': 'Sending message using alt failed.',
+				'alt-message-success': 'Alt message posted.'
+			}
+		},
+		'blame-context': {
+			reply: {
+				blame1: '{{user, usermention}} told me to do it!',
+				blame2: '{{user, usermention}} made me do it!',
+				blame3: 'I blame {{user, usermention}}…',
+				blame4: 'Ask {{user, usermention}}, not me!',
+				blame5: '{{user, usermention}} looks awfully suspicious over there…',
+				blame6: "Couldn't be {{user, usermention}}, could it?",
+				'user-unknown': "Sorry, I don't remember.",
+				'message-not-found': 'Could not find message to execute command on.'
+			}
+		},
+		bookmark: {
+			reply: {
+				header1: 'A [new chapter]({{url}}) was written in {{channel, channelmention}}.',
+				header2: 'Something [new happened]({{url}}) in {{channel, channelmention}}!',
+				header3: 'The [story continued]({{url}}) in {{channel, channelmention}}.',
+				header4: 'The [pen touched the paper]({{url}}) and the pages turned; find out what happened in {{channel, channelmention}}.',
+				header5: 'Little by little, [developments were made]({{url}}) in {{channel, channelmention}}.',
+				header6: "Let's see [what happened]({{url}}) in {{channel, channelmention}}!",
+				header7: 'Another key event [took place]({{url}}) in {{channel, channelmention}}!',
+				success: '[Your bookmark]({{url}}) was successfully created in {{channel, channelmention}}!',
+				'no-bookmarkable-content': 'This message does not have any bookmarkable content.'
+			}
+		},
+		coin: {
+			heads: 'heads',
+			tails: 'tails',
+			reply: '{{member}} tosses a coin. It lands on… {{result}}!'
+		},
+		'config-alt': {
+			'field-usable-by': 'Can be used by',
+			reply: {
+				'alt-exists': 'An alternate character with the name "{{name}}" already exists. If you want to adjust it, use the `/config-alt edit` command.',
+				'add-failure': 'Adding the alternate character failed.',
+				'add-success': 'New alternate character was successfully created.',
+				'edit-failure': 'Updating the alternate character failed.',
+				'edit-success': 'Alternate character was successfully updated.',
+				'delete-failure': 'The alternate character with the name "{{name}}" was successfully deleted.',
+				'delete-success': 'Could not delete alternate character by the name "${name}".',
+				'show-alts-failure': 'An error occurred while trying to find the alternate characters of this server in the database. Please try again later.',
+				'show-alts': 'The following alternate characters currently exist. Use `/config-alt show <name>` to find out details about a particular alternate character.'
+			}
+		},
+		config: {
+			'show-title': 'Configuration',
+			'show-description': 'This is the current configuration of the bot in this server. To change any options, use the `/config set` command.',
+			'show-field-bookmarks-channel': 'Bookmarks channel',
+			'show-field-quotes-channel': 'Quotes channel',
+			'show-field-role-play-channels': 'Role-play channels',
+			'show-value-none': 'none',
+			reply: {
+				'missing-option': 'Please specify an option to set.',
+				'set-failure': 'Changing configuration failed.',
+				'set-success': 'Successfully changed configuration.',
+				'reset-failure': 'Resetting options failed.',
+				'reset-success': 'Successfully reset options.',
+				'wrong-channel-type': 'This will only work with text channels in a server.',
+				'add-failure': 'Adding the role-play channel failed.',
+				'add-success': 'Successfully added role-play channel.',
+				'remove-failure': 'Removing the role-play channel failed.',
+				'remove-success': 'Successfully removed role-play channel.'
+			}
+		},
+		'delete-context': {
+			reply: {
+				'not-deletable1': 'This is not a message you can delete. This command will only work on:',
+				'not-deletable2': '- Quotes or bookmarks you created through me (including my reply to the `/bookmark` command),',
+				'not-deletable3': '- Quotes someone else created through me where you were quoted,',
+				'not-deletable4': '- My reply to `/goto` and the corresponding message in the destination channel,',
+				'not-deletable5': '- My reply to `/narrate`,',
+				'not-deletable6': '- My reply to `/names`,',
+				'not-deletable7': '- Messages of alternate characters sent through me.',
+				'delete-failure': 'There was an error trying to delete the message.',
+				'delete-success': 'Message was successfully deleted.'
+			}
+		},
+		goto: {
+			reply: {
+				'origin-message-unlinked': 'The story continues in {{channel, channelmention}}.',
+				'origin-message-linked': 'The [story continues]({{url}}) in {{channel, channelmention}}.',
+				'destination-message': 'Following [the events]({{url}}) from {{channel, channelmention}}…'
+			}
+		},
+		names: {
+			reply: {
+				title: 'When we turn back the pages, the members of {{guildName}} had the following names:'
+			}
+		},
+		'quote-context': {
+			reply: {
+				gossip1: 'Did you hear what {{author, usermention}} [just said]({{url}})?',
+				gossip2: "I can't believe {{author, usermention}} [said that]({{url}}).",
+				gossip3: '[What was that]({{url}}), {{author, usermention}}?',
+				gossip4: 'Did {{author, usermention}} *really* [say that]({{url}})?',
+				gossip5: '{{author, usermention}}, did you actually just [say that]({{url}})?',
+				gossip6: 'Look at {{author, usermention}} just [saying things]({{url}}) without a care in the world!',
+				gossip7: "Now [that's something quotable]({{url}}), {{author, usermention}}!",
+				gossip8: "Don't mind me, just making a note of what {{author, usermention}} [just said]({{url}}).",
+				gossip9: "Hey, those were {{author, usermention}}'s [words]({{url}}), not mine!",
+				gossip10: "So, we're [saying that]({{url}}) now, are we, {{author, usermention}}?",
+				success: '[A quote]({{url}}) was successfully created in {{channel, channelmention}}!',
+				'not-quotable': 'This message does not have any quotable content.'
+			}
+		},
+		'refresh-commands': {
+			reply: {
+				failure: 'Commands could not be refreshed. This might be a temporary problem. Please try again later.',
+				success: 'Commands successfully refreshed.'
+			}
+		},
+		roll: {
+			reply: {
+				'invalid-notation': 'Could not recognise your input.',
+				'notation-explanation_other': 'This command uses [dice notation](https://en.wikipedia.org/wiki/Dice_notation) \
+as used by many tabletop games, but only basic versions of it like "d6" or "3d20". \
+The dice available are the standard Dungeons & Dragons ones: d2, d4, d6, d8, d10, d12 and d20. \
+You can roll up to {{count}} dice at a time. You cannot roll multiple dice with different numbers of faces at once.',
+				'invalid-number': 'Number of dice or number or faces is not a valid number.',
+				'too-many-dice_other': 'Unfortunately you can only roll up to {{count}} dice at a time.',
+				roll_one: '{{member}} rolls a {{numberOfFaces}}-sided dice.',
+				roll_other: '{{member}} rolls {{count}} {{numberOfFaces}}-sided dice.',
+				'result-single': 'The result is: {{result}}',
+				'result-sum': 'The result is: {{results}} = {{sum}}',
+				addition: ' + '
+			}
+		},
+		where: {
+			reply: {
+				'you-last-seen': 'You were [last seen]({{url}}) role-playing in {{channel, channelmention}}.',
+				'user-last-seen': '{{user, usermention}} was [last seen]({{url}}) role-playing in {{channel, channelmention}}.',
+				'you-not-found': "Could not find a recent message by you in any of the role-play channels. Your last role-play must have been a while back or you haven't role-played yet!",
+				'user-not-found': "Could not find a recent message by {{user, usermention}} in any of the role-play channels. Their last role-play must have been a while back or they haven't role-played yet!"
+			}
+		}
+	}
+}
