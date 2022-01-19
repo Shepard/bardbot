@@ -2,7 +2,7 @@ import { Constants } from 'discord.js';
 
 // For now this notation is localised for English and German by allowing "d" and "w" as the dice type prefix.
 // More letters can be added for other languages in the future (e.g. "t" for Swedish?).
-const notationExpression = /^\s*([1-9]\d*)?(d|w)(2|4|6|8|10|12|20)\s*$/i;
+const NOTATION_EXPRESSION = /^\s*([1-9]\d*)?(d|w)(2|4|6|8|10|12|20)\s*$/i;
 const MAX_NUMBER_OF_DICE = 20;
 
 const rollCommand = {
@@ -23,7 +23,7 @@ const rollCommand = {
 	// Handler for when the command is used
 	async execute(interaction, t) {
 		const notation = interaction.options.getString('notation');
-		const matches = notation.match(notationExpression);
+		const matches = notation.match(NOTATION_EXPRESSION);
 
 		if (matches === null) {
 			await interaction.reply({

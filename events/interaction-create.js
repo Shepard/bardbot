@@ -14,10 +14,9 @@ async function handleInteraction(interaction) {
 	if (interaction.isCommand() || interaction.isContextMenu() || interaction.isAutocomplete()) {
 		const command = commands.get(interaction.commandName);
 		if (command) {
-			const t = getTranslatorForInteraction(interaction, command);
-
 			if (isMatchingCommand(interaction, command)) {
 				const guildConfig = getGuildConfig(interaction.guildId);
+				const t = getTranslatorForInteraction(interaction, command, guildConfig);
 				if (!command.guard) {
 					await executeCommand(command, interaction, t, guildConfig);
 				} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
@@ -31,6 +30,7 @@ async function handleInteraction(interaction) {
 			) {
 				// We probably don't need to guard the autocomplete.
 				const guildConfig = getGuildConfig(interaction.guildId);
+				const t = getTranslatorForInteraction(interaction, command, guildConfig);
 				await autocompleteCommandOption(command, interaction, t, guildConfig);
 			}
 		}

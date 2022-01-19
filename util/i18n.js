@@ -2,16 +2,17 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { userMention, memberNicknameMention, channelMention, roleMention, time } from '@discordjs/builders';
 
+export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de']);
+
 let i18n;
 
 export async function initI18n() {
-	const supportedLngs = ['en', 'en-US', 'en-GB', 'de'];
 	i18n = i18next
 		.createInstance({
-			supportedLngs,
+			supportedLngs: SUPPORTED_LANGUAGES,
 			fallbackLng: 'en',
 			// Since we're a server application and don't need to worry about bandwidth, we can preload all supported languages.
-			preload: supportedLngs,
+			preload: SUPPORTED_LANGUAGES,
 			ns: 'main',
 			defaultNS: 'main',
 			returnNull: false,
@@ -49,9 +50,9 @@ export function translate(keys, options) {
 	return i18n.t(keys, options);
 }
 
-export function getTranslatorForInteraction(interaction, command) {
+export function getTranslatorForInteraction(interaction, command, guildConfig) {
 	const userLocale = interaction.locale ?? 'en';
-	const guildLocale = interaction.guildLocale ?? 'en';
+	const guildLocale = guildConfig.language ?? interaction.guildLocale ?? 'en';
 	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? interaction.commandName);
 	const sharedPrefix = 'shared';
 	const t = {

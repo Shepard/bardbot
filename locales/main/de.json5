@@ -1,4 +1,5 @@
 {
+	languageName: 'Deutsch',
 	interaction: {
 		error: 'Beim Ausführen dieses Befehls ist ein Fehler aufgetreten!'
 	},

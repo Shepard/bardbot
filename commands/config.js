@@ -6,6 +6,7 @@ import {
 	clearConfigurationValues,
 	setBookmarksChannel,
 	setQuotesChannel,
+	setLanguage,
 	addRolePlayChannel,
 	removeRolePlayChannel,
 	removeAllRolePlayChannels,
@@ -14,6 +15,7 @@ import {
 } from '../storage/guild-config-dao.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 import { createWebhook } from '../util/webhook-util.js';
+import { SUPPORTED_LANGUAGES, translate } from '../util/i18n.js';
 
 // Limit for characters in a field value of an embed.
 // See https://discord.com/developers/docs/resources/channel#embed-limits
@@ -47,6 +49,12 @@ const configCommand = {
 						description: 'The channel to set for posting quotes in',
 						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
+					},
+					{
+						name: 'language',
+						description: 'The language the bot should use for posting public messages in this server',
+						type: Constants.ApplicationCommandOptionTypes.STRING,
+						choices: getLanguageChoices()
 					}
 				]
 			},
@@ -76,6 +84,10 @@ const configCommand = {
 							{
 								name: 'quotes channel',
 								value: 'quotes-channel'
+							},
+							{
+								name: 'language',
+								value: 'language'
 							}
 						]
 					}
@@ -130,13 +142,13 @@ const configCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, t, guildConfig) {
 		const subcommandGroup = interaction.options.getSubcommandGroup(false);
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'show') {
 			await showConfiguration(interaction, t);
 		} else if (subcommand === 'set') {
-			await setConfiguration(interaction, t);
+			await setConfiguration(interaction, t, guildConfig);
 		} else if (subcommand === 'reset') {
 			await resetConfiguration(interaction, t);
 		} else if (subcommand === 'role-play-channel') {
@@ -189,19 +201,27 @@ async function showConfiguration(interaction, t) {
 	}
 }
 
-async function setConfiguration(interaction, t) {
+async function setConfiguration(interaction, t, guildConfig) {
 	const bookmarksChannel = interaction.options.getChannel('bookmarks-channel');
 	const quotesChannel = interaction.options.getChannel('quotes-channel');
+	let language = interaction.options.getString('language');
+	if (language && !SUPPORTED_LANGUAGES.includes(language)) {
+		language = null;
+	}
 
-	if (!bookmarksChannel && !quotesChannel) {
+	if (!bookmarksChannel && !quotesChannel && !language) {
 		await t.privateReply(interaction, 'reply.missing-option');
 		return;
 	}
 
 	try {
-		setConfigurationValues(interaction.guildId, {
-			bookmarksChannelId: bookmarksChannel ? bookmarksChannel.id : null,
-			quotesChannelId: quotesChannel ? quotesChannel.id : null
+		// If no guildConfig existed in the database then the guildConfig object we have here only has an id property and all other properties would result in undefined.
+		// We don't want to pass undefined into this method but only null values in this case, hence the "?? null".
+		setConfigurationValues({
+			id: guildConfig.id,
+			bookmarksChannelId: bookmarksChannel ? bookmarksChannel.id : guildConfig.bookmarksChannel ?? null,
+			quotesChannelId: quotesChannel ? quotesChannel.id : guildConfig.quotesChannel ?? null,
+			language: language ?? guildConfig.language ?? null
 		});
 	} catch (e) {
 		console.error(`Database error while trying to set configuration values for guild ${interaction.guildId}:`, e);
@@ -228,6 +248,8 @@ async function resetConfiguration(interaction, t) {
 			setBookmarksChannel(interaction.guildId, null);
 		} else if (option === 'quotes-channel') {
 			setQuotesChannel(interaction.guildId, null);
+		} else if (option === 'language') {
+			setLanguage(interaction.guildId, null);
 		}
 	} catch (e) {
 		console.error(`Database error while trying to clear options for guild ${interaction.guildId}:`, e);
@@ -346,6 +368,19 @@ function getChannelsList(channelIds) {
 		return channelsList;
 	}
 	return '-';
+}
+
+function getLanguageChoices() {
+	return (
+		SUPPORTED_LANGUAGES
+			// We mostly use 'en' as a fallback but don't want to offer it as a choice since it provides identical translations to en-GB and would just confuse the user.
+			.filter(languageTag => languageTag !== 'en')
+			// Each language is presented with the name of the language in that language.
+			.map(languageTag => ({
+				name: translate('languageName', { lng: languageTag }),
+				value: languageTag
+			}))
+	);
 }
 
 export async function updateCommandsAfterConfigChange(interaction, t) {

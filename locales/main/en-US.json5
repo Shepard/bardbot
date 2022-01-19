@@ -1,4 +1,5 @@
 {
+	languageName: 'English, US',
 	shared: {
 		'webhook-validation-error': {
 			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalization."

@@ -4,7 +4,8 @@ let getGuildConfigStatement = null;
 let getGuildIdsForGuildsWithConfigurationStatement = null;
 let setBookmarksChannelStatement = null;
 let setQuotesChannelStatement = null;
-let setChannelsStatement = null;
+let setLanguageStatement = null;
+let setConfigurationValuesStatement = null;
 let removeGuildConfigStatement = null;
 
 let getRolePlayChannelsDataStatement = null;
@@ -16,7 +17,7 @@ let setWebhookIdForRolePlayChannelStatement = null;
 
 registerDbInitialisedListener(() => {
 	getGuildConfigStatement = db.prepare(
-		'SELECT bookmarks_channel_id, quotes_channel_id FROM guild_config WHERE id = :id'
+		'SELECT bookmarks_channel_id, quotes_channel_id, language FROM guild_config WHERE id = :id'
 	);
 	getGuildIdsForGuildsWithConfigurationStatement = db.prepare(
 		'SELECT id FROM guild_config UNION SELECT guild_id as id FROM guild_role_play_channel'
@@ -31,10 +32,15 @@ registerDbInitialisedListener(() => {
 			' VALUES(:id, :quotesChannelId)' +
 			' ON CONFLICT(id) DO UPDATE SET quotes_channel_id = :quotesChannelId'
 	);
-	setChannelsStatement = db.prepare(
-		'INSERT INTO guild_config(id, bookmarks_channel_id, quotes_channel_id)' +
-			' VALUES(:id, :bookmarksChannelId, :quotesChannelId)' +
-			' ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = :bookmarksChannelId, quotes_channel_id = :quotesChannelId'
+	setLanguageStatement = db.prepare(
+		'INSERT INTO guild_config(id, language)' +
+			' VALUES(:id, :language)' +
+			' ON CONFLICT(id) DO UPDATE SET language = :language'
+	);
+	setConfigurationValuesStatement = db.prepare(
+		'INSERT INTO guild_config(id, bookmarks_channel_id, quotes_channel_id, language)' +
+			' VALUES(:id, :bookmarksChannelId, :quotesChannelId, :language)' +
+			' ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = :bookmarksChannelId, quotes_channel_id = :quotesChannelId, language = :language'
 	);
 	removeGuildConfigStatement = db.prepare('DELETE FROM guild_config WHERE id = :id');
 
@@ -68,9 +74,10 @@ export function getGuildConfig(guildId) {
 		if (config) {
 			const rolePlayChannels = getRolePlayChannelIds(guildId);
 			return {
-				id: config.id,
+				id: guildId,
 				bookmarksChannel: config.bookmarks_channel_id,
 				quotesChannel: config.quotes_channel_id,
+				language: config.language,
 				rolePlayChannels
 			};
 		}
@@ -96,23 +103,19 @@ export function getGuildIdsForGuildsWithConfiguration() {
 }
 
 /**
+ * Adds a new guild config with the values provided in the patch object
+ * or changes properties of an existing guild config in the database if a record already exists for the id property in the provided patch.
+ * All existing values will be overwritten with the ones form the patch.
+ *
+ * @param {*} patchedGuildConfig An object containing all the properties a guild config can have in the database.
+ * The values of those properties will be used to override any existing guild config or create a new one.
+ * In particular: "id" will be used to identify the guild config to override.
+ * The other properties are bookmarksChannelId, quotesChannelId and language.
+ * "rolePlayChannels", while provided in getGuildConfig, is not used as a property here.
  * @throws Caller has to handle potential database errors.
  */
-export function setConfigurationValues(guildId, patch) {
-	if (patch.bookmarksChannelId && patch.quotesChannelId) {
-		// In the future when there's more settings to set, just fetch the current configuration,
-		// change its values with the patch and send an update - or insert a new row if no configuration existed.
-		// Thus handling the upsert ourselves and not having an upsert statement for all possible combinations of settings.
-		setChannelsStatement.run({
-			id: guildId,
-			bookmarksChannelId: patch.bookmarksChannelId,
-			quotesChannelId: patch.quotesChannelId
-		});
-	} else if (patch.bookmarksChannelId) {
-		setBookmarksChannelStatement.run({ id: guildId, bookmarksChannelId: patch.bookmarksChannelId });
-	} else if (patch.quotesChannelId) {
-		setQuotesChannelStatement.run({ id: guildId, quotesChannelId: patch.quotesChannelId });
-	}
+export function setConfigurationValues(patchedGuildConfig) {
+	setConfigurationValuesStatement.run(patchedGuildConfig);
 }
 
 /**
@@ -135,6 +138,13 @@ export function setBookmarksChannel(guildId, bookmarksChannelId) {
  */
 export function setQuotesChannel(guildId, quotesChannelId) {
 	setQuotesChannelStatement.run({ id: guildId, quotesChannelId });
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function setLanguage(guildId, language) {
+	setLanguageStatement.run({ id: guildId, language });
 }
 
 /**
