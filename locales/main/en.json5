@@ -62,8 +62,8 @@
 				'add-success': 'New alternate character was successfully created.',
 				'edit-failure': 'Updating the alternate character failed.',
 				'edit-success': 'Alternate character was successfully updated.',
-				'delete-failure': 'The alternate character with the name "{{name}}" was successfully deleted.',
-				'delete-success': 'Could not delete alternate character by the name "${name}".',
+				'delete-failure': 'Could not delete alternate character by the name "{{name}}".',
+				'delete-success': 'The alternate character with the name "{{name}}" was successfully deleted.',
 				'show-alts-failure': 'An error occurred while trying to find the alternate characters of this server in the database. Please try again later.',
 				'show-alts': 'The following alternate characters currently exist. Use `/config-alt show <name>` to find out details about a particular alternate character.'
 			}
