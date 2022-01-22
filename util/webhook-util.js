@@ -1,16 +1,17 @@
 import { codePointLength } from '../util/helpers.js';
 import { getRolePlayChannelsData, setWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
+import logger from './logger.js';
 
-export async function createWebhook(channel, client) {
+export async function createWebhook(channel, client, logger) {
 	try {
 		return await channel.createWebhook(client.user.username);
 	} catch (e) {
-		console.error(`Error while trying to create webhook for channel ${channel.id}:`, e);
+		logger.error(e, 'Error while trying to create webhook for channel %s', channel.id);
 		return null;
 	}
 }
 
-export async function getWebhookForMessageIfCreatedByBot(message) {
+export async function getWebhookForMessageIfCreatedByBot(message, logger) {
 	// When the webhookId is the applicationId then this is actually an interaction reply and not a webhook we can fetch.
 	if (message.webhookId && message.webhookId !== message.applicationId) {
 		try {
@@ -19,7 +20,7 @@ export async function getWebhookForMessageIfCreatedByBot(message) {
 				return webhook;
 			}
 		} catch (e) {
-			console.error(e);
+			logger.error(e);
 		}
 	}
 	return null;
@@ -67,7 +68,7 @@ export function validateWebhookName(name) {
  */
 export async function ensureWebhookCorrectness(client, guildId) {
 	try {
-		console.debug(`Ensuring webhook correctness for guild ${guildId}.`);
+		logger.info('Ensuring webhook correctness for guild %s.', guildId);
 
 		const guild = await client.guilds.fetch({ guild: guildId, withCounts: false });
 		const existingWebhooks = (await guild.fetchWebhooks()).filter(webhook => webhook.owner.id === client.user.id);
@@ -102,18 +103,21 @@ export async function ensureWebhookCorrectness(client, guildId) {
 					return webhook
 						.delete()
 						.catch(e =>
-							console.error(`Could not delete superfluous webhook ${webhook.id} in Discord in guild ${guildId}:`, e)
+							logger.error(e, 'Could not delete superfluous webhook %s in Discord in guild %s', webhook.id, guildId)
 						);
 				}
 				return Promise.resolve();
 			})
 		);
 
-		console.debug(
-			`Webhook correctness for guild ${guildId} ensured. ${createdCounter} webhook(s) created, ${deletedCounter} webhook(s) deleted.`
+		logger.info(
+			'Webhook correctness for guild %s ensured. %d webhook(s) created, %d webhook(s) deleted.',
+			guildId,
+			createdCounter,
+			deletedCounter
 		);
 	} catch (e) {
-		console.error(`Error while trying to ensure webhook correctness for guild ${guildId}:`, e);
+		logger.error(e, 'Error while trying to ensure webhook correctness for guild %s', guildId);
 	}
 }
 
@@ -133,12 +137,14 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 			// Apparently not, so we need to create one.
 			try {
 				const channel = await guild.channels.fetch(rpChannelId);
-				webhookForChannel = await createWebhook(channel, client);
+				webhookForChannel = await createWebhook(channel, client, logger);
 				createdCounter++;
 			} catch (e) {
-				console.error(
-					`Error while trying fetch channel ${rpChannelId} for guild ${guild.id} for creating a new webhook for it:`,
-					e
+				logger.error(
+					e,
+					'Error while trying fetch channel %s for guild %s for creating a new webhook for it',
+					rpChannelId,
+					guild.id
 				);
 			}
 		} else {
@@ -148,9 +154,12 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 			try {
 				setWebhookIdForRolePlayChannel(guild.id, rpChannelId, webhookForChannel.id);
 			} catch (e) {
-				console.error(
-					`Error while trying update webhook id to ${webhookForChannel.id} for guild ${guild.id} and channel ${rpChannelId}:`,
-					e
+				logger.error(
+					e,
+					'Error while trying update webhook id to %s for guild %s and channel %s',
+					webhookForChannel.id,
+					guild.id,
+					rpChannelId
 				);
 			}
 		}

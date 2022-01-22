@@ -114,7 +114,7 @@ export function getAlts(guildId) {
  * If no matching alternate characters could be found or if an error occurred during the database fetching,
  * this is handled and an empty array is returned.
  */
-export function findMatchingAlts(guildId, searchInput) {
+export function findMatchingAlts(guildId, searchInput, logger) {
 	try {
 		const escapedSearchInput = searchInput.replaceAll('#', '##').replaceAll('%', '#%').replaceAll('_', '#_');
 		const pattern = '%' + escapedSearchInput + '%';
@@ -122,7 +122,7 @@ export function findMatchingAlts(guildId, searchInput) {
 			.all({ guildId, pattern })
 			.map(row => ({ name: row.name, usableById: row.usable_by_id, usableByType: row.usable_by_type }));
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return [];
 	}
 }
@@ -132,12 +132,12 @@ export function findMatchingAlts(guildId, searchInput) {
  * @param {string} guildId The id of the guild to search.
  * @returns {number} The number of alts that exist. 0 if there are none or if an error occurred during the database fetching.
  */
-export function getNumberOfAlts(guildId) {
+export function getNumberOfAlts(guildId, logger) {
 	try {
 		const result = countAltsStatement.get({ guildId });
 		return result?.number ?? 0;
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return 0;
 	}
 }

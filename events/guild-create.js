@@ -1,16 +1,17 @@
 import { updateCommandsForSingleGuild, areGuildCommandsUpdated } from '../command-handling/update-commands.js';
 import { ensureWebhookCorrectness } from '../util/webhook-util.js';
+import logger from '../util/logger.js';
 
 const guildCreateEvent = {
 	name: 'guildCreate',
 	execute(guild) {
-		handleGuildCreate(guild).catch(e => console.error(e));
+		handleGuildCreate(guild).catch(e => logger.error(e));
 	}
 };
 
 async function handleGuildCreate(guild) {
 	if (!areGuildCommandsUpdated(guild.id)) {
-		console.log(`Updating commands for guild ${guild.id} after receiving guild create event.`);
+		logger.info('Updating commands for guild %s after receiving guild create event.', guild.id);
 		await updateCommandsForSingleGuild(guild.client, guild);
 	}
 

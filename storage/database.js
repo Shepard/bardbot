@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import fsPromises from 'fs/promises';
 import fs from 'fs';
 import { EventEmitter } from 'events';
+import logger from '../util/logger.js';
 
 const UPGRADES_DIR = './storage/upgrades';
 const UPGRADE_FILE_PATTERN = /^V([1-9]\d*)__.*\.sql$/i;
@@ -33,7 +34,7 @@ export async function initDatabase() {
 		db.transaction(() => {
 			db.exec(upgrade.upgradeSql);
 			db.pragma('user_version = ' + upgrade.version);
-			console.log(`Applied upgrade ${upgrade.fileName}, increasing version to ${upgrade.version}.`);
+			logger.info('Applied upgrade %s, increasing version to %d.', upgrade.fileName, upgrade.version);
 		})();
 	}
 

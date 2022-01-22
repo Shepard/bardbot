@@ -1,32 +1,33 @@
 import { Constants } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from './command-registry.js';
+import logger from '../util/logger.js';
 
 const updatedGuildsCache = new Set();
 
 export async function updateCommandsForAllGuilds(client) {
-	console.log('Updating commands for all guilds.');
+	logger.info('Updating commands for all guilds.');
 
 	// Map all guilds the client is currently in to a promise each that updates all commands for that guild.
 	// Then wait for all those promises to be done.
 	await Promise.allSettled(
 		client.guilds.cache.map(guild => {
 			return updateCommandsForSingleGuild(client, guild).catch(e => {
-				console.error(`Error while trying to update commands for guild ${guild.id}:`, e);
+				logger.error(e, 'Error while trying to update commands for guild %s', guild.id);
 			});
 		})
 	);
 
-	console.log('Commands for all guilds updated.');
+	logger.info('Commands for all guilds updated.');
 }
 
 export async function updateCommandsForSingleGuild(client, guild) {
-	const guildConfig = getGuildConfig(guild.id);
+	const guildConfig = getGuildConfig(guild.id, logger);
 
 	const guildCommands = [];
 	commands.each(command => {
 		// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
-		if (!command.guard || command.guard(client, guild, guildConfig)) {
+		if (!command.guard || command.guard(client, guild, guildConfig, logger)) {
 			const commandConfiguration = {
 				...command.configuration
 			};

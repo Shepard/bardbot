@@ -37,7 +37,7 @@ const bookmarkCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, t, guildConfig) {
+	async execute(interaction, { t, guildConfig, logger }) {
 		// First send a message in the channel where the user used the command,
 		// as a reply to their command call, showing the text they entered with the command.
 		const eventMessageText = interaction.options.getString('event');
@@ -64,7 +64,7 @@ const bookmarkCommand = {
 			}
 		});
 
-		addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark);
+		addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark, logger);
 	}
 };
 

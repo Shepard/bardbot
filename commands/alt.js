@@ -26,15 +26,15 @@ const altCommand = {
 		]
 	},
 	// Test function to check if the command should apply to a guild
-	guard(client, guild, guildConfig) {
-		return guildConfig?.rolePlayChannels?.length && getNumberOfAlts(guild.id) > 0;
+	guard(client, guild, guildConfig, logger) {
+		return guildConfig?.rolePlayChannels?.length && getNumberOfAlts(guild.id, logger) > 0;
 	},
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t, logger }) {
 		const altName = interaction.options.getString('name');
 		const messageText = interaction.options.getString('message');
 
-		const webhook = await getWebhook(interaction, t);
+		const webhook = await getWebhook(interaction, t, logger);
 		if (!webhook) {
 			// getWebhook already handled telling the user about it.
 			return;
@@ -45,7 +45,7 @@ const altCommand = {
 			try {
 				alt = getAlt(interaction.guildId, altName);
 			} catch (e) {
-				console.error('Error while trying to fetch alt from db:', e);
+				logger.error(e, 'Error while trying to fetch alt from db');
 				await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 				return;
 			}
@@ -53,7 +53,7 @@ const altCommand = {
 				await t.privateReplyShared(interaction, 'no-alt-with-name', { altName });
 				return;
 			}
-			if (!isUsableByUser(alt, interaction)) {
+			if (!isUsableByUser(alt, interaction, logger)) {
 				await t.privateReply(interaction, 'reply.alt-not-usable', { altName });
 				return;
 			}
@@ -85,24 +85,24 @@ const altCommand = {
 				});
 				await interaction.deleteReply();
 			} catch (e) {
-				console.error('Error while trying to handle interaction reply after sending alt message:', e);
+				logger.error(e, 'Error while trying to handle interaction reply after sending alt message');
 			}
 
 			// Record the alt message as sent by the user.
-			addMessageMetadata(altMessage, interaction.user.id, MessageType.AltMessage);
+			addMessageMetadata(altMessage, interaction.user.id, MessageType.AltMessage, logger);
 		} catch (e) {
-			console.error('Error while trying to send alt message:', e);
+			logger.error(e, 'Error while trying to send alt message');
 			await t.privateReply(interaction, 'reply.alt-message-failure');
 		}
 	},
-	async autocomplete(interaction) {
+	async autocomplete(interaction, { logger }) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'name') {
 			const collator = new Intl.Collator(interaction.locale);
-			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value);
+			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value, logger);
 			return (
 				matchingAlts
-					.filter(alt => isUsableByUser(alt, interaction))
+					.filter(alt => isUsableByUser(alt, interaction, logger))
 					.map(alt => ({ name: alt.name, value: alt.name }))
 					// The database already does some sorting for us but it's not very good at proper i18n sorting.
 					.sort((a, b) => collator.compare(a?.name, b?.name))
@@ -113,14 +113,16 @@ const altCommand = {
 	}
 };
 
-async function getWebhook(interaction, t) {
+async function getWebhook(interaction, t, logger) {
 	let webhookId = null;
 	try {
 		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, interaction.channelId);
 	} catch (e) {
-		console.error(
-			`Loading webhook id from database for channel ${interaction.channelId} in guild ${interaction.guildId} failed:`,
-			e
+		logger.error(
+			e,
+			'Loading webhook id from database for channel %s in guild %s failed.',
+			interaction.channelId,
+			interaction.guildId
 		);
 		await t.privateReply(interaction, 'reply.alt-message-failure');
 		return null;
@@ -129,7 +131,7 @@ async function getWebhook(interaction, t) {
 		try {
 			return interaction.client.fetchWebhook(webhookId);
 		} catch (e) {
-			console.error('Fetching webhook failed:', e);
+			logger.error(e, 'Fetching webhook failed.');
 			await t.privateReply(interaction, 'reply.alt-message-failure');
 		}
 	} else {
@@ -138,13 +140,13 @@ async function getWebhook(interaction, t) {
 	return null;
 }
 
-function isUsableByUser(alt, interaction) {
+function isUsableByUser(alt, interaction, logger) {
 	if (alt.usableByType === UsableByType.User) {
 		return interaction.user.id === alt.usableById;
 	} else if (alt.usableByType === UsableByType.Role) {
 		return interaction.member.roles.cache.has(alt.usableById);
 	} else {
-		console.error(`Unsupported type ${alt.usableByType} used for alt "${alt.name}" in guild ${interaction.guildId}.`);
+		logger.error('Unsupported type %s used for alt "%s" in guild %s.', alt.usableByType, alt.name, interaction.guildId);
 		return false;
 	}
 }

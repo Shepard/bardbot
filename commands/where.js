@@ -26,7 +26,7 @@ const whereCommand = {
 		return guildConfig?.rolePlayChannels?.length;
 	},
 	// Handler for when the command is used
-	async execute(interaction, t, guildConfig) {
+	async execute(interaction, { t, guildConfig, logger }) {
 		// Defer reply for now so we get more time to reply because fetching all the messages can take some time.
 		await interaction.deferReply({ ephemeral: true });
 
@@ -56,10 +56,15 @@ const whereCommand = {
 		// This lets us consider interactions by the user that are RP-related
 		// but produced a message by the bot that is not linked to a Discord interaction
 		// (for example the message in the destination channel produced by /goto).
-		const newestMessageMetadata = findNewestRPMessageMetadata(userToFind.id, interaction.guildId, channelIdsToSearch);
+		const newestMessageMetadata = findNewestRPMessageMetadata(
+			userToFind.id,
+			interaction.guildId,
+			channelIdsToSearch,
+			logger
+		);
 
 		// Find the message.
-		const newestUserMessage = await findNewestUserMessage(userToFind, channelsToSearch, newestMessageMetadata);
+		const newestUserMessage = await findNewestUserMessage(userToFind, channelsToSearch, newestMessageMetadata, logger);
 
 		if (newestUserMessage) {
 			const messageText = findingCurrentUser
@@ -89,7 +94,7 @@ function getUser(interaction) {
 	return interaction.user;
 }
 
-async function findNewestUserMessage(userToFind, channelsToSearch, newestMessageMetadata) {
+async function findNewestUserMessage(userToFind, channelsToSearch, newestMessageMetadata, logger) {
 	let channelsToSearchAndOldestMessageIds = channelsToSearch.map(channel => [channel, null]);
 	let newestMessage = null;
 	let i = 0;
@@ -128,7 +133,7 @@ async function findNewestUserMessage(userToFind, channelsToSearch, newestMessage
 					newestMessage = fetchedMessage;
 				}
 			} catch (e) {
-				console.error(e);
+				logger.error(e);
 			}
 		}
 	}

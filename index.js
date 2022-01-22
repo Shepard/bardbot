@@ -6,6 +6,7 @@ import { initDatabase, closeDatabase } from './storage/database.js';
 import { getJSFilesInDir } from './util/helpers.js';
 import { loadCommands } from './command-handling/command-registry.js';
 import { initI18n } from './util/i18n.js';
+import logger from './util/logger.js';
 
 async function initApp() {
 	await initI18n();
@@ -39,4 +40,4 @@ async function initApp() {
 	});
 }
 
-initApp().catch(e => console.error(e));
+initApp().catch(e => logger.error(e));

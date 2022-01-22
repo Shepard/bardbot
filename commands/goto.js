@@ -23,7 +23,7 @@ const gotoCommand = {
 		]
 	},
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t, logger }) {
 		const sourceChannel = interaction.channel;
 		const destinationChannel = interaction.options.getChannel('destination');
 		let actionMessageText = interaction.options.getString('action');
@@ -67,7 +67,7 @@ const gotoCommand = {
 				t.guild('reply.origin-message-linked', { url: destinationMessage.url, channel: destinationChannel.id })
 		);
 
-		addMessageMetadata(destinationMessage, interaction.user.id, MessageType.Arrival);
+		addMessageMetadata(destinationMessage, interaction.user.id, MessageType.Arrival, logger);
 	}
 };
 

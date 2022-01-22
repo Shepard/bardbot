@@ -1,7 +1,6 @@
 import { Constants, Permissions, MessageEmbed, Webhook } from 'discord.js';
 import { channelMention, italic } from '@discordjs/builders';
 import {
-	getGuildConfig,
 	setConfigurationValues,
 	clearConfigurationValues,
 	setBookmarksChannel,
@@ -142,20 +141,20 @@ const configCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction, t, guildConfig) {
+	async execute(interaction, { t, guildConfig, logger }) {
 		const subcommandGroup = interaction.options.getSubcommandGroup(false);
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'show') {
-			await showConfiguration(interaction, t);
+			await showConfiguration(interaction, guildConfig, t);
 		} else if (subcommand === 'set') {
-			await setConfiguration(interaction, t, guildConfig);
+			await setConfiguration(interaction, guildConfig, t, logger);
 		} else if (subcommand === 'reset') {
-			await resetConfiguration(interaction, t);
+			await resetConfiguration(interaction, t, logger);
 		} else if (subcommand === 'role-play-channel') {
 			if (subcommandGroup === 'add') {
-				await handleAddRolePlayChannelInteraction(interaction, t);
+				await handleAddRolePlayChannelInteraction(interaction, t, logger);
 			} else if (subcommandGroup === 'remove') {
-				await handleRemoveRolePlayChannelInteraction(interaction, t);
+				await handleRemoveRolePlayChannelInteraction(interaction, t, logger);
 			} else {
 				await t.privateReplyShared(interaction, 'unknown-command');
 			}
@@ -165,8 +164,7 @@ const configCommand = {
 	}
 };
 
-async function showConfiguration(interaction, t) {
-	const guildConfig = getGuildConfig(interaction.guildId);
+async function showConfiguration(interaction, guildConfig, t) {
 	const bookmarksChannelValue = guildConfig.bookmarksChannel
 		? channelMention(guildConfig.bookmarksChannel)
 		: italic(t.user('show-value-none'));
@@ -201,7 +199,7 @@ async function showConfiguration(interaction, t) {
 	}
 }
 
-async function setConfiguration(interaction, t, guildConfig) {
+async function setConfiguration(interaction, guildConfig, t, logger) {
 	const bookmarksChannel = interaction.options.getChannel('bookmarks-channel');
 	const quotesChannel = interaction.options.getChannel('quotes-channel');
 	let language = interaction.options.getString('language');
@@ -224,17 +222,17 @@ async function setConfiguration(interaction, t, guildConfig) {
 			language: language ?? guildConfig.language ?? null
 		});
 	} catch (e) {
-		console.error(`Database error while trying to set configuration values for guild ${interaction.guildId}:`, e);
+		logger.error(e, 'Database error while trying to set configuration values for guild %s', interaction.guildId);
 		await t.privateReply(interaction, 'reply.set-failure');
 		return;
 	}
 
 	await t.privateReply(interaction, 'reply.set-success');
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
-async function resetConfiguration(interaction, t) {
+async function resetConfiguration(interaction, t, logger) {
 	const option = interaction.options.getString('option');
 	let webhookIds = null;
 	try {
@@ -252,7 +250,7 @@ async function resetConfiguration(interaction, t) {
 			setLanguage(interaction.guildId, null);
 		}
 	} catch (e) {
-		console.error(`Database error while trying to clear options for guild ${interaction.guildId}:`, e);
+		logger.error(e, 'Database error while trying to clear options for guild %s', interaction.guildId);
 		await t.privateReply(interaction, 'reply.reset-failure');
 		return;
 	}
@@ -262,9 +260,11 @@ async function resetConfiguration(interaction, t) {
 		await Promise.allSettled(
 			webhookIds.map(webhookId => {
 				return new Webhook(interaction.client, { id: webhookId }).delete().catch(e => {
-					console.error(
-						`Error while trying to delete ${webhookId} in Discord in guild ${interaction.guildId} after clearing configuration values:`,
-						e
+					logger.error(
+						e,
+						'Error while trying to delete %s in Discord in guild %s after clearing configuration values',
+						webhookId,
+						interaction.guildId
 					);
 				});
 			})
@@ -273,10 +273,10 @@ async function resetConfiguration(interaction, t) {
 
 	await t.privateReply(interaction, 'reply.reset-success');
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
-async function handleAddRolePlayChannelInteraction(interaction, t) {
+async function handleAddRolePlayChannelInteraction(interaction, t, logger) {
 	const channel = getChannel(interaction);
 	if (!channel) {
 		await t.privateReply(interaction, 'reply.wrong-channel-type');
@@ -284,7 +284,7 @@ async function handleAddRolePlayChannelInteraction(interaction, t) {
 	}
 
 	try {
-		const webhook = await createWebhook(channel, interaction.client);
+		const webhook = await createWebhook(channel, interaction.client, logger);
 		if (webhook) {
 			addRolePlayChannel(interaction.guildId, channel.id, webhook.id);
 		} else {
@@ -292,17 +292,17 @@ async function handleAddRolePlayChannelInteraction(interaction, t) {
 			return;
 		}
 	} catch (e) {
-		console.error(`Database error while trying to add role-play channel for guild ${interaction.guildId}:`, e);
+		logger.error(e, 'Database error while trying to add role-play channel for guild %s', interaction.guildId);
 		await t.privateReply(interaction, 'reply.add-failure');
 		return;
 	}
 
 	await t.privateReply(interaction, 'reply.add-success');
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
-async function handleRemoveRolePlayChannelInteraction(interaction, t) {
+async function handleRemoveRolePlayChannelInteraction(interaction, t, logger) {
 	const channel = getChannel(interaction);
 	if (!channel) {
 		await t.privateReply(interaction, 'reply.wrong-channel-type');
@@ -314,7 +314,7 @@ async function handleRemoveRolePlayChannelInteraction(interaction, t) {
 		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, channel.id);
 		removeRolePlayChannel(interaction.guildId, channel.id);
 	} catch (e) {
-		console.error(`Database error while trying to remove role-play channel for guild ${interaction.guildId}:`, e);
+		logger.error(e, 'Database error while trying to remove role-play channel for guild %s', interaction.guildId);
 		await t.privateReply(interaction, 'reply.remove-failure');
 		return;
 	}
@@ -323,16 +323,19 @@ async function handleRemoveRolePlayChannelInteraction(interaction, t) {
 		try {
 			await new Webhook(interaction.client, { id: webhookId }).delete();
 		} catch (e) {
-			console.error(
-				`Could not delete webhook ${webhookId} in Discord after removing role-play channel ${channel.id} in guild ${interaction.guildId}:`,
-				e
+			logger.error(
+				e,
+				'Could not delete webhook %s in Discord after removing role-play channel %s in guild %s',
+				webhookId,
+				channel.id,
+				interaction.guildId
 			);
 		}
 	}
 
 	await t.privateReply(interaction, 'reply.remove-success');
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
 function getChannel(interaction) {
@@ -383,13 +386,14 @@ function getLanguageChoices() {
 	);
 }
 
-export async function updateCommandsAfterConfigChange(interaction, t) {
+export async function updateCommandsAfterConfigChange(interaction, t, logger) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {
-		console.error(
-			`Error while trying to update commands for guild ${interaction.guildId} after changing configuration:`,
-			e
+		logger.error(
+			e,
+			'Error while trying to update commands for guild %s after changing configuration',
+			interaction.guildId
 		);
 		await interaction.followUp({
 			content: t.userShared('commands-update-failure1') + '\n' + t.userShared('commands-update-failure2'),

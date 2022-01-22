@@ -44,7 +44,7 @@ registerDbInitialisedListener(() => {
  * If no entry is present in the database or if an error occurred while querying the database,
  * this is handled and null is returned.
  */
-export function getMessageMetadata(messageId) {
+export function getMessageMetadata(messageId, logger) {
 	try {
 		const metadata = getMessageMetadataStatement.get({ messageId });
 		if (metadata) {
@@ -59,7 +59,7 @@ export function getMessageMetadata(messageId) {
 		}
 		return null;
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return null;
 	}
 }
@@ -71,7 +71,7 @@ export function getMessageMetadata(messageId) {
  * If no matching entry could be found or if an error occurred while querying the database,
  * this is handled and null is returned.
  */
-export function findNewestRPMessageMetadata(interactingUserId, guildId, channelIdsToSearch) {
+export function findNewestRPMessageMetadata(interactingUserId, guildId, channelIdsToSearch, logger) {
 	try {
 		// First we query for all messages associated with this user in the RP channels of this guild.
 		const iterator = fetchRPMessageMetadataStatement.iterate({ interactingUserId, guildId });
@@ -91,7 +91,7 @@ export function findNewestRPMessageMetadata(interactingUserId, guildId, channelI
 		}
 		return null;
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return null;
 	}
 }
@@ -99,7 +99,7 @@ export function findNewestRPMessageMetadata(interactingUserId, guildId, channelI
 /**
  * Records metadata for a message. Handles errors and logs them, so the caller doesn't have to catch anything.
  */
-export function addMessageMetadata(message, interactingUserId, messageType) {
+export function addMessageMetadata(message, interactingUserId, messageType, logger) {
 	try {
 		// The timestamp is saved as an integer of the number of milliseconds since 1970.
 		addMessageMetadataStatement.run({
@@ -111,7 +111,7 @@ export function addMessageMetadata(message, interactingUserId, messageType) {
 			messageType
 		});
 	} catch (e) {
-		console.error(`Error while trying to store metadata for message '${message.id}':`, e);
+		logger.error(e, 'Error while trying to store metadata for message %s', message.id);
 	}
 }
 

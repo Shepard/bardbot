@@ -1,17 +1,18 @@
 import process from 'process';
 import { updateCommandsForAllGuilds } from '../command-handling/update-commands.js';
 import { initMaintenanceJobs } from '../storage/maintenance-jobs.js';
+import logger from '../util/logger.js';
 
 const readyEvent = {
 	name: 'ready',
 	once: true,
 	execute(client) {
-		handleReady(client).catch(e => console.error(e));
+		handleReady(client).catch(e => logger.error(e));
 	}
 };
 
 async function handleReady(client) {
-	console.log(`Client is connected. Logged in as ${client.user.tag}.`);
+	logger.info('Client is connected. Logged in as %s.', client.user.tag);
 
 	// Only update the commands when the client is ready so we know the guilds cache in the client is filled.
 	await updateCommandsForAllGuilds(client);

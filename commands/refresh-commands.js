@@ -13,14 +13,14 @@ const refreshCommandsCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t, logger }) {
 		// Updating commands can take some time. So register a reply early on.
 		await interaction.deferReply({ ephemeral: true });
 
 		try {
 			await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 		} catch (e) {
-			console.error(`Error while trying to update commands for guild ${interaction.guildId}:`, e);
+			logger.error(e, 'Error while trying to update commands for guild %s', interaction.guildId);
 			await interaction.editReply({
 				content: t.user('reply.failure'),
 				ephemeral: true

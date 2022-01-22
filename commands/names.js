@@ -14,7 +14,7 @@ const namesCommand = {
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT
 	},
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t }) {
 		// Defer reply for now so we get more time to reply in case fetching the member list takes an unusual amount of time.
 		await interaction.deferReply();
 

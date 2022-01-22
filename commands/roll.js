@@ -21,7 +21,7 @@ const rollCommand = {
 		]
 	},
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t }) {
 		const notation = interaction.options.getString('notation');
 		const matches = notation.match(NOTATION_EXPRESSION);
 

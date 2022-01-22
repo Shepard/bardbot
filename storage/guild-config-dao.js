@@ -1,4 +1,5 @@
 import db, { registerDbInitialisedListener } from './database.js';
+import logger from '../util/logger.js';
 
 let getGuildConfigStatement = null;
 let getGuildIdsForGuildsWithConfigurationStatement = null;
@@ -68,7 +69,7 @@ registerDbInitialisedListener(() => {
  * If no information is present in the database or if an error occurred while querying the database,
  * this is handled and a minimal configuration object is returned.
  */
-export function getGuildConfig(guildId) {
+export function getGuildConfig(guildId, logger) {
 	try {
 		const config = getGuildConfigStatement.get({ id: guildId });
 		if (config) {
@@ -83,7 +84,7 @@ export function getGuildConfig(guildId) {
 		}
 		return { id: guildId };
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return { id: guildId };
 	}
 }
@@ -97,7 +98,7 @@ export function getGuildIdsForGuildsWithConfiguration() {
 	try {
 		return getGuildIdsForGuildsWithConfigurationStatement.all().map(row => row.id);
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		return [];
 	}
 }

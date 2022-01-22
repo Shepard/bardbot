@@ -18,7 +18,7 @@ const blameContextCommand = {
 	},
 	i18nKeyPrefix: 'blame-context',
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t, logger }) {
 		// Get message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		if (message) {
@@ -27,7 +27,7 @@ const blameContextCommand = {
 				// it would be even weirder for the bot to go "I don't know.". So it's just for the sake of completeness.
 				await replyWithUser(interaction, message.interaction.user.id, t.user);
 			} else {
-				const metadata = getMessageMetadata(message.id);
+				const metadata = getMessageMetadata(message.id, logger);
 				if (metadata) {
 					await replyWithUser(interaction, metadata.interactingUserId, t.user);
 				} else {

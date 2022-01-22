@@ -33,7 +33,7 @@ const quoteContextCommand = {
 		return false;
 	},
 	// Handler for when the command is used
-	async execute(interaction, t, guildConfig) {
+	async execute(interaction, { t, guildConfig, logger }) {
 		// Get message that the context menu command was used on.
 		const message = interaction.targetMessage;
 		// The quote command will only work with text-based messages, not e.g. embeds.
@@ -64,7 +64,7 @@ const quoteContextCommand = {
 			// If we don't send any reply, discord will show the command as failed after a while.
 			await t.privateReply(interaction, 'reply.success', { url: quoteMessage.url, channel: quotesChannel.id });
 
-			addMessageMetadata(quoteMessage, interaction.user.id, MessageType.Quote);
+			addMessageMetadata(quoteMessage, interaction.user.id, MessageType.Quote, logger);
 		} else {
 			await t.privateReply(interaction, 'reply.not-quotable');
 		}

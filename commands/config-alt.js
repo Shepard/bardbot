@@ -104,25 +104,25 @@ const configAltCommand = {
 	// can't use the command without explicitly having an admin role.
 	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
-	async execute(interaction, t) {
+	async execute(interaction, { t, logger }) {
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'add') {
-			await handleAddAlt(interaction, t);
+			await handleAddAlt(interaction, t, logger);
 		} else if (subcommand === 'edit') {
-			await handleEditAlt(interaction, t);
+			await handleEditAlt(interaction, t, logger);
 		} else if (subcommand === 'delete') {
-			await handleDeleteAlt(interaction, t);
+			await handleDeleteAlt(interaction, t, logger);
 		} else if (subcommand === 'show') {
-			await handleShowAlts(interaction, t);
+			await handleShowAlts(interaction, t, logger);
 		} else {
 			await t.privateReplyShared(interaction, 'unknown-command');
 		}
 	},
-	async autocomplete(interaction) {
+	async autocomplete(interaction, { logger }) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'name') {
 			const collator = new Intl.Collator(interaction.locale);
-			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value);
+			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value, logger);
 			return (
 				matchingAlts
 					.map(alt => ({ name: alt.name, value: alt.name }))
@@ -135,7 +135,7 @@ const configAltCommand = {
 	}
 };
 
-async function handleAddAlt(interaction, t) {
+async function handleAddAlt(interaction, t, logger) {
 	const guildId = interaction.guildId;
 
 	const name = interaction.options.getString('name', true).trim();
@@ -157,12 +157,12 @@ async function handleAddAlt(interaction, t) {
 
 	try {
 		const id = addAlt(guildId, name, usableById, usableByType, avatarUrl);
-		console.debug(`An alt with the id ${id} and the name "${name}" was created in guild ${guildId}.`);
+		logger.info('An alt with the id %d and the name "%s" was created in guild %s.', id, name, guildId);
 	} catch (e) {
 		if (e.message?.includes('UNIQUE constraint failed')) {
 			await t.privateReply(interaction, 'reply.alt-exists', { name });
 		} else {
-			console.error('Error while trying to create alt in db:', e);
+			logger.error(e, 'Error while trying to create alt in db');
 			await t.privateReply(interaction, 'reply.add-failure');
 		}
 		return;
@@ -179,10 +179,10 @@ async function handleAddAlt(interaction, t) {
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
-async function handleEditAlt(interaction, t) {
+async function handleEditAlt(interaction, t, logger) {
 	const guildId = interaction.guildId;
 
 	// Try to find the existing alt by the provided name.
@@ -191,7 +191,7 @@ async function handleEditAlt(interaction, t) {
 	try {
 		alt = getAlt(guildId, name);
 	} catch (e) {
-		console.error('Error while trying to fetch alt from db:', e);
+		logger.error(e, 'Error while trying to fetch alt from db');
 		await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 		return;
 	}
@@ -210,12 +210,16 @@ async function handleEditAlt(interaction, t) {
 	try {
 		editAlt(patchedAlt);
 		if (name !== patchedAlt.name) {
-			console.debug(
-				`An alt with the id ${patchedAlt.id} and the name "${name}" was updated in guild ${guildId}. The new name is "${patchedAlt.name}".`
+			logger.info(
+				'An alt with the id %d and the name "%s" was updated in guild %s. The new name is "%s".',
+				patchedAlt.id,
+				name,
+				guildId,
+				patchedAlt.name
 			);
 		}
 	} catch (e) {
-		console.error('Error while trying to edit alt in db:', e);
+		logger.error(e, 'Error while trying to edit alt in db');
 		await t.privateReply(interaction, 'reply.edit-failure');
 		return;
 	}
@@ -233,30 +237,30 @@ async function handleEditAlt(interaction, t) {
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction, t);
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }
 
-async function handleDeleteAlt(interaction, t) {
+async function handleDeleteAlt(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	const name = interaction.options.getString('name', true);
 
 	try {
 		const deleted = deleteAlt(guildId, name);
 		if (deleted) {
-			console.debug(`An alt with the name "${name}" was deleted in guild ${guildId}.`);
+			logger.info('An alt with the name "%s" was deleted in guild %s.', name, guildId);
 			await t.privateReply(interaction, 'reply.delete-success', { name });
 
-			await updateCommandsAfterConfigChange(interaction, t);
+			await updateCommandsAfterConfigChange(interaction, t, logger);
 		} else {
 			await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
 		}
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		await t.privateReply(interaction, 'reply.delete-failure', { name });
 	}
 }
 
-async function handleShowAlts(interaction, t) {
+async function handleShowAlts(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	const name = interaction.options.getString('name');
 
@@ -265,7 +269,7 @@ async function handleShowAlts(interaction, t) {
 		try {
 			alt = getAlt(guildId, name);
 		} catch (e) {
-			console.error('Error while trying to fetch alt from db:', e);
+			logger.error(e, 'Error while trying to fetch alt from db');
 			await t.privateReplyShared(interaction, 'alt-db-fetch-error');
 			return;
 		}
@@ -288,7 +292,7 @@ async function handleShowAlts(interaction, t) {
 		try {
 			alts = getAlts(guildId);
 		} catch (e) {
-			console.error('Error while trying to fetch alts from db:', e);
+			logger.error(e, 'Error while trying to fetch alts from db');
 			await t.privateReply(interaction, 'reply.show-alts-failure');
 			return;
 		}

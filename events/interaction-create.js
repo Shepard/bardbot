@@ -2,11 +2,12 @@ import { Constants } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from '../command-handling/command-registry.js';
 import { getTranslatorForInteraction, translate } from '../util/i18n.js';
+import logger from '../util/logger.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',
 	execute(interaction) {
-		handleInteraction(interaction).catch(e => console.error(e));
+		handleInteraction(interaction).catch(e => logger.error(e));
 	}
 };
 
@@ -15,23 +16,21 @@ async function handleInteraction(interaction) {
 		const command = commands.get(interaction.commandName);
 		if (command) {
 			if (isMatchingCommand(interaction, command)) {
-				const guildConfig = getGuildConfig(interaction.guildId);
-				const t = getTranslatorForInteraction(interaction, command, guildConfig);
+				const context = getExecutionContext(interaction, command);
 				if (!command.guard) {
-					await executeCommand(command, interaction, t, guildConfig);
-				} else if (command.guard(interaction.client, interaction.guild, guildConfig)) {
-					await executeCommand(command, interaction, t, guildConfig);
+					await executeCommand(command, interaction, context);
+				} else if (command.guard(interaction.client, interaction.guild, context.guildConfig, context.logger)) {
+					await executeCommand(command, interaction, context);
 				} else {
-					console.error('Command was called in guild that it should not apply to.');
+					context.logger.error('Command was called in guild that it should not apply to.');
 				}
 			} else if (
 				interaction.isAutocomplete() &&
 				command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT
 			) {
 				// We probably don't need to guard the autocomplete.
-				const guildConfig = getGuildConfig(interaction.guildId);
-				const t = getTranslatorForInteraction(interaction, command, guildConfig);
-				await autocompleteCommandOption(command, interaction, t, guildConfig);
+				const context = getExecutionContext(interaction, command);
+				await autocompleteCommandOption(command, interaction, context);
 			}
 		}
 	}
@@ -50,11 +49,22 @@ function isMatchingCommand(interaction, command) {
 	return false;
 }
 
-async function executeCommand(command, interaction, t, guildConfig) {
+function getExecutionContext(interaction, command) {
+	const interactionLogger = logger.child({ interactionId: interaction.id, guildId: interaction.guildId });
+	const guildConfig = getGuildConfig(interaction.guildId, interactionLogger);
+	const t = getTranslatorForInteraction(interaction, command, guildConfig);
+	return {
+		guildConfig,
+		t,
+		logger: interactionLogger
+	};
+}
+
+async function executeCommand(command, interaction, context) {
 	try {
-		await command.execute(interaction, t, guildConfig);
+		await command.execute(interaction, context);
 	} catch (error) {
-		console.error(`Error while executing command '${interaction.commandName}':`, error);
+		context.logger.error(error, 'Error while executing command %s', interaction.commandName);
 		// Tell the user who used the command (and only them) that the command failed.
 		try {
 			const userLocale = interaction.locale ?? 'en';
@@ -63,27 +73,28 @@ async function executeCommand(command, interaction, t, guildConfig) {
 				ephemeral: true
 			});
 		} catch (innerError) {
-			console.error('Error while trying to tell user about the previous error:', innerError);
+			context.logger.error(innerError, 'Error while trying to tell user about the previous error');
 		}
 	}
 }
 
-async function autocompleteCommandOption(command, interaction, t, guildConfig) {
+async function autocompleteCommandOption(command, interaction, context) {
 	if (command.autocomplete) {
 		try {
-			const options = await command.autocomplete(interaction, t, guildConfig);
+			const options = await command.autocomplete(interaction, context);
 			await interaction.respond(options);
 			return;
 		} catch (error) {
-			console.error(`Error while running option autocomplete for command '${interaction.commandName}':`, error);
+			context.logger.error(error, 'Error while running option autocomplete for command %s', interaction.commandName);
 		}
 	}
 	try {
 		await interaction.respond([]);
 	} catch (error) {
-		console.error(
-			`Error while trying to respond with empty options for autocomplete for command '${interaction.commandName}':`,
-			error
+		context.logger.error(
+			error,
+			'Error while trying to respond with empty options for autocomplete for command %s',
+			interaction.commandName
 		);
 	}
 }
