@@ -181,11 +181,11 @@ async function showConfiguration(interaction, guildConfig, t) {
 		.setTitle(t.user('show-title'))
 		.setDescription(t.user('show-description'))
 		.addField(t.user('show-field-bookmarks-channel'), bookmarksChannelValue)
-		.addField(t.user('show-field-quotes-channel'), quotesChannelValue)
-		.addField(t.user('show-field-language'), languageValue);
+		.addField(t.user('show-field-quotes-channel'), quotesChannelValue);
 	if (rolePlayChannelsList.length <= FIELD_VALUE_CHARACTER_LIMIT) {
 		configurationValuesEmbed.addField(t.user('show-field-role-play-channels'), rolePlayChannelsList);
 	}
+	configurationValuesEmbed.addField(t.user('show-field-language'), languageValue);
 	await interaction.reply({
 		embeds: [configurationValuesEmbed],
 		ephemeral: true
