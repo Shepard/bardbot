@@ -70,7 +70,7 @@
 		},
 		config: {
 			'show-title': 'Konfiguration',
-			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config set`.',
+			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config set`. Um Rollenspiel-Kanäle hinzuzufügen, benutze `/config add role-play-channel`.',
 			'show-field-bookmarks-channel': 'Lesezeichen-Kanal',
 			'show-field-quotes-channel': 'Zitate-Kanal',
 			'show-field-role-play-channels': 'Rollenspiel-Kanäle',
