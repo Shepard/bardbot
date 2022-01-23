@@ -171,6 +171,9 @@ async function showConfiguration(interaction, guildConfig, t) {
 	const quotesChannelValue = guildConfig.quotesChannel
 		? channelMention(guildConfig.quotesChannel)
 		: italic(t.user('show-value-none'));
+	const languageValue = guildConfig.language
+		? translate('languageName', { lng: guildConfig.language })
+		: italic(t.user('show-value-none'));
 
 	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannels);
 
@@ -178,7 +181,8 @@ async function showConfiguration(interaction, guildConfig, t) {
 		.setTitle(t.user('show-title'))
 		.setDescription(t.user('show-description'))
 		.addField(t.user('show-field-bookmarks-channel'), bookmarksChannelValue)
-		.addField(t.user('show-field-quotes-channel'), quotesChannelValue);
+		.addField(t.user('show-field-quotes-channel'), quotesChannelValue)
+		.addField(t.user('show-field-language'), languageValue);
 	if (rolePlayChannelsList.length <= FIELD_VALUE_CHARACTER_LIMIT) {
 		configurationValuesEmbed.addField(t.user('show-field-role-play-channels'), rolePlayChannelsList);
 	}

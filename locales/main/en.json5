@@ -73,6 +73,7 @@
 			'show-description': 'This is the current configuration of the bot in this server. To change any options, use the `/config set` command.',
 			'show-field-bookmarks-channel': 'Bookmarks channel',
 			'show-field-quotes-channel': 'Quotes channel',
+			'show-field-language': 'Language',
 			'show-field-role-play-channels': 'Role-play channels',
 			'show-value-none': 'none',
 			reply: {
