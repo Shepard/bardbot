@@ -65,15 +65,17 @@ async function executeCommand(command, interaction, context) {
 		await command.execute(interaction, context);
 	} catch (error) {
 		context.logger.error(error, 'Error while executing command %s', interaction.commandName);
-		// Tell the user who used the command (and only them) that the command failed.
-		try {
-			const userLocale = interaction.locale ?? 'en';
-			await interaction.reply({
-				content: translate('interaction.error', { lng: userLocale }),
-				ephemeral: true
-			});
-		} catch (innerError) {
-			context.logger.error(innerError, 'Error while trying to tell user about the previous error');
+		if (!interaction.replied) {
+			// Tell the user who used the command (and only them) that the command failed.
+			try {
+				const userLocale = interaction.locale ?? 'en';
+				await interaction.reply({
+					content: translate('interaction.error', { lng: userLocale }),
+					ephemeral: true
+				});
+			} catch (innerError) {
+				context.logger.error(innerError, 'Error while trying to tell user about the previous error');
+			}
 		}
 	}
 }
