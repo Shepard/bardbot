@@ -1,6 +1,7 @@
 import { codePointLength } from '../util/helpers.js';
 import { getRolePlayChannelsData, setWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
 import logger from './logger.js';
+import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
 
 export async function createWebhook(channel, client, logger) {
 	try {
@@ -39,7 +40,7 @@ export function validateWebhookName(name) {
 	// Based on some simple testing, Discord seems to be counting Unicode code points,
 	// not UTF-16 characters like JavaScript would do with "name.length".
 	const nameLength = codePointLength(name);
-	if (nameLength < 1 || nameLength > 80) {
+	if (nameLength < 1 || nameLength > WEBHOOK_NAME_CHARACTER_LIMIT) {
 		errorMessageKey = 'webhook-validation-error.name-length';
 	}
 	// Testing revealed that, contrary to the documentation and unlike the other forbidden words,

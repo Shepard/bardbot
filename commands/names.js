@@ -1,10 +1,7 @@
 import { userMention } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
-import { chunk } from '../util/helpers.js';
-
-// Limit for characters in the description of an embed.
-// See https://discord.com/developers/docs/resources/channel#embed-limits
-const CHARACTER_LIMIT = 4096;
+import { chunk, codePointLength } from '../util/helpers.js';
+import { EMBED_DESCRIPTION_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const namesCommand = {
 	// Configuration for registering the command
@@ -26,7 +23,7 @@ const namesCommand = {
 			if (!member.user.bot && member.user.username !== member.displayName) {
 				const newLine = `${member.displayName} - ${userMention(member.id)}`;
 				// If messageText would exceed the character limit of embed descriptions by appending this line, split it off into a separate messageText.
-				if (messageText.length + newLine.length + 1 /*line break*/ > CHARACTER_LIMIT) {
+				if (codePointLength(messageText + newLine + '\n') > EMBED_DESCRIPTION_CHARACTER_LIMIT) {
 					messageTexts.push(messageText);
 					messageText = newLine;
 				} else {

@@ -15,10 +15,8 @@ import {
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 import { createWebhook } from '../util/webhook-util.js';
 import { SUPPORTED_LANGUAGES, translate } from '../util/i18n.js';
-
-// Limit for characters in a field value of an embed.
-// See https://discord.com/developers/docs/resources/channel#embed-limits
-const FIELD_VALUE_CHARACTER_LIMIT = 1024;
+import { codePointLength } from '../util/helpers.js';
+import { EMBED_FIELD_VALUE_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const configCommand = {
 	// Configuration for registering the command
@@ -182,7 +180,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 		.setDescription(t.user('show-description'))
 		.addField(t.user('show-field-bookmarks-channel'), bookmarksChannelValue)
 		.addField(t.user('show-field-quotes-channel'), quotesChannelValue);
-	if (rolePlayChannelsList.length <= FIELD_VALUE_CHARACTER_LIMIT) {
+	if (codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT) {
 		configurationValuesEmbed.addField(t.user('show-field-role-play-channels'), rolePlayChannelsList);
 	}
 	configurationValuesEmbed.addField(t.user('show-field-language'), languageValue);
@@ -192,7 +190,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 	});
 	// If the RP channel list doesn't fit in a single field value,
 	// send it in the description of a follow-up embed instead.
-	if (rolePlayChannelsList.length > FIELD_VALUE_CHARACTER_LIMIT) {
+	if (codePointLength(rolePlayChannelsList) > EMBED_FIELD_VALUE_CHARACTER_LIMIT) {
 		const rolePlayChannelsListEmbed = new MessageEmbed()
 			.setTitle(t.user('show-field-role-play-channels'))
 			.setDescription(rolePlayChannelsList);
