@@ -40,4 +40,9 @@ async function initApp() {
 	});
 }
 
+process.on('unhandledRejection', err => {
+	logger.error(err, "There is an unhandled promise rejection. Forgot an 'await'?");
+	process.exit(1);
+});
+
 initApp().catch(e => logger.error(e));
