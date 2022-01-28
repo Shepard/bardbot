@@ -65,7 +65,7 @@ const altCommand = {
 				return;
 			}
 
-			// Send message using webhook for this RP channel and with the name and avatar or the alt picked by the user.
+			// Send message using webhook for this RP channel and with the name and avatar for the alt picked by the user.
 			const altMessage = await webhook.send({
 				content: messageText,
 				username: alt.name,
