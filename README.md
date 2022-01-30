@@ -13,7 +13,7 @@ A Discord bot for supporting role-playing servers.
 - Set up a config file (see below).
 - To start the bot, run `npm run start`.
   - For a more permanent setup for starting and managing the bot I recommend using a Node process manager like [pm2](https://pm2.keymetrics.io/).
-- [Configure the bot on your server](https://github.com/Shepard/bardbot/wiki/Overview#configuring-the-bot-on-a-server) using the `/config` command.
+- [Configure the bot on your server](https://github.com/Shepard/bardbot/wiki/User-Guide#configuring-the-bot-on-a-server) using the `/config` command.
 
 ### Setting up a config file
 
