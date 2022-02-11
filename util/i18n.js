@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { userMention, memberNicknameMention, channelMention, roleMention, time } from '@discordjs/builders';
 
-export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de']);
+export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
 
 let i18n;
 
