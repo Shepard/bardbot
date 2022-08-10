@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
-import { userMention, memberNicknameMention, channelMention, roleMention, time } from '@discordjs/builders';
+import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
 
 export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
 
@@ -31,9 +31,6 @@ export async function initI18n() {
 	// These have to be added as lowercase strings because i18next lowercases formatters found in translations and searches for them that way.
 	i18n.services.formatter.add('usermention', value => {
 		return userMention(value);
-	});
-	i18n.services.formatter.add('membernicknamemention', value => {
-		return memberNicknameMention(value);
 	});
 	i18n.services.formatter.add('channelmention', value => {
 		return channelMention(value);

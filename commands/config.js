@@ -24,6 +24,7 @@ const configCommand = {
 		name: 'config',
 		description: 'Configure the bot for your server.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
 		options: [
 			{
 				name: 'show',
@@ -134,10 +135,6 @@ const configCommand = {
 			}
 		]
 	},
-	// Command is only usable by users in roles that have the Administrator flag set.
-	// Until Discord implements the new command permission system, this means that the server owner
-	// can't use the command without explicitly having an admin role.
-	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
 	async execute(interaction, { t, guildConfig, logger }) {
 		const subcommandGroup = interaction.options.getSubcommandGroup(false);
@@ -178,12 +175,14 @@ async function showConfiguration(interaction, guildConfig, t) {
 	const configurationValuesEmbed = new MessageEmbed()
 		.setTitle(t.user('show-title'))
 		.setDescription(t.user('show-description'))
-		.addField(t.user('show-field-bookmarks-channel'), bookmarksChannelValue)
-		.addField(t.user('show-field-quotes-channel'), quotesChannelValue);
+		.addFields(
+			{ name: t.user('show-field-bookmarks-channel'), value: bookmarksChannelValue },
+			{ name: t.user('show-field-quotes-channel'), value: quotesChannelValue }
+		);
 	if (codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT) {
-		configurationValuesEmbed.addField(t.user('show-field-role-play-channels'), rolePlayChannelsList);
+		configurationValuesEmbed.addFields({ name: t.user('show-field-role-play-channels'), value: rolePlayChannelsList });
 	}
-	configurationValuesEmbed.addField(t.user('show-field-language'), languageValue);
+	configurationValuesEmbed.addFields({ name: t.user('show-field-language'), value: languageValue });
 	await interaction.reply({
 		embeds: [configurationValuesEmbed],
 		ephemeral: true

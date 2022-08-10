@@ -6,12 +6,9 @@ const refreshCommandsCommand = {
 	configuration: {
 		name: 'refresh-commands',
 		description: 'Refresh all commands in this server. Normally done automatically. Use in case of errors.',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT
+		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD])
 	},
-	// Command is only usable by users in roles that have the Administrator flag set.
-	// Until Discord implements the new command permission system, this means that the server owner
-	// can't use the command without explicitly having an admin role.
-	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
 	async execute(interaction, { t, logger }) {
 		// Updating commands can take some time. So register a reply early on.

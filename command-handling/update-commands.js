@@ -1,4 +1,3 @@
-import { Constants } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from './command-registry.js';
 import logger from '../util/logger.js';
@@ -28,47 +27,13 @@ export async function updateCommandsForSingleGuild(client, guild) {
 	commands.each(command => {
 		// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
 		if (!command.guard || command.guard(client, guild, guildConfig, logger)) {
-			const commandConfiguration = {
-				...command.configuration
-			};
-			// If the command declares any permissions (which we set separately below)
-			// we need to turn the default permissions in the command configuration off.
-			if (command.permissions) {
-				commandConfiguration.default_permission = false;
-			}
-			guildCommands.push(commandConfiguration);
+			guildCommands.push(command.configuration);
 		}
 	});
 
-	const remoteCommands = await guild.commands.set(guildCommands);
-
-	const fullPermissions = remoteCommands
-		.map(remoteCommand => {
-			const matchingLocalCommand = commands.find(
-				localCommand => localCommand.configuration.name === remoteCommand.name
-			);
-			if (matchingLocalCommand?.permissions) {
-				const roles = getMatchingRoles(guild, matchingLocalCommand.permissions);
-				return {
-					id: remoteCommand.id,
-					permissions: roles.map(role => ({
-						id: role.id,
-						type: Constants.ApplicationCommandPermissionTypes.ROLE,
-						permission: true
-					}))
-				};
-			}
-			return null;
-		})
-		.filter(commandPermissions => commandPermissions !== null);
-
-	await guild.commands.permissions.set({ fullPermissions });
+	await guild.commands.set(guildCommands);
 
 	updatedGuildsCache.add(guild.id);
-}
-
-function getMatchingRoles(guild, permissions) {
-	return guild.roles.cache.filter(role => role.permissions.has(permissions) && !role.managed);
 }
 
 export function areGuildCommandsUpdated(guildId) {

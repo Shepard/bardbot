@@ -11,6 +11,7 @@ const configAltCommand = {
 		name: 'config-alt',
 		description: 'Configure an alternate character.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
 		options: [
 			{
 				name: 'add',
@@ -99,10 +100,6 @@ const configAltCommand = {
 			}
 		]
 	},
-	// Command is only usable by users in roles that have the Administrator flag set.
-	// Until Discord implements the new command permission system, this means that the server owner
-	// can't use the command without explicitly having an admin role.
-	permissions: [Permissions.FLAGS.ADMINISTRATOR],
 	// Handler for when the command is used
 	async execute(interaction, { t, logger }) {
 		const subcommand = interaction.options.getSubcommand(false);
@@ -172,7 +169,7 @@ async function handleAddAlt(interaction, t, logger) {
 	const usableByMention = usableByType === UsableByType.User ? userMention(usableById) : roleMention(usableById);
 	const altEmbed = new MessageEmbed()
 		.setAuthor({ name, iconURL: avatarUrl })
-		.addField(t.user('field-usable-by'), usableByMention);
+		.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 	await interaction.reply({
 		content: t.user('reply.add-success'),
 		embeds: [altEmbed],
@@ -230,7 +227,7 @@ async function handleEditAlt(interaction, t, logger) {
 			: roleMention(patchedAlt.usableById);
 	const altEmbed = new MessageEmbed()
 		.setAuthor({ name: patchedAlt.name, iconURL: patchedAlt.avatarUrl })
-		.addField(t.user('field-usable-by'), usableByMention);
+		.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 	await interaction.reply({
 		content: t.user('reply.edit-success'),
 		embeds: [altEmbed],
@@ -282,7 +279,7 @@ async function handleShowAlts(interaction, t, logger) {
 			alt.usableByType === UsableByType.User ? userMention(alt.usableById) : roleMention(alt.usableById);
 		const altEmbed = new MessageEmbed()
 			.setAuthor({ name: alt.name, iconURL: alt.avatarUrl })
-			.addField(t.user('field-usable-by'), usableByMention);
+			.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 		await interaction.reply({
 			embeds: [altEmbed],
 			ephemeral: true
