@@ -123,6 +123,10 @@ export async function ensureWebhookCorrectness(client, guildId) {
 		);
 	} catch (e) {
 		logger.error(e, 'Error while trying to ensure webhook correctness for guild %s', guildId);
+		// TODO If the error was that the guild was not found, remove the configuration we have stored for the guild.
+		//  If we just have no access, we might want to assume that our bot was just removed from the guild
+		//  and we don't want to clean up just yet in case it gets readded later on.
+		//  In that case, proceed as per our plans for guild cleanup in handleGuildDelete event.
 	}
 }
 

@@ -16,6 +16,7 @@ function handleGuildDelete(guild) {
 
 	// TODO Register a time in the guild_config (create if not exists?)
 	//  and then add a clean-up task to remove guild config (including RP channels), alts and message metadata after some time.
+	//  Also do a check-up on start-up or as a maintenance task in case we missed any events?
 	//  Aligns with Discord Developer Policy: https://discord.com/developers/docs/policy
 	//  "You may not use the APIs in any way to: [...] retain data any longer than necessary for the operation of your application"
 	//  The time needs to be short enough to be considered complying with this policy
