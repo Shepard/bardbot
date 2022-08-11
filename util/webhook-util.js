@@ -1,5 +1,9 @@
 import { codePointLength } from '../util/helpers.js';
-import { getRolePlayChannelsData, setWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
+import {
+	getRolePlayChannelsData,
+	setWebhookIdForRolePlayChannel,
+	removeRolePlayChannel
+} from '../storage/guild-config-dao.js';
 import logger from './logger.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
 
@@ -141,12 +145,17 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 				webhookForChannel = await createWebhook(channel, client, logger);
 				createdCounter++;
 			} catch (e) {
-				logger.error(
-					e,
-					'Error while trying fetch channel %s for guild %s for creating a new webhook for it',
-					rpChannelId,
-					guild.id
-				);
+				if (e.type === 'DiscordAPIError' && (e.message === 'Unknown Channel' || e.httpStatus === 404)) {
+					// The server doesn't know this channel anymore so we can clean it up from the database.
+					removeNonExistingRolePlayChannel(guild.id, rpChannelId);
+				} else {
+					logger.error(
+						e,
+						'Error while trying fetch channel %s for guild %s for creating a new webhook for it',
+						rpChannelId,
+						guild.id
+					);
+				}
 			}
 		} else {
 			usedWebhookIds.add(webhookForChannel.id);
@@ -169,4 +178,17 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 		// We could theoretically check if it matches the channel but it seems super unlikely that it wouldn't.
 	}
 	return createdCounter;
+}
+
+function removeNonExistingRolePlayChannel(guildId, rpChannelId) {
+	try {
+		removeRolePlayChannel(guildId, rpChannelId);
+		logger.info(
+			'Detected non-existing role-play channel %s in guild %s while trying to ensure webhook correctness. Removed channel from database.',
+			rpChannelId,
+			guildId
+		);
+	} catch (e) {
+		logger.error(e, 'Database error while trying to remove role-play channel for guild %s', guildId);
+	}
 }
