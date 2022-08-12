@@ -15,7 +15,22 @@
 		'commands-update-failure2': 'This could be a temporary problem. You can try updating them yourself later by using `/refresh-commands`.'
 	},
 	commands: {
+		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_"
+		// Descriptions: 1-100 characters
+		// Choices: 1-100 characters
 		alt: {
+			name: 'alt',
+			description: 'Write messages through an alternate character.',
+			options: {
+				name: {
+					name: 'name',
+					description: 'The name of the alt you want to pick'
+				},
+				message: {
+					name: 'message',
+					description: 'The message the alternate character should send'
+				}
+			},
 			reply: {
 				'alt-not-usable': 'The alternate character "{{altName}}" cannot be used for role-play by you.',
 				'channel-not-viewable': 'This is not a place I can see, unfortunately. So you cannot use alternate characters here.',
@@ -25,6 +40,8 @@
 			}
 		},
 		'blame-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Who dunnit?',
 			reply: {
 				blame1: '{{user, usermention}} told me to do it!',
 				blame2: '{{user, usermention}} made me do it!',
@@ -37,6 +54,14 @@
 			}
 		},
 		bookmark: {
+			name: 'bookmark',
+			description: 'Creates a bookmark to identify a new chapter in the lore for easy referencing.',
+			options: {
+				event: {
+					name: 'event',
+					description: 'Description of the event starting the chapter'
+				}
+			},
 			reply: {
 				header1: 'A [new chapter]({{url}}) was written in {{channel, channelmention}}.',
 				header2: 'Something [new happened]({{url}}) in {{channel, channelmention}}!',
@@ -49,12 +74,82 @@
 				'no-bookmarkable-content': 'This message does not have any bookmarkable content.'
 			}
 		},
+		'bookmark-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Bookmark'
+		},
 		coin: {
+			name: 'coin',
+			description: 'Toss a coin and see which side it lands on.',
 			heads: 'heads',
 			tails: 'tails',
 			reply: '{{member}} tosses a coin. It lands on… {{result}}!'
 		},
 		'config-alt': {
+			name: 'config-alt',
+			description: 'Configure an alternate character.',
+			options: {
+				add: {
+					name: 'add',
+					description: 'Add a new alternate character.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the alternate character to create. Needs to be unique.'
+						},
+						'usable-by': {
+							name: 'usable-by',
+							description: 'A user or role who is allowed to use this alternate character.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'A URL pointing to an image file to be used as the avatar of the alternate character.'
+						}
+					}
+				},
+				edit: {
+					name: 'edit',
+					description: 'Change some properties of an alternate character.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the existing alternate character to edit.'
+						},
+						'new-name': {
+							name: 'new-name',
+							description: 'A new name for the alternate character. Needs to be unique.'
+						},
+						'usable-by': {
+							name: 'usable-by',
+							description: 'A user or role who is allowed to use this alternate character.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'A URL pointing to an image file to be used as the avatar of the alternate character.'
+						}
+					}
+				},
+				delete: {
+					name: 'delete',
+					description: 'Delete an alternate character. It will not be usable anymore but old messages stay.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the existing alternate character to delete.'
+						}
+					}
+				},
+				show: {
+					name: 'show',
+					description: 'List currently configured alternate characters.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of an alternate character to show. If left out, lists all characters.'
+						}
+					}
+				}
+			},
 			'field-usable-by': 'Can be used by',
 			reply: {
 				'alt-exists': 'An alternate character with the name "{{name}}" already exists. If you want to adjust it, use the `/config-alt edit` command.',
@@ -69,6 +164,81 @@
 			}
 		},
 		config: {
+			name: 'config',
+			description: 'Configure the bot for your server.',
+			options: {
+				show: {
+					name: 'show',
+					description: 'List the current values of all options.'
+				},
+				set: {
+					name: 'set',
+					description: 'Set the values of one or more options.',
+					options: {
+						'bookmarks-channel': {
+							name: 'bookmarks-channel',
+							description: 'The channel to set for posting bookmarks in'
+						},
+						'quotes-channel': {
+							name: 'quotes-channel',
+							description: 'The channel to set for posting quotes in'
+						},
+						language: {
+							name: 'language',
+							description: 'The language the bot should use for posting public messages in this server'
+						}
+					}
+				},
+				reset: {
+					name: 'reset',
+					description: 'Clear the value of one or all options or reset to the default.',
+					options: {
+						option: {
+							name: 'option',
+							description: 'The option to clear',
+							choices: {
+								all: 'all',
+								'role-play channels': 'role-play channels',
+								'bookmarks channel': 'bookmarks channel',
+								'quotes channel': 'quotes channel',
+								language: 'language'
+							}
+						}
+					}
+				},
+				add: {
+					name: 'add',
+					description: 'Add a value to the options.',
+					options: {
+						'role-play-channel': {
+							name: 'role-play-channel',
+							description: 'Add a channel to the list of role-play channels for this server.',
+							options: {
+								channel: {
+									name: 'channel',
+									description: 'The channel to add as a role-play channel. Leave empty to use the current channel.'
+								}
+							}
+						}
+					}
+				},
+				remove: {
+					name: 'remove',
+					description: 'Remove a value from the options.',
+					options: {
+						'role-play-channel': {
+							name: 'role-play-channel',
+							description: 'Remove a channel from the list of role-play channels for this server.',
+							options: {
+								channel: {
+									name: 'channel',
+									description: 'The role-play channel to remove. Leave empty to use the current channel.'
+								}
+							}
+						}
+					}
+				}
+			},
 			'show-title': 'Configuration',
 			'show-description': 'This is the current configuration of the bot in this server. To change any options, use the `/config set` command. For adding role-play channels use `/config add role-play-channel`.',
 			'show-field-bookmarks-channel': 'Bookmarks channel',
@@ -90,6 +260,8 @@
 			}
 		},
 		'delete-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Delete',
 			reply: {
 				'not-deletable1': 'This is not a message you can delete. This command will only work on:',
 				'not-deletable2': '- Quotes or bookmarks you created through me (including my reply to the `/bookmark` command),',
@@ -103,6 +275,18 @@
 			}
 		},
 		goto: {
+			name: 'goto',
+			description: 'Creates a link in the lore for characters to easily travel between two channels.',
+			options: {
+				destination: {
+					name: 'destination',
+					description: 'The destination channel to go to'
+				},
+				action: {
+					name: 'action',
+					description: 'A short description of the action taking place as people travel to a new place'
+				}
+			},
 			reply: {
 				'origin-message-unlinked': 'The story continues in {{channel, channelmention}}.',
 				'origin-message-linked': 'The [story continues]({{url}}) in {{channel, channelmention}}.',
@@ -110,11 +294,25 @@
 			}
 		},
 		names: {
+			name: 'names',
+			description: 'Keep a memory of all the fun nicknames that everyone currently has!',
 			reply: {
 				title: 'When we turn back the pages, the members of {{guildName}} had the following names:'
 			}
 		},
+		narrate: {
+			name: 'narrate',
+			description: 'Makes me narrate what you input.',
+			options: {
+				story: {
+					name: 'story',
+					description: 'The story I should tell'
+				}
+			}
+		},
 		'quote-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Quote',
 			reply: {
 				gossip1: 'Did you hear what {{author, usermention}} [just said]({{url}})?',
 				gossip2: "I can't believe {{author, usermention}} [said that]({{url}}).",
@@ -131,12 +329,22 @@
 			}
 		},
 		'refresh-commands': {
+			name: 'refresh-commands',
+			description: 'Refresh all commands in this server. Normally done automatically. Use in case of errors.',
 			reply: {
 				failure: 'Commands could not be refreshed. This might be a temporary problem. Please try again later.',
 				success: 'Commands successfully refreshed.'
 			}
 		},
 		roll: {
+			name: 'roll',
+			description: 'Roll some dice! You can roll up to 20 dice at a time.',
+			options: {
+				notation: {
+					name: 'notation',
+					description: 'Describe which and how many dice to roll, using D&D dice notation. E.g. "d4" or "3d20".'
+				}
+			},
 			reply: {
 				'invalid-notation': 'Could not recognise your input.',
 				'notation-explanation_other': 'This command uses [dice notation](https://en.wikipedia.org/wiki/Dice_notation) \
@@ -153,6 +361,14 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 			}
 		},
 		where: {
+			name: 'where',
+			description: 'Tries to find the location (role-play channel) where a character was last seen acting.',
+			options: {
+				user: {
+					name: 'user',
+					description: 'The user to look for. Leave empty to look for yourself.'
+				}
+			},
 			reply: {
 				'you-last-seen': 'You were [last seen]({{url}}) role-playing in {{channel, channelmention}}.',
 				'user-last-seen': '{{user, usermention}} was [last seen]({{url}}) role-playing in {{channel, channelmention}}.',

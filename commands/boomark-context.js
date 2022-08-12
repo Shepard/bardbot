@@ -8,7 +8,11 @@ const bookmarkContextCommand = {
 		name: 'Bookmark',
 		type: Constants.ApplicationCommandTypes.MESSAGE
 	},
+	// We want to reuse the translations of the bookmark slash command so we use the key prefix to get the same ones.
 	i18nKeyPrefix: 'bookmark',
+	// However for the purpose of translating the name of this context command (which should translate differently than the slash command)
+	// we want to use a different prefix, so we provide this special override.
+	commandNameKeyPrefixOverride: 'bookmark-context',
 	// Test function to check if the command should apply to a guild
 	guard(client, guild, guildConfig) {
 		if (guildConfig?.bookmarksChannel) {

@@ -16,6 +16,18 @@
 	},
 	commands: {
 		alt: {
+			name: 'alt',
+			description: 'Schreibe Nachrichten als ein alternativer Charakter.',
+			options: {
+				name: {
+					name: 'name',
+					description: 'Der Name des alternativen Charakters, den Du wählen willst'
+				},
+				message: {
+					name: 'nachricht',
+					description: 'Die Nachricht, die der alternative Charakter senden soll'
+				}
+			},
 			reply: {
 				'alt-not-usable': 'Der alternative Charakter "{{altName}}" darf von Dir nicht zum Rollenspielen benutzt werden.',
 				'channel-not-viewable': 'Dies ist leider kein Ort, den ich sehen darf. Daher kannst Du hier alternative Charaktere nicht benutzen.',
@@ -25,6 +37,7 @@
 			}
 		},
 		'blame-context': {
+			name: "Wer war's?",
 			reply: {
 				blame1: "{{user, usermention}} hat mir gesagt, ich soll's machen!",
 				blame2: '{{user, usermention}} hat mich dazu gezwungen!',
@@ -37,6 +50,14 @@
 			}
 		},
 		bookmark: {
+			name: 'lesezeichen',
+			description: 'Erstellt ein Lesezeichen als Kennzeichnung zum Nachschlagen eines neuen Kapitels in der Geschichte.',
+			options: {
+				event: {
+					name: 'ereignis',
+					description: 'Beschreibung des Ereignisses, das das neue Kapitel einleitet'
+				}
+			},
 			reply: {
 				header1: 'Ein [neues Kapitel]({{url}}) wurde in {{channel, channelmention}} geschrieben.',
 				header2: '[Etwas Neues]({{url}}) ist in {{channel, channelmention}} passiert!',
@@ -49,12 +70,81 @@
 				'no-bookmarkable-content': 'Diese Nachricht hat keinen Inhalt, der für ein Lesezeichen verwendet werden kann.'
 			}
 		},
+		'bookmark-context': {
+			name: 'Lesezeichen'
+		},
 		coin: {
+			name: 'münze',
+			description: 'Wirf eine Münze und sehe, auf welcher Seite sie landet.',
 			heads: 'Kopf',
 			tails: 'Zahl',
 			reply: '{{member}} wirft eine Münze. Sie landet auf… {{result}}!'
 		},
 		'config-alt': {
+			name: 'konfig-alt',
+			description: 'Konfiguriere einen alternativen Charakter.',
+			options: {
+				add: {
+					name: 'hinzufügen',
+					description: 'Füge einen neuen alternativen Charakter hinzu.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'Der Name des zu erstellenden alternativen Charakters. Muss eindeutig sein.'
+						},
+						'usable-by': {
+							name: 'verwendbar-von',
+							description: 'Benutzer oder Rolle, die diesen alternativen Charakter verwenden dürfen.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'URL auf eine Bilddatei, die als Avatar des alternativen Charakters verwendet werden soll.'
+						}
+					}
+				},
+				edit: {
+					name: 'bearbeiten',
+					description: 'Ändere ein paar Eigenschaften des alternativen Charakters.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'Der Name eines bestehenden alternativen Charakters, der bearbeitet werden soll.'
+						},
+						'new-name': {
+							name: 'neuer-name',
+							description: 'Ein neuer Name für den alternativen Charakter. Muss eindeutig sein.'
+						},
+						'usable-by': {
+							name: 'verwendbar-von',
+							description: 'Benutzer oder Rolle, die diesen alternativen Charakter verwenden dürfen.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'URL auf eine Bilddatei, die als Avatar des alternativen Charakters verwendet werden soll.'
+						}
+					}
+				},
+				delete: {
+					name: 'löschen',
+					description: 'Löscht einen Charakter. Er kann nicht mehr verwendet werden, alte Nachrichten bleiben aber erhalten.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'Der Name eines bestehenden alternativen Charakters, der gelöscht werden soll.'
+						}
+					}
+				},
+				show: {
+					name: 'zeigen',
+					description: 'Listet aktuell konfigurierte alternative Charaktere auf.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'Der Name des anzuzeigenden alternativen Charakters. Bei Auslassen werden alle aufgelistet.'
+						}
+					}
+				}
+			},
 			'field-usable-by': 'Kann verwendet werden von',
 			reply: {
 				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl `/config-alt edit`.',
@@ -69,6 +159,81 @@
 			}
 		},
 		config: {
+			name: 'konfig',
+			description: 'Konfiguriere den Bot für Deinen Server.',
+			options: {
+				show: {
+					name: 'zeigen',
+					description: 'Listet die aktuellen Werte aller Optionen auf.'
+				},
+				set: {
+					name: 'setzen',
+					description: 'Setzt den Wert einer oder mehrerer Optionen.',
+					options: {
+						'bookmarks-channel': {
+							name: 'lesezeichen-kanal',
+							description: 'Der Kanal, in dem Lesezeichen gepostet werden sollen'
+						},
+						'quotes-channel': {
+							name: 'zitate-kanal',
+							description: 'Der Kanal, in dem Zitate gepostet werden sollen'
+						},
+						language: {
+							name: 'sprache',
+							description: 'Die Sprache, die der Bot verwenden soll, um öffentliche Nachrichten in diesem Server zu posten'
+						}
+					}
+				},
+				reset: {
+					name: 'zurücksetzen',
+					description: 'Lösche den Wert einer oder aller Optionen oder setze sie auf den Default zurück.',
+					options: {
+						option: {
+							name: 'option',
+							description: 'Die Option, die zurückgesetzt werden soll',
+							choices: {
+								all: 'alle',
+								'role-play channels': 'Rollenspiel-Kanäle',
+								'bookmarks channel': 'Lesezeichen-Kanal',
+								'quotes channel': 'Zitate-Kanal',
+								language: 'Sprache'
+							}
+						}
+					}
+				},
+				add: {
+					name: 'hinzufügen',
+					description: 'Füge einen Wert zu den Optionen hinzu.',
+					options: {
+						'role-play-channel': {
+							name: 'rollenspiel-kanal',
+							description: 'Füge einen Kanal zur Liste der Rollenspiel-Kanäle dieses Servers hinzu.',
+							options: {
+								channel: {
+									name: 'kanal',
+									description: 'Der als Rollenspiel-Kanal hinzuzufügende Kanal. Leerlassen für aktuellen Kanal.'
+								}
+							}
+						}
+					}
+				},
+				remove: {
+					name: 'entfernen',
+					description: 'Entferne einen Wert von den Optionen.',
+					options: {
+						'role-play-channel': {
+							name: 'rollenspiel-kanal',
+							description: 'Entferne einen Kanal von der Liste der Rollenspiel-Kanäle dieses Servers.',
+							options: {
+								channel: {
+									name: 'kanal',
+									description: 'Der zu entfernende Rollenspiel-Kanal. Leerlassen für aktuellen Kanal.'
+								}
+							}
+						}
+					}
+				}
+			},
 			'show-title': 'Konfiguration',
 			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config set`. Um Rollenspiel-Kanäle hinzuzufügen, benutze `/config add role-play-channel`.',
 			'show-field-bookmarks-channel': 'Lesezeichen-Kanal',
@@ -90,6 +255,7 @@
 			}
 		},
 		'delete-context': {
+			name: 'Löschen',
 			reply: {
 				'not-deletable1': 'Das ist keine Nachricht, die Du löschen kannst. Dieser Befehl funktioniert nur bei:',
 				'not-deletable2': '- Zitaten und Lesezeichen, die Du durch mich erstellt hast (inklusive meiner Antwort auf den Befehl `/bookmark`),',
@@ -103,6 +269,18 @@
 			}
 		},
 		goto: {
+			name: 'gehe-nach',
+			description: 'Erstellt einen Link, so dass Charaktere einfach zwischen zwei Kanälen reisen können.',
+			options: {
+				destination: {
+					name: 'ziel',
+					description: 'Der Zielkanal, zu dem gegangen werden soll'
+				},
+				action: {
+					name: 'aktion',
+					description: 'Eine kurze Beschreibung der stattfindenden Aktion, während Leute zum Zielort reisen'
+				}
+			},
 			reply: {
 				'origin-message-unlinked': 'Die Geschichte geht in {{channel, channelmention}} weiter.',
 				'origin-message-linked': 'Die [Geschichte]({{url}}) geht in {{channel, channelmention}} weiter.',
@@ -110,11 +288,24 @@
 			}
 		},
 		names: {
+			name: 'namen',
+			description: 'Bewahre die aktuellen Server-Nicknamen aller Mitglieder in Erinnerung!',
 			reply: {
 				title: 'Wenn wir zurückschauen, hatten die Mitglieder von {{guildName}} die folgenden Namen:'
 			}
 		},
+		narrate: {
+			name: 'erzählen',
+			description: 'Lässt mich erzählen was Du eingibst.',
+			options: {
+				story: {
+					name: 'geschichte',
+					description: 'Die Geschichte, die ich erzählen soll'
+				}
+			}
+		},
 		'quote-context': {
+			name: 'Zitieren',
 			reply: {
 				gossip1: 'Habt ihr gehört, was {{author, usermention}} [gerade gesagt hat]({{url}})?',
 				gossip2: 'Ich kann nicht glauben, dass {{author, usermention}} [das gesagt hat]({{url}}).',
@@ -131,12 +322,22 @@
 			}
 		},
 		'refresh-commands': {
+			name: 'befehle-neuladen',
+			description: 'Lädt alle Befehle im Server neu. Passiert normalerweise automatisch. Im Fall von Fehlern verwenden.',
 			reply: {
 				failure: 'Befehle konnten nicht neu geladen werden. Es könnte sich um ein temporäres Problem handeln. Bitte versuch es später nochmal.',
 				success: 'Befehle erfolgreich neu geladen.'
 			}
 		},
 		roll: {
+			name: 'würfeln',
+			description: 'Wirf ein paar Würfel! Du kannst bis zu 20 Würfel auf einmal werfen.',
+			options: {
+				notation: {
+					name: 'notation',
+					description: 'Beschreibe durch D&D-Würfel-Notation, welche Würfel geworfen werden sollen. Z. B. "d4" oder "3d20".'
+				}
+			},
 			reply: {
 				'invalid-notation': 'Konnte Deine Eingabe nicht verstehen.',
 				'notation-explanation_other': 'Dieser Befehl benutzt [Würfel-Notation](https://en.wikipedia.org/wiki/Dice_notation), \
@@ -153,6 +354,14 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			}
 		},
 		where: {
+			name: 'wo',
+			description: 'Versucht den Ort (Rollenspiel-Kanal) zu finden, an dem ein Charakter zuletzt gesehen wurde.',
+			options: {
+				user: {
+					name: 'benutzer',
+					description: 'Der zu suchende Benutzer. Leerlassen um nach Dir selbst zu suchen.'
+				}
+			},
 			reply: {
 				'you-last-seen': 'Du wurdest zuletzt in {{channel, channelmention}} beim Rollenspielen [gesehen]({{url}}).',
 				'user-last-seen': '{{user, usermention}} wurde zuletzt in {{channel, channelmention}} beim Rollenspielen [gesehen]({{url}}).',

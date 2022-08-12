@@ -22,35 +22,29 @@ const configCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'config',
-		description: 'Configure the bot for your server.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
 		options: [
 			{
 				name: 'show',
-				description: 'List the current values of all options.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
 			},
 			{
 				name: 'set',
-				description: 'Set the values of one or more options.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'bookmarks-channel',
-						description: 'The channel to set for posting bookmarks in',
 						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
 					},
 					{
 						name: 'quotes-channel',
-						description: 'The channel to set for posting quotes in',
 						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
 					},
 					{
 						name: 'language',
-						description: 'The language the bot should use for posting public messages in this server',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						choices: getLanguageChoices()
 					}
@@ -58,12 +52,10 @@ const configCommand = {
 			},
 			{
 				name: 'reset',
-				description: 'Clear the value of one or all options or reset to the default.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'option',
-						description: 'The option to clear',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: true,
 						choices: [
@@ -93,17 +85,14 @@ const configCommand = {
 			},
 			{
 				name: 'add',
-				description: 'Add a value to the options.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
 				options: [
 					{
 						name: 'role-play-channel',
-						description: 'Add a channel to the list of role-play channels for this server.',
 						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 						options: [
 							{
 								name: 'channel',
-								description: 'The channel to add as a role-play channel. Leave empty to use the current channel.',
 								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
 								required: false
@@ -114,17 +103,14 @@ const configCommand = {
 			},
 			{
 				name: 'remove',
-				description: 'Remove a value from the options.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
 				options: [
 					{
 						name: 'role-play-channel',
-						description: 'Remove a channel from the list of role-play channels for this server.',
 						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 						options: [
 							{
 								name: 'channel',
-								description: 'The role-play channel to remove. Leave empty to use the current channel.',
 								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
 								required: false

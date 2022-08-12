@@ -4,12 +4,10 @@ const narrateCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'narrate',
-		description: 'Makes me narrate what you input.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'story',
-				description: 'The story I should tell',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}

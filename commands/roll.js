@@ -9,12 +9,10 @@ const rollCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'roll',
-		description: `Roll some dice! You can roll up to ${MAX_NUMBER_OF_DICE} dice at a time.`,
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'notation',
-				description: 'Describe which and how many dice to roll, using D&D dice notation. E.g. "d4" or "3d20".',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}

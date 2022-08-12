@@ -1,7 +1,7 @@
 import { Constants, Permissions, MessageEmbed } from 'discord.js';
 import { findNewestRPMessageMetadata } from '../storage/message-metadata-dao.js';
 
-// Determines how many message back the command searches in each channel.
+// Determines how many messages back the command searches in each channel.
 // It will fetch MESSAGE_BATCH many messages for up to MAX_ITERATIONS times.
 const MESSAGE_BATCH = 100;
 const MAX_ITERATIONS = 5;
@@ -10,12 +10,10 @@ const whereCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'where',
-		description: 'Tries to find the location (role-play channel) where a character was last seen acting.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'user',
-				description: 'The user to look for. Leave empty to look for yourself.',
 				type: Constants.ApplicationCommandOptionTypes.USER,
 				required: false
 			}

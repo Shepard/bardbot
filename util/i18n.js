@@ -53,6 +53,10 @@ export function translate(keys, options) {
 	return i18n.t(keys, options);
 }
 
+export function translationExists(key, options) {
+	return i18n.exists(key, options);
+}
+
 export function getTranslatorForInteraction(interaction, command, guildConfig) {
 	const userLocale = interaction.locale ?? 'en';
 	const guildLocale = guildConfig.language ?? interaction.guildLocale ?? 'en';

@@ -7,19 +7,16 @@ const altCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'alt',
-		description: 'Write messages through an alternate character.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'name',
-				description: 'The name of the alt you want to pick',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true,
 				autocomplete: true
 			},
 			{
 				name: 'message',
-				description: 'The message the alternate character should send',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}

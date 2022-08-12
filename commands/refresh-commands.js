@@ -5,7 +5,6 @@ const refreshCommandsCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'refresh-commands',
-		description: 'Refresh all commands in this server. Normally done automatically. Use in case of errors.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD])
 	},

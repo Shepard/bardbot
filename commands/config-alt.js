@@ -9,30 +9,25 @@ const configAltCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'config-alt',
-		description: 'Configure an alternate character.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
 		options: [
 			{
 				name: 'add',
-				description: 'Add a new alternate character.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'name',
-						description: 'The name of the alternate character to create. Needs to be unique.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: true
 					},
 					{
 						name: 'usable-by',
-						description: 'A user or role who is allowed to use this alternate character.',
 						type: Constants.ApplicationCommandOptionTypes.MENTIONABLE,
 						required: true
 					},
 					{
 						name: 'avatar-url',
-						description: 'A URL pointing to an image file to be used as the avatar of the alternate character.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: false
 					}
@@ -40,31 +35,26 @@ const configAltCommand = {
 			},
 			{
 				name: 'edit',
-				description: 'Change some properties of an alternate character.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'name',
-						description: 'The name of the existing alternate character to edit.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: true,
 						autocomplete: true
 					},
 					{
 						name: 'new-name',
-						description: 'A new name for the alternate character. Needs to be unique.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: false
 					},
 					{
 						name: 'usable-by',
-						description: 'A user or role who is allowed to use this alternate character.',
 						type: Constants.ApplicationCommandOptionTypes.MENTIONABLE,
 						required: false
 					},
 					{
 						name: 'avatar-url',
-						description: 'A URL pointing to an image file to be used as the avatar of the alternate character.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: false
 					}
@@ -72,12 +62,10 @@ const configAltCommand = {
 			},
 			{
 				name: 'delete',
-				description: 'Delete an alternate character. It will not be usable anymore but old messages stay.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'name',
-						description: 'The name of the existing alternate character to delete.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: true,
 						autocomplete: true
@@ -86,12 +74,10 @@ const configAltCommand = {
 			},
 			{
 				name: 'show',
-				description: 'List currently configured alternate characters.',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
 					{
 						name: 'name',
-						description: 'The name of an alternate character to show. If left out, lists all characters.',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
 						required: false,
 						autocomplete: true

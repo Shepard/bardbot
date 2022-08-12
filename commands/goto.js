@@ -5,19 +5,16 @@ const gotoCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'goto',
-		description: 'Creates a link in the lore for characters to easily travel between two channels.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'destination',
-				description: 'The destination channel to go to',
 				type: Constants.ApplicationCommandOptionTypes.CHANNEL,
 				channel_types: [Constants.ChannelTypes.GUILD_TEXT],
 				required: true
 			},
 			{
 				name: 'action',
-				description: 'A short description of the action taking place as people travel to a new place',
 				type: Constants.ApplicationCommandOptionTypes.STRING
 			}
 		]

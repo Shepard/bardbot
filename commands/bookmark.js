@@ -15,12 +15,10 @@ const bookmarkCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'bookmark',
-		description: 'Creates a bookmark to identify a new chapter in the lore for easy referencing.',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
 		options: [
 			{
 				name: 'event',
-				description: 'Description of the event starting the chapter',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
 				required: true
 			}

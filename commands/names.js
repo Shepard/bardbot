@@ -7,7 +7,6 @@ const namesCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'names',
-		description: 'Keep a memory of all the fun nicknames that everyone currently has!',
 		type: Constants.ApplicationCommandTypes.CHAT_INPUT
 	},
 	// Handler for when the command is used
