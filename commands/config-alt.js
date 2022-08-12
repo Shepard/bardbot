@@ -4,6 +4,7 @@ import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, delet
 import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
 import { updateCommandsAfterConfigChange } from './config.js';
+import { WEBHOOK_NAME_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const configAltCommand = {
 	// Configuration for registering the command
@@ -19,7 +20,9 @@ const configAltCommand = {
 					{
 						name: 'name',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
-						required: true
+						required: true,
+						min_length: 1,
+						max_length: WEBHOOK_NAME_CHARACTER_LIMIT
 					},
 					{
 						name: 'usable-by',
@@ -46,7 +49,9 @@ const configAltCommand = {
 					{
 						name: 'new-name',
 						type: Constants.ApplicationCommandOptionTypes.STRING,
-						required: false
+						required: false,
+						min_length: 1,
+						max_length: WEBHOOK_NAME_CHARACTER_LIMIT
 					},
 					{
 						name: 'usable-by',
