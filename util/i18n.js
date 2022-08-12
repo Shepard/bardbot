@@ -2,17 +2,23 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
 
-export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
+const INTERNAL_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
+
+export const SUPPORTED_LANGUAGES = Object.freeze(
+	INTERNAL_LANGUAGES
+		// We mostly use 'en' as a fallback but don't want to offer it as a choice since it provides identical translations to en-GB and would just confuse the user.
+		.filter(languageTag => languageTag !== 'en')
+);
 
 let i18n;
 
 export async function initI18n() {
 	i18n = i18next
 		.createInstance({
-			supportedLngs: SUPPORTED_LANGUAGES,
+			supportedLngs: INTERNAL_LANGUAGES,
 			fallbackLng: 'en',
 			// Since we're a server application and don't need to worry about bandwidth, we can preload all supported languages.
-			preload: SUPPORTED_LANGUAGES,
+			preload: INTERNAL_LANGUAGES,
 			ns: 'main',
 			defaultNS: 'main',
 			returnNull: false,

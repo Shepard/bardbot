@@ -377,8 +377,6 @@ function getChannelsList(channelIds) {
 function getLanguageChoices() {
 	return (
 		SUPPORTED_LANGUAGES
-			// We mostly use 'en' as a fallback but don't want to offer it as a choice since it provides identical translations to en-GB and would just confuse the user.
-			.filter(languageTag => languageTag !== 'en')
 			// Each language is presented with the name of the language in that language.
 			.map(languageTag => ({
 				name: translate('languageName', { lng: languageTag }),
