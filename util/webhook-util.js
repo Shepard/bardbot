@@ -6,6 +6,7 @@ import {
 } from '../storage/guild-config-dao.js';
 import logger from './logger.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
+import { DiscordAPIError } from 'discord.js';
 
 export async function createWebhook(channel, client, logger) {
 	try {
@@ -149,7 +150,7 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 				webhookForChannel = await createWebhook(channel, client, logger);
 				createdCounter++;
 			} catch (e) {
-				if (e.type === 'DiscordAPIError' && (e.message === 'Unknown Channel' || e.httpStatus === 404)) {
+				if (e instanceof DiscordAPIError && (e.message === 'Unknown Channel' || e.httpStatus === 404)) {
 					// The server doesn't know this channel anymore so we can clean it up from the database.
 					removeNonExistingRolePlayChannel(guild.id, rpChannelId);
 				} else {
