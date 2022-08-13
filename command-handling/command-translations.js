@@ -47,6 +47,7 @@ function addNameAndDescriptionTranslations(object, keyPrefix, isOption) {
 
 	// TODO Name localisations of slash command names are disabled until a show-stopper bug in the feature is fixed:
 	//  https://github.com/discord/discord-api-docs/issues/5001
+	//  When activating this for slash commands, make sure to adjust the mentions of slash commands in translations.
 	if (isOption || object.type !== Constants.ApplicationCommandTypes.CHAT_INPUT) {
 		const nameValidator = commandNameValidator.bind(null, isOptionOrChatInputCommand);
 		const nameTranslations = getAllTranslations(keyPrefix + '.name', nameValidator);

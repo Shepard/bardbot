@@ -147,7 +147,7 @@
 			},
 			'field-usable-by': 'Kann verwendet werden von',
 			reply: {
-				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl `/config-alt edit`.',
+				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl `/config-alt bearbeiten`.',
 				'add-failure': 'Hinzufügen des alternativen Charakters ist fehlgeschlagen.',
 				'add-success': 'Neuer alternativer Charakter wurde erfolgreich erstellt.',
 				'edit-failure': 'Aktualisieren des alternativen Charakters ist fehlgeschlagen.',
@@ -155,7 +155,7 @@
 				'delete-failure': 'Konnte alternativen Charakter mit dem Namen "{{name}}" nicht löschen.',
 				'delete-success': 'Der alternative Charakter mit dem Namen "{{name}}" wurde erfolgreich gelöscht.',
 				'show-alts-failure': 'Ein Fehler ist beim Versuch, die alternativen Charaktere dieses Servers in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
-				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Benutze `/config-alt show <name>`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
+				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Benutze `/config-alt zeigen <name>`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
 			}
 		},
 		config: {
@@ -235,7 +235,7 @@
 				}
 			},
 			'show-title': 'Konfiguration',
-			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config set`. Um Rollenspiel-Kanäle hinzuzufügen, benutze `/config add role-play-channel`.',
+			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/config setzen`. Um Rollenspiel-Kanäle hinzuzufügen, benutze `/config hinzufügen rollenspiel-kanal`.',
 			'show-field-bookmarks-channel': 'Lesezeichen-Kanal',
 			'show-field-quotes-channel': 'Zitate-Kanal',
 			'show-field-role-play-channels': 'Rollenspiel-Kanäle',
