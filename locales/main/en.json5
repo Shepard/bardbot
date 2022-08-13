@@ -264,12 +264,12 @@
 			name: 'Delete',
 			reply: {
 				'not-deletable1': 'This is not a message you can delete. This command will only work on:',
-				'not-deletable2': '- Quotes or bookmarks you created through me (including my reply to the `/bookmark` command),',
-				'not-deletable3': '- Quotes someone else created through me where you were quoted,',
-				'not-deletable4': '- My reply to `/goto` and the corresponding message in the destination channel,',
-				'not-deletable5': '- My reply to `/narrate`,',
-				'not-deletable6': '- My reply to `/names`,',
-				'not-deletable7': '- Messages of alternate characters sent through me.',
+				'not-deletable2': '- quotes or bookmarks you created through me (including my reply to the `/bookmark` command),',
+				'not-deletable3': '- quotes someone else created through me where you were quoted,',
+				'not-deletable4': '- my reply to `/goto` and the corresponding message in the destination channel,',
+				'not-deletable5': '- my reply to `/narrate`,',
+				'not-deletable6': '- my reply to `/names`,',
+				'not-deletable7': '- messages of alternate characters sent through me.',
 				'delete-failure': 'There was an error trying to delete the message.',
 				'delete-success': 'Message was successfully deleted.'
 			}

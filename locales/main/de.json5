@@ -260,9 +260,9 @@
 				'not-deletable1': 'Das ist keine Nachricht, die Du löschen kannst. Dieser Befehl funktioniert nur bei:',
 				'not-deletable2': '- Zitaten und Lesezeichen, die Du durch mich erstellt hast (inklusive meiner Antwort auf den Befehl `/bookmark`),',
 				'not-deletable3': '- Zitaten, die jemand anders durch mich erstellt hat, bei denen Du zitiert wurdest,',
-				'not-deletable4': '- Meiner Antwort auf `/goto` und die zugehörige Nachricht im Zielkanal,',
-				'not-deletable5': '- Meiner Antwort auf `/narrate`,',
-				'not-deletable6': '- Meiner Antwort auf `/names`,',
+				'not-deletable4': '- meiner Antwort auf `/goto` und die zugehörige Nachricht im Zielkanal,',
+				'not-deletable5': '- meiner Antwort auf `/narrate`,',
+				'not-deletable6': '- meiner Antwort auf `/names`,',
 				'not-deletable7': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
 				'delete-failure': 'Beim Versuch, die Nachricht zu löschen, ist ein Fehler aufgetreten.',
 				'delete-success': 'Nachricht wurde erfolgreich gelöscht.'

@@ -92,12 +92,12 @@
 		'delete-context': {
 			reply: {
 				'not-deletable1': 'Este no es un mensaje que puedas borrar. Este comando solo funcionará en:',
-				'not-deletable2': '- Citas o marcadores que creó a través de mí (incluida mi respuesta al comando `/ bookmark`),',
-				'not-deletable3': '- Citas que alguien más creó a través de mí donde usted fue citado,',
-				'not-deletable4': '- Mi respuesta a `/goto` y el mensaje correspondiente en el canal de destino,',
-				'not-deletable5': '- Mi respuesta a `/narrate`,',
-				'not-deletable6': '- Mi respuesta a `/names`,',
-				'not-deletable7': '- Mensajes de personajes alternativos enviados a través de mí.',
+				'not-deletable2': '- citas o marcadores que creó a través de mí (incluida mi respuesta al comando `/ bookmark`),',
+				'not-deletable3': '- citas que alguien más creó a través de mí donde usted fue citado,',
+				'not-deletable4': '- mi respuesta a `/goto` y el mensaje correspondiente en el canal de destino,',
+				'not-deletable5': '- mi respuesta a `/narrate`,',
+				'not-deletable6': '- mi respuesta a `/names`,',
+				'not-deletable7': '- mensajes de personajes alternativos enviados a través de mí.',
 				'delete-failure': 'Hubo un error al intentar eliminar el mensaje.',
 				'delete-success': 'El mensaje fue eliminado con éxito.'
 			}
