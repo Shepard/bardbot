@@ -65,17 +65,35 @@ async function executeCommand(command, interaction, context) {
 		await command.execute(interaction, context);
 	} catch (error) {
 		context.logger.error(error, 'Error while executing command %s', interaction.commandName);
-		if (!interaction.replied) {
-			// Tell the user who used the command (and only them) that the command failed.
-			try {
-				const userLocale = interaction.locale ?? 'en';
-				await interaction.reply({
-					content: translate('interaction.error', { lng: userLocale }),
+
+		// Tell the user who used the command (and only them) that the command failed.
+		try {
+			const userLocale = interaction.locale ?? 'en';
+			const content = translate('interaction.error', { lng: userLocale });
+			if (interaction.replied) {
+				await interaction.followUp({
+					content,
 					ephemeral: true
 				});
-			} catch (innerError) {
-				context.logger.error(innerError, 'Error while trying to tell user about the previous error');
+			} else {
+				if (interaction.deferred) {
+					// In this case we can't guarantee that the original .deferReply() call was ephemeral
+					// and we can't edit it to be ephemeral after the fact either.
+					// So we delete the initial deferred reply and have to use a follow-up in order to send an ephemeral message.
+					await interaction.deleteReply();
+					await interaction.followUp({
+						content,
+						ephemeral: true
+					});
+				} else {
+					await interaction.reply({
+						content,
+						ephemeral: true
+					});
+				}
 			}
+		} catch (innerError) {
+			context.logger.error(innerError, 'Error while trying to tell user about the previous error');
 		}
 	}
 }
