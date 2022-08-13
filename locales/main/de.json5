@@ -71,7 +71,7 @@
 			}
 		},
 		'bookmark-context': {
-			name: 'Lesezeichen'
+			name: 'Lesezeichen erstellen'
 		},
 		coin: {
 			name: 'münze',
