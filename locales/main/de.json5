@@ -268,6 +268,18 @@
 				'delete-success': 'Nachricht wurde erfolgreich gelöscht.'
 			}
 		},
+		'edit-context': {
+			name: 'Bearbeiten',
+			reply: {
+				'edit-dialog-title': 'Nachricht bearbeiten',
+				'edit-dialog-text-field-label': 'Nachrichtentext',
+				'not-editable1': 'Das ist keine Nachricht, die Du bearbeiten kannst. Dieser Befehl funktioniert nur bei:',
+				'not-editable2': '- meiner Antwort auf `/narrate`,',
+				'not-editable3': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
+				'edit-failure': 'Beim Versuch, die Nachricht zu bearbeiten, ist ein Fehler aufgetreten.',
+				'edit-success': 'Nachricht wurde erfolgreich bearbeitet.'
+			}
+		},
 		goto: {
 			name: 'gehe-nach',
 			description: 'Erstellt einen Link, so dass Charaktere einfach zwischen zwei Kanälen reisen können.',

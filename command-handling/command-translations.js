@@ -153,7 +153,8 @@ function commandNameValidator(isOptionOrChatInputCommand, translation, key, lng)
 		} else {
 			// According to https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-naming
 			// "USER and MESSAGE commands may be mixed case and can include spaces."
-			// However in testing I noticed that other characters such as "?" and "'" are also accepted so for now no additional validation is applied for those names.
+			// However in testing I noticed that other characters such as ?'"#$%&@{}[]()/\*~+=^°§ are also accepted,
+			// so for now no additional validation is applied for those names.
 			return translation;
 		}
 	}

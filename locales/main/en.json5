@@ -274,6 +274,19 @@
 				'delete-success': 'Message was successfully deleted.'
 			}
 		},
+		'edit-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Edit',
+			reply: {
+				'edit-dialog-title': 'Edit message',
+				'edit-dialog-text-field-label': 'Message text',
+				'not-editable1': 'This is not a message you can edit. This command will only work on:',
+				'not-editable2': '- My reply to `/narrate`,',
+				'not-editable3': '- Messages of alternate characters sent through me.',
+				'edit-failure': 'There was an error trying to edit the message.',
+				'edit-success': 'Message was successfully edited.'
+			}
+		},
 		goto: {
 			name: 'goto',
 			description: 'Creates a link in the lore for characters to easily travel between two channels.',

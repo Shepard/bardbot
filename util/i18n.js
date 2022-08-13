@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
+import { privateReply } from './interaction-util.js';
 
 const INTERNAL_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
 
@@ -71,11 +72,4 @@ export function getTranslatorForInteraction(interaction, command, guildConfig) {
 	t.privateReply = privateReply.bind(t, t.user);
 	t.privateReplyShared = privateReply.bind(t, t.userShared);
 	return t;
-}
-
-async function privateReply(t, interaction, messageKey, options) {
-	await interaction.reply({
-		content: t(messageKey, options),
-		ephemeral: true
-	});
 }
