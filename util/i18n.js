@@ -61,7 +61,7 @@ export function translationExists(key, options) {
 export function getTranslatorForInteraction(interaction, command, guildConfig) {
 	const userLocale = interaction.locale ?? 'en';
 	const guildLocale = guildConfig.language ?? interaction.guildLocale ?? 'en';
-	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? interaction.commandName);
+	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? command.configuration.name);
 	const sharedPrefix = 'shared';
 	const t = {
 		user: i18n.getFixedT(userLocale, null, commandPrefix),
