@@ -2,6 +2,7 @@ import { Constants } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
 import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../storage/alt-dao.js';
+import { AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
 
 const altCommand = {
 	// Configuration for registering the command
@@ -95,15 +96,16 @@ const altCommand = {
 	async autocomplete(interaction, { logger }) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'name') {
-			const collator = new Intl.Collator(interaction.locale);
 			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value, logger);
-			return (
-				matchingAlts
-					.filter(alt => isUsableByUser(alt, interaction, logger))
-					.map(alt => ({ name: alt.name, value: alt.name }))
-					// The database already does some sorting for us but it's not very good at proper i18n sorting.
-					.sort((a, b) => collator.compare(a?.name, b?.name))
-			);
+			let result = matchingAlts
+				.filter(alt => isUsableByUser(alt, interaction, logger))
+				.map(alt => ({ name: alt.name, value: alt.name }));
+			// Limit to the maximum number of results Discord accepts.
+			result = result.slice(0, Math.min(result.length, AUTOCOMPLETE_CHOICE_LIMIT + 1));
+			// The database already does some sorting for us but it's not very good at proper i18n sorting.
+			const collator = new Intl.Collator(interaction.locale);
+			result = result.sort((a, b) => collator.compare(a?.name, b?.name));
+			return result;
 		} else {
 			return [];
 		}

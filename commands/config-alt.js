@@ -4,7 +4,8 @@ import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, delet
 import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
 import { updateCommandsAfterConfigChange } from './config.js';
-import { WEBHOOK_NAME_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { WEBHOOK_NAME_CHARACTER_LIMIT, AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
+import { sendListReply } from '../util/interaction-util.js';
 
 const configAltCommand = {
 	// Configuration for registering the command
@@ -109,14 +110,14 @@ const configAltCommand = {
 	async autocomplete(interaction, { logger }) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'name') {
-			const collator = new Intl.Collator(interaction.locale);
 			const matchingAlts = findMatchingAlts(interaction.guildId, focusedOption.value, logger);
-			return (
-				matchingAlts
-					.map(alt => ({ name: alt.name, value: alt.name }))
-					// The database already does some sorting for us but it's not very good at proper i18n sorting.
-					.sort((a, b) => collator.compare(a?.name, b?.name))
-			);
+			let result = matchingAlts.map(alt => ({ name: alt.name, value: alt.name }));
+			// Limit to the maximum number of results Discord accepts.
+			result = result.slice(0, Math.min(result.length, AUTOCOMPLETE_CHOICE_LIMIT + 1));
+			// The database already does some sorting for us but it's not very good at proper i18n sorting.
+			const collator = new Intl.Collator(interaction.locale);
+			result = result.sort((a, b) => collator.compare(a?.name, b?.name));
+			return result;
 		} else {
 			return [];
 		}
@@ -288,12 +289,8 @@ async function handleShowAlts(interaction, t, logger) {
 		const altNameList = alts
 			.map(alt => alt.name)
 			// The database already does some sorting for us but it's not very good at proper i18n sorting.
-			.sort(collator.compare)
-			.join('\n');
-		await interaction.reply({
-			content: t.user('reply.show-alts') + '\n\n' + altNameList,
-			ephemeral: true
-		});
+			.sort(collator.compare);
+		await sendListReply(interaction, altNameList, t.user('reply.show-alts'), false, true, false);
 	}
 }
 

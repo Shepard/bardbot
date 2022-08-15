@@ -157,6 +157,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 		: italic(t.user('show-value-none'));
 
 	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannels);
+	const rolePlayChannelsListFitsInField = codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT;
 
 	const configurationValuesEmbed = new MessageEmbed()
 		.setTitle(t.user('show-title'))
@@ -165,7 +166,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 			{ name: t.user('show-field-bookmarks-channel'), value: bookmarksChannelValue },
 			{ name: t.user('show-field-quotes-channel'), value: quotesChannelValue }
 		);
-	if (codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT) {
+	if (rolePlayChannelsListFitsInField) {
 		configurationValuesEmbed.addFields({ name: t.user('show-field-role-play-channels'), value: rolePlayChannelsList });
 	}
 	configurationValuesEmbed.addFields({ name: t.user('show-field-language'), value: languageValue });
@@ -175,7 +176,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 	});
 	// If the RP channel list doesn't fit in a single field value,
 	// send it in the description of a follow-up embed instead.
-	if (codePointLength(rolePlayChannelsList) > EMBED_FIELD_VALUE_CHARACTER_LIMIT) {
+	if (!rolePlayChannelsListFitsInField) {
 		const rolePlayChannelsListEmbed = new MessageEmbed()
 			.setTitle(t.user('show-field-role-play-channels'))
 			.setDescription(rolePlayChannelsList);

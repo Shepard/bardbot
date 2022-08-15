@@ -2,6 +2,7 @@ import { Constants, Modal, MessageActionRow, TextInputComponent } from 'discord.
 import { getMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
 import { getCustomIdForCommandRouting } from '../util/interaction-util.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const editContextCommand = {
 	// Configuration for registering the command
@@ -80,7 +81,8 @@ async function showEditMessageDialog(message, interaction, t) {
 		.setValue(message.content)
 		.setStyle(Constants.TextInputStyles[Constants.TextInputStyles.PARAGRAPH])
 		.setRequired(true)
-		.setMinLength(1);
+		.setMinLength(1)
+		.setMaxLength(MESSAGE_CONTENT_CHARACTER_LIMIT);
 
 	editDialog.addComponents(new MessageActionRow().addComponents(messageEditField));
 
