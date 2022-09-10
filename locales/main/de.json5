@@ -370,8 +370,8 @@ Du kannst bis zu {{count}} WÃ¼rfel auf einmal werfen. Du kannst nicht mehrere WÃ
 			description: 'Versucht den Ort (Rollenspiel-Kanal) zu finden, an dem ein Charakter zuletzt gesehen wurde.',
 			options: {
 				user: {
-					name: 'benutzer',
-					description: 'Der zu suchende Benutzer. Leerlassen um nach Dir selbst zu suchen.'
+					name: 'person',
+					description: 'Die zu suchende Person. Leerlassen um nach Dir selbst zu suchen.'
 				}
 			},
 			reply: {
