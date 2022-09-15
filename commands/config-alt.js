@@ -148,7 +148,7 @@ async function handleAddAlt(interaction, t, logger) {
 		const id = addAlt(guildId, name, usableById, usableByType, avatarUrl);
 		logger.info('An alt with the id %d and the name "%s" was created in guild %s.', id, name, guildId);
 	} catch (e) {
-		if (e.message?.includes('UNIQUE constraint failed')) {
+		if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
 			await t.privateReply(interaction, 'reply.alt-exists', { name });
 		} else {
 			logger.error(e, 'Error while trying to create alt in db');
@@ -290,7 +290,7 @@ async function handleShowAlts(interaction, t, logger) {
 			.map(alt => alt.name)
 			// The database already does some sorting for us but it's not very good at proper i18n sorting.
 			.sort(collator.compare);
-		await sendListReply(interaction, altNameList, t.user('reply.show-alts'), false, true, false);
+		await sendListReply(interaction, altNameList, t.user('reply.show-alts'), false, true);
 	}
 }
 

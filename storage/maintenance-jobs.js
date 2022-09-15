@@ -43,3 +43,5 @@ function addEnsureWebhookCorrectnessJob(client) {
 		).catch(e => logger.error(e));
 	});
 }
+
+// TODO job for cleaning up stories of state Draft or ToBeDeleted where story.lastChanged is more than X time units ago. (maybe one day?)

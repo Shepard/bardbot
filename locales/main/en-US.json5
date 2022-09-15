@@ -6,6 +6,11 @@
 		}
 	},
 	commands: {
+		'config-story': {
+			reply: {
+				'story-draft-created': 'I have memorized your story. Before it can be published, please fill out some more information by pressing the button below. This will help users find the story and learn more about it.'
+			}
+		},
 		roll: {
 			reply: {
 				'invalid-notation': 'Could not recognize your input.',

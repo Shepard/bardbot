@@ -6,6 +6,9 @@
 	shared: {
 		'alt-db-fetch-error': 'Ein Fehler ist beim Versuch, den alternativen Charakter in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
 		'no-alt-with-name': 'Es gibt keinen alternativen Charakter mit dem Namen "{{altName}}".',
+		'story-db-fetch-error': 'Ein Fehler ist beim Versuch, die Geschichte in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
+		'story-not-found': 'Ich konnte diese Geschichte nicht finden.',
+		'show-stories-failure': 'Ein Fehler ist aufgetreten beim Versuch, die Geschichten dieses Servers in der Datenbank zu finden. Bitte versuch es später nochmal.',
 		'webhook-validation-error': {
 			'name-length': 'Name muss zwischen 1 und 80 Zeichen lang sein.',
 			clyde: "Das Wort 'clyde' ist von Discord reserviert und darf nirgendwo im Namen vorkommen, egal in welcher Groß- oder Kleinschreibung."
@@ -156,6 +159,105 @@
 				'delete-success': 'Der alternative Charakter mit dem Namen "{{name}}" wurde erfolgreich gelöscht.',
 				'show-alts-failure': 'Ein Fehler ist beim Versuch, die alternativen Charaktere dieses Servers in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
 				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Benutze `/konfig-alt zeigen <name>`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
+			}
+		},
+		'config-story': {
+			name: 'konfig-geschichte',
+			description: 'Verwalte interaktive Geschichten auf diesem Server.',
+			options: {
+				create: {
+					name: 'erstellen',
+					description: 'Erstelle eine interaktive Geschichte auf diesem Server.',
+					options: {
+						'ink-file': {
+							name: 'ink-datei',
+							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
+						},
+						editor: {
+							name: 'editor',
+							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
+						}
+					}
+				},
+				edit: {
+					name: 'bearbeiten',
+					description: 'Nehme Änderungen an einer bestehenden Geschichte vor.',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Name einer bestehenden Geschichte, die bearbeitet werden soll.'
+						},
+						'ink-file': {
+							name: 'ink-datei',
+							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
+						},
+						editor: {
+							name: 'editor',
+							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
+						}
+					}
+				},
+				delete: {
+					name: 'löschen',
+					description: 'Lösche eine Geschichte, sowie alle aktuellen und vergangenen Durchläufe davon.',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Name einer bestehenden Geschichte, die gelöscht werden soll.'
+						}
+					}
+				},
+				show: {
+					name: 'zeigen',
+					description: 'Listet auf diesem Server zur Zeit bestehende Geschichten auf.',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Titel einer bestehenden Geschichte, die gezeigt werden soll. Listet alle auf wenn leer.'
+						}
+					}
+				},
+				post: {
+					name: 'posten',
+					description: 'Sende einen öffentlichen Post zu einer Geschichte, so dass andere sie bemerken und spielen können.',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Titel der bestehenden Geschichte, die gepostet werden soll.'
+						}
+					}
+				}
+			},
+			'story-line': '{{title}} (von {{author}}) [{{status}}]',
+			'story-status-Testing': 'Im Test',
+			'story-status-Published': 'Veröffentlicht',
+			'show-field-editor': 'Editor:in',
+			'show-field-status': 'Status',
+			'edit-metadata-button-label': 'Metadaten bearbeiten',
+			'publish-button-label': 'Geschichte veröffentlichen',
+			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
+			'metadata-dialog-title-field-label': 'Titel',
+			'metadata-dialog-author-field-label': 'Autor:in',
+			'metadata-dialog-teaser-field-label': 'Anreißer',
+			'story-state-reset-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen musste. Die Geschichte fängt nochmal von vorn an.',
+			reply: {
+				'wrong-content-type': 'Die von Dir hochgeladene Datei hat das falsche Dateiformat. Lade bitte eine .json-Datei hoch, die von einer Ink-Datei kompiliert wurde. Der Typ Deiner Datei ist "{{providedType}}".',
+				'file-too-large': 'Die von Dir hochgeladene Datei ist zu groß. Ich kann nur Geschichten bis zu {{maxFileSize, bytes}} akzeptieren.',
+				'could-not-load-file': 'Die von Dir hochgeladene Datei konnte nicht von Discord empfangen werden.',
+				'time-budget-exceeded': 'Die ersten Schritte in der Geschichte konnten nicht schnell genug ausgerechnet werden. Eventuell hast Du eine Endlosschleife in Deiner Geschichte, oder der Bot ist gerade zu überlastet. Überprüfe bitte Deine Geschichte oder versuch es später nochmal.',
+				'story-errors': 'Beim Versuch, die Geschichte laufen zu lassen, hat die Ink-Engine Fehler gemeldet. Für Details, siehe unten.\n{{errors}}',
+				'story-warnings': 'Beim Versuch, die Geschichte laufen zu lassen, hat die Ink-Engine Warnungen gemeldet. Ich nehme die Geschichte zwar an, aber Du solltest Dir diese Warnungen trotzdem mal anschauen.\n{{warnings}}',
+				'story-draft-created': 'Ich habe mir Deine Geschichte eingeprägt. Bevor sie veröffentlicht werden kann, fülle bitte noch ein paar weitere Informationen aus, indem Du den Button unten anklickst. Dies hilft anderen Leuten dabei, die Geschichte zu finden und mehr darüber zu erfahren.',
+				'create-story-failure': 'Erstellen der Geschichte fehlgeschlagen.',
+				'edit-failure': 'Speichern der Änderungen an der Geschichte fehlgeschlagen.',
+				'edit-failure-title-not-unique': 'Es gibt bereits eine Geschichte mit dem gleichen Titel. Bitte ändere ihn auf etwas anderes.',
+				'story-updated': 'Deine Änderungen an der Geschichte wurden gespeichert. Wenn Du willst, kannst Du auch die Metadaten der Geschichte bearbeiten.',
+				'edit-metadata-prompt': 'Du kannst die Metadaten der Geschichte bearbeiten, indem Du den Button unten anklickst.',
+				'story-metadata-updated': 'Die Metadaten wurden geändert. Und so sieht Deine Geschichte jetzt aus.',
+				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, oder Du kannst sie jetzt veröffentlichen.',
+				'publish-success': 'Die Geschichte ist jetzt live und bereit, von allen gespielt zu werden.',
+				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
+				'show-stories': 'Die folgenden Geschichten gibt es zur Zeit auf diesem Server. Benutze `/konfig-geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.'
 			}
 		},
 		config: {
@@ -363,6 +465,82 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'result-single': 'Das Ergebnis ist: {{result}}',
 				'result-sum': 'Das Ergebnis ist: {{results}} = {{sum}}',
 				addition: ' + '
+			}
+		},
+		story: {
+			name: 'geschichte',
+			description: 'Tauche in interaktive Geschichten ein und beginne Dein Abenteuer!',
+			options: {
+				show: {
+					name: 'zeigen',
+					description: 'Zeige verfügbare Geschichten.',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Titel der Geschichte, über die Du mehr wissen möchtest. Falls leer, werden alle aufgelistet.'
+						}
+					}
+				},
+				start: {
+					name: 'start',
+					description: 'Beginne ein neues Abenteuer!',
+					options: {
+						title: {
+							name: 'titel',
+							description: 'Der Titel der Geschichte, die Du beginnen willst.'
+						}
+					}
+				},
+				restart: {
+					name: 'neustarten',
+					description: 'Starte die Geschichte, die Du gerade spielst, nochmal vom Anfang.'
+				},
+				stop: {
+					name: 'stop',
+					description: 'Höre auf, die aktuelle Geschichte zu spielen. Fortschritt geht verloren.'
+				},
+				state: {
+					name: 'status',
+					description: 'Siehe welche Geschichte Du aktuell spielst und was die letzte Interaktion darin war.'
+				}
+			},
+			'start-button-label': 'Geschichte starten',
+			'state-button-label': 'Zustand aktueller Geschichte prüfen',
+			'stop-button-label': 'Aktuelle Geschichte stoppen',
+			'restart-button-label': 'Aktuelle Geschichte neustarten',
+			'story-line': '{{title}} (von {{author}})',
+			'choice-buttons-header': 'Bitte wähle:',
+			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			reply: {
+				'show-stories': 'Die folgenden Geschichten stehen zur Verfügung. Benutze `/geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
+				'story-not-published': 'Diese Geschichte konnte nicht öffentlich gepostet werden, da sie noch nicht veröffentlicht ist.',
+				'already-playing': 'Du spielst bereits eine Geschichte. Ich kann Dich an den aktuellen Zustand erinnern. Oder Du kannst aufhören zu spielen und Deinen Fortschritt verlieren.',
+				'could-not-start-story': 'Beim Versuch, die Geschichte zu starten, ist ein Fehler aufgetreten.',
+				'could-not-save-state': 'Beim Versuch, Deinen Fortschritt in der Geschichte zu speichern, ist ein Fehler aufgetreten. Du kannst später nochmal den aktuellen Zustand der Geschichte prüfen und wenn es weiterhin nicht funktioniert, musst Du gegebenenfalls die Geschichte neu starten oder stoppen, verlierst dabei allerdings Deinen Fortschritt.',
+				'time-budget-exceeded': 'Die nächsten Schritte in der Geschichte konnten nicht schnell genug ausgerechnet werden. Dies könnte entweder auf Grund eines Problem mit der Geschichte selbst passiert sein, oder der Bot ist gerade zu überlastet. Versuch es bitte später nochmal.',
+				'starting-story': 'Dein Abenteuer beginnt in Deinen Direktnachrichten …',
+				'story-intro1': 'Du spielst jetzt diese Geschichte. Du kannst sie neu starten oder aufhören, sie zu spielen, verlierst dann aber Deinen Fortschritt.',
+				'story-intro2': 'Die Geschichte wird Dir über mehrere Zeilen Text erzählt und immer wieder mal wirst Du mehrere Buttons sehen, die Dir die Wahl geben, wie Du in der Geschichte fortfahren willst. Du kannst jedes Mal nur einen der Buttons drücken, also wähle weise!',
+				'no-story-running': 'Zur Zeit scheinst Du keine Geschichte zu spielen.',
+				'could-not-continue-story': 'In der Geschichte ist ein Fehler aufgetreten und sie kann nicht fortgesetzt werden.',
+				'invalid-choice': 'Leider war diese Auswahl ungültig. Entweder liegt ein Problem mit der Geschichte vor, oder Du hast einen veralteten Button angeklickt.',
+				'too-many-choices': '(Leider will Dir die Geschichte mehr Auswahlen anbieten, als ich verarbeiten kann. Daher zeige ich Dir nur die ersten {{choiceLimit}}.)',
+				'stop-story-failure': 'Beim Versuch, die Geschichte zu stoppen, ist ein Fehler aufgetreten.',
+				'stop-story-success': 'Geschichte erfolgreich gestoppt.',
+				'reset-story-failure': 'Beim Versuch, die Geschichte neuzustarten, ist ein Fehler aufgetreten.',
+				'reset-story-success': 'Geschichte erfolgreich neugestartet.',
+				'story-state-fetch-failure': 'Beim Versuch, den aktuellen Zustand der Geschichte zu laden, ist ein Fehler aufgetreten.',
+				'story-state-success': 'Für Details zur aktuell gespielten Geschichte, schaue in Deinen Direktnachrichten.',
+				'story-state-repeat': 'Du spielst diese Geschichte. Folgendes ist zuletzt passiert …'
+			},
+			'editor-report': {
+				intro: 'Es sind Probleme mit Deiner Geschichte "{{storyTitle}}" im Server "{{serverName}}" aufgetreten:',
+				'type-InkWarning': 'Die Ink-Engine hat Warnungen gemeldet. Die Geschichte kann für die spielende Person normal weiterlaufen, aber Du solltest Dir die Warnung mal anschauen. Details folgen.',
+				'type-InkError': 'Die Ink-Engine hat Fehler gemeldet. Die Geschichte kann für die spielende Person nicht fortgesetzt werden. Details folgen.',
+				'type-PotentialLoopDetected': 'Die Geschichts-Engine hat wiederholt zu lange gebraucht, um die nächsten Schritte Deiner Geschichte zu berechnen. Das kann ein Hinweis darauf sein, dass der Code Deiner Geschichte eine Endlosschleife erzeugt, ohne Auswahlen anzubieten.',
+				'type-MaximumChoiceNumberExceeded': 'Die Geschichte möchte der spielenden Person mehr Auswahlen auf einmal anbieten, als ich in einer Discord-Nachricht darstellen kann (bis zu {{choiceLimit}}). Die spielende Person kann die Geschichte weiter spielen, bekommt aber nicht alle Auswahlen zu sehen und wird auch darauf hingewiesen. Nachfolgend siehst Du die aktuellen Auswahlen an diesem Punkt in der Geschichte, um Dir zu helfen, die problematische Stelle zu finden.',
+				'last-lines': 'Die letzten Zeilen in der Geschichte waren:',
+				'no-repeat': 'Du bekommst keine weiteren Meldungen über Probleme in der selben Kategorie, bis Du eine neue Datei für diese Geschichte hochlädst.'
 			}
 		},
 		where: {
