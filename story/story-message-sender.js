@@ -35,7 +35,7 @@ export async function sendStoryStepData(interaction, stepData, t, getStoryButton
 	const messages = getMessagesToSend(stepData, t, getStoryButtonId);
 	// TODO test if this can become an issue considering the warning on https://discord.com/developers/docs/resources/user#create-dm.
 	//  if malicious users manage to get the bot to contact too many users at once
-	//  (either by starting stories, or by getting informed about story errors, or by getting informed about story state being reset)
+	//  (either by starting stories (incl. sendStoryIntro in story.js), or by getting informed about story errors, or by getting informed about story state being reset)
 	//  they could get the bot blocked from using DMs.
 	//  does discord.js have a protection mechanism in place for this or do I need to keep track of this manually and space out calls to createDM?
 	const dmChannel = await interaction.user.createDM();

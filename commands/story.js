@@ -18,6 +18,22 @@ import {
 	sendListReply
 } from '../util/interaction-util.js';
 import { getTranslatorForInteraction } from '../util/i18n.js';
+import RandomMessageProvider from '../util/random-message-provider.js';
+
+const postIntroMessages = new RandomMessageProvider()
+	.add(t => t('reply.post-intro1'))
+	.add(t => t('reply.post-intro2'))
+	.add(t => t('reply.post-intro3'))
+	.add(t => t('reply.post-intro4'))
+	.add(t => t('reply.post-intro5'));
+
+const startingStoryMessages = new RandomMessageProvider()
+	.add(t => t('reply.starting-story1'))
+	.add(t => t('reply.starting-story2'))
+	.add(t => t('reply.starting-story3'))
+	.add(t => t('reply.starting-story4'))
+	.add(t => t('reply.starting-story5'))
+	.add(t => t('reply.starting-story6'));
 
 // TODO check that all log statements contain enough context
 
@@ -125,19 +141,19 @@ function getStartButton(t, storyId) {
 }
 
 function getRestartButton(t) {
-	return getTranslatedStoryButton(t, 'restart-button-label', 'restart', Constants.MessageButtonStyles.DANGER);
+	return getTranslatedStoryButton(t.user, 'restart-button-label', 'restart', Constants.MessageButtonStyles.DANGER);
 }
 
 function getStopButton(t) {
-	return getTranslatedStoryButton(t, 'stop-button-label', 'stop', Constants.MessageButtonStyles.DANGER);
+	return getTranslatedStoryButton(t.user, 'stop-button-label', 'stop', Constants.MessageButtonStyles.DANGER);
 }
 
 function getStateButton(t) {
-	return getTranslatedStoryButton(t, 'state-button-label', 'state', Constants.MessageButtonStyles.SECONDARY);
+	return getTranslatedStoryButton(t.user, 'state-button-label', 'state', Constants.MessageButtonStyles.SECONDARY);
 }
 
 function getTranslatedStoryButton(t, translationKey, innerCustomId, style) {
-	return getStoryButton(t.user(translationKey), innerCustomId, style);
+	return getStoryButton(t(translationKey), innerCustomId, style);
 }
 
 /**
@@ -214,21 +230,14 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 
 	let content;
 	if (publicly) {
-		// TODO set content to a random text providing some context:
-		/*
-		"I have recently been told this story. Do you want to hear it?"
-		"There is a new adventure to be had. Shall we take a look?"
-		"I certainly know a few tales, but this one is special, no doubt."
-		"The best adventure is the one I could have with you right now."
-		"I'm off to experience new adventures. Care to join me?"
-		*/
+		content = postIntroMessages.any(t.guild);
 	}
 
 	const storyEmbed = getStoryEmbed(story, story.teaser);
 	const components = [
 		{
 			type: Constants.MessageComponentTypes.ACTION_ROW,
-			components: [getStartButton(t, storyId)],
+			components: [getStartButton(publicly ? t.guild : t.user, storyId)],
 			allowed_mentions: {
 				parse: []
 			}
@@ -267,8 +276,7 @@ async function startStoryWithId(interaction, storyId, t, logger) {
 		const stepData = await startStory(interaction.user.id, storyId, interaction.client, logger);
 
 		await interaction.editReply({
-			// TODO pick randomly between a bunch of messages
-			content: t.user('reply.starting-story'),
+			content: startingStoryMessages.any(t.user),
 			ephemeral: true
 		});
 		// TODO put buttons in there
