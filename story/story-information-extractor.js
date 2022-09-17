@@ -13,6 +13,7 @@
 const CHARACTER_TAG_REGEXP =
 	/^character(?::)? (?:([^\s]+)|(?:"([^"]+)"))(?: (?<url>http[^\s]+))?(?: (?<colour>#?(?:[0-9a-fA-F]{3}){1,2}))?$/i;
 
+// TODO allow "title:bla" (so no space), same for the others
 const TITLE_TAG_REGEXP = /^title(?::)? (.+)$/i;
 
 const AUTHOR_TAG_REGEXP = /^author(?::)? (.+)$/i;
