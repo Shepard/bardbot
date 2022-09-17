@@ -89,7 +89,14 @@ async function loadStory(storyId, logger) {
 }
 
 export async function startStory(userId, storyId, guildId, client, logger) {
-	if (hasCurrentStoryPlay(userId)) {
+	let hasCurrentStory;
+	try {
+		hasCurrentStory = hasCurrentStoryPlay(userId);
+	} catch (error) {
+		logger.error(error, 'Error while trying to check if user has current story play');
+		throw newError(StoryErrorType.StoryNotStartable);
+	}
+	if (hasCurrentStory) {
 		throw newError(StoryErrorType.AlreadyPlayingDifferentStory);
 	}
 
@@ -135,7 +142,11 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 	try {
 		stepData = storyStep(userId, inkStory, storyRecord, client, logger);
 	} catch (error) {
-		clearCurrentStoryPlay(userId);
+		try {
+			clearCurrentStoryPlay(userId);
+		} catch (error) {
+			logger.error(error, 'Error while trying to clear current story play for user %s in database.', userId);
+		}
 		throw error;
 	}
 	stepData.storyRecord = storyRecord;

@@ -244,7 +244,7 @@ export function changeStoryEditor(storyId, guildId, editorId) {
 	return info.changes > 0;
 }
 
-export function moveStoryToTesting(storyId, guildId) {
+function moveStoryToTesting(storyId, guildId) {
 	return setStatus(storyId, guildId, StoryStatus.Testing, StoryStatus.Draft);
 }
 
@@ -309,14 +309,8 @@ function clearWarningFlagsAndCounters(storyId) {
 	return info.changes > 0;
 }
 
-// TODO deleteStory; will delete db record, current and past plays (automatically via cascade) and file
+// TODO later: deleteStory; will delete db record, current and past plays (automatically via cascade) and file
 
-/**
- * Tries to find the currently running story for a given user id in the database.
- * If no entry is present in the database or if an error occurred while querying the database,
- * this is handled and null is returned.
- */
-// TODO caller should handle error
 export function getCurrentStoryPlay(userId) {
 	const row = getStoryPlayStatement.get({ userId });
 	if (row) {
@@ -328,7 +322,6 @@ export function getCurrentStoryPlay(userId) {
 	return null;
 }
 
-// TODO caller should handle error
 export function hasCurrentStoryPlay(userId) {
 	return !!hasStoryPlayStatement.get({ userId });
 }
@@ -353,4 +346,4 @@ export function getCurrentPlayers(storyId) {
 	return getCurrentPlayersStatement.all({ storyId });
 }
 
-// TODO methods for saving, querying and clearing past plays
+// TODO later: methods for saving, querying and clearing past plays
