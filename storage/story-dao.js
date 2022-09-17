@@ -3,6 +3,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import db, { FILES_DIR, registerDbInitialisedListener } from './database.js';
+import { escapeSearchInputToLikePattern } from '../util/helpers.js';
 
 export const EditorReportType = Object.freeze({
 	InkWarning: 'InkWarning',
@@ -177,9 +178,7 @@ export function getStories(guildId, publishedOnly) {
 
 export function findMatchingStories(guildId, searchInput, logger, publishedOnly) {
 	try {
-		// TODO extract method, used by this and alt-dao
-		const escapedSearchInput = searchInput.replaceAll('#', '##').replaceAll('%', '#%').replaceAll('_', '#_');
-		const pattern = '%' + escapedSearchInput + '%';
+		const pattern = escapeSearchInputToLikePattern(searchInput);
 		let statement;
 		if (publishedOnly) {
 			statement = findMatchingPublishedStoriesStatement;

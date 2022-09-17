@@ -1,4 +1,5 @@
 import db, { registerDbInitialisedListener } from './database.js';
+import { escapeSearchInputToLikePattern } from '../util/helpers.js';
 
 /**
  * Used for specifying what type of object is referred to by the "usableById" property of an alternate character.
@@ -116,8 +117,7 @@ export function getAlts(guildId) {
  */
 export function findMatchingAlts(guildId, searchInput, logger) {
 	try {
-		const escapedSearchInput = searchInput.replaceAll('#', '##').replaceAll('%', '#%').replaceAll('_', '#_');
-		const pattern = '%' + escapedSearchInput + '%';
+		const pattern = escapeSearchInputToLikePattern(searchInput);
 		return findMatchingAltsStatement
 			.all({ guildId, pattern })
 			.map(row => ({ name: row.name, usableById: row.usable_by_id, usableByType: row.usable_by_type }));

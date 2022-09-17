@@ -139,3 +139,14 @@ export async function wait(ms) {
 		}
 	});
 }
+
+/**
+ * Takes a string (that a user might've entered) containing a text to search for
+ * and turns it into a pattern that can be used in a SQL LIKE clause.
+ * The LIKE clause should look as follows: "LIKE :pattern ESCAPE '#'"
+ * where ":pattern" is a parameter replaced with the output of this function.
+ */
+export function escapeSearchInputToLikePattern(searchInput) {
+	const escapedSearchInput = searchInput.replaceAll('#', '##').replaceAll('%', '#%').replaceAll('_', '#_');
+	return '%' + escapedSearchInput + '%';
+}
