@@ -24,8 +24,6 @@ import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../st
 import { postStory, getStartStoryButtonId } from './story.js';
 import { trimText } from '../util/helpers.js';
 
-// TODO check that all log statements contain enough context
-
 const MAX_STORY_FILE_SIZE = 1000000;
 // Limiting the length of the title to this so that the title is a valid option label in the autocomplete for stories.
 const MAX_TITLE_LENGTH = COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT;
@@ -201,7 +199,7 @@ async function handleCreateStory(interaction, t, logger) {
 			// the story will be in draft state for now. The user will have to press a button to edit the metadata before they can publish it.
 			storyId = await createStory(storyData, editorId, interaction.guildId);
 		} catch (error) {
-			logger.error(error, 'Error while trying to add story.');
+			logger.error(error, 'Error while trying to add story in guild %s.', interaction.guildId);
 			await errorReply(interaction, t.user('reply.create-story-failure'));
 			return;
 		}
@@ -329,7 +327,7 @@ async function handleEditStory(interaction, t, logger) {
 	try {
 		story = getStory(storyId, interaction.guildId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to fetch story from db');
+		logger.error(error, 'Error while trying to fetch story %s from database', storyId);
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
 		return;
 	}
@@ -350,7 +348,7 @@ async function handleEditStory(interaction, t, logger) {
 			stopStoryPlayAndInformPlayers(story, interaction.client, getStartStoryButtonId, logger);
 			dataChanged = true;
 		} catch (error) {
-			logger.error(error, 'Error while trying to update file of story.');
+			logger.error(error, 'Error while trying to update file of story %s.', storyId);
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
@@ -362,7 +360,7 @@ async function handleEditStory(interaction, t, logger) {
 			changeStoryEditor(storyId, interaction.guildId, editorId);
 			dataChanged = true;
 		} catch (error) {
-			logger.error(error, 'Error while trying to change editor of story.');
+			logger.error(error, 'Error while trying to change editor of story %s.', storyId);
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
@@ -419,7 +417,7 @@ async function handleShowStories(interaction, t, logger) {
 		try {
 			story = getStory(storyId, interaction.guildId);
 		} catch (error) {
-			logger.error(error, 'Error while trying to fetch story from db');
+			logger.error(error, 'Error while trying to fetch story %s from database', storyId);
 			await errorReply(interaction, t.userShared('story-db-fetch-error'));
 			return;
 		}
@@ -461,7 +459,7 @@ async function handleShowStories(interaction, t, logger) {
 		try {
 			guildStories = getStories(guildId, false);
 		} catch (error) {
-			logger.error(error, 'Error while trying to fetch stories from db');
+			logger.error(error, 'Error while trying to fetch stories in guild %s from database', guildId);
 			await t.privateReplyShared(interaction, 'show-stories-failure');
 			return;
 		}
@@ -526,7 +524,7 @@ async function handleTriggerEditMetadataDialog(interaction, storyId, t, logger) 
 	try {
 		storyRecord = getStory(storyId, interaction.guildId);
 	} catch (e) {
-		logger.error(e, 'Error while trying to fetch story from db');
+		logger.error(e, 'Error while trying to fetch story %s from database', storyId);
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
 		return;
 	}
@@ -595,7 +593,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 			//  maybe we want to save the rest of the data at least then and not advance the status.
 			await warningReply(interaction, t.user('reply.edit-failure-title-not-unique'));
 		} else {
-			logger.error(error, 'Error while trying to edit metadata of story.');
+			logger.error(error, 'Error while trying to edit metadata of story %s.', storyId);
 			await errorReply(interaction, t.user('reply.edit-failure'));
 		}
 		return;
@@ -606,7 +604,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 		try {
 			storyRecord = getStory(storyId, interaction.guildId);
 		} catch (error) {
-			logger.error(error, 'Error while trying to fetch story after editing its metadata.');
+			logger.error(error, 'Error while trying to fetch story %s after editing its metadata.', storyId);
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
@@ -646,7 +644,7 @@ async function handlePublishStory(interaction, storyId, t, logger) {
 	try {
 		found = publishStory(storyId, interaction.guildId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to publish story.');
+		logger.error(error, 'Error while trying to publish story %s.', storyId);
 		await errorReply(interaction, t.user('reply.publish-failure'));
 	}
 

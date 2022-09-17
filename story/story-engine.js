@@ -88,7 +88,7 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 	try {
 		hasCurrentStory = hasCurrentStoryPlay(userId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to check if user has current story play');
+		logger.error(error, 'Error while trying to check if user %s has current story play', userId);
 		throw newError(StoryErrorType.StoryNotStartable);
 	}
 	if (hasCurrentStory) {
@@ -100,7 +100,7 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 	try {
 		storyRecord = getStory(storyId, guildId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to find story in database');
+		logger.error(error, 'Error while trying to find story %s in database', storyId);
 		throw newError(StoryErrorType.StoryNotStartable);
 	}
 	if (storyRecord !== null) {
@@ -113,14 +113,14 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 				const issueDetails = error.message;
 				informStoryEditor(client, storyRecord, EditorReportType.InkError, issueDetails, [], logger);
 			} else {
-				logger.error(error, 'Error while trying to load story.');
+				logger.error(error, 'Error while trying to load story %s.', storyId);
 			}
 			throw newError(StoryErrorType.StoryNotStartable);
 		}
 		try {
 			saveCurrentStoryPlay(userId, storyId);
 		} catch (error) {
-			logger.error(error, 'Error while trying to save current story for user in database');
+			logger.error(error, 'Error while trying to save current story for user %s in database', userId);
 			throw newError(StoryErrorType.StoryNotStartable);
 		}
 	}
@@ -166,7 +166,7 @@ export async function continueStory(userId, choiceIndex, client, logger) {
 			throw newError(StoryErrorType.StoryNotContinueable);
 		} else {
 			// Other errors like database errors and file system errors might be temporary.
-			logger.error(error, 'Error while trying to load current story.');
+			logger.error(error, 'Error while trying to load current story for user %s.', userId);
 			throw newError(StoryErrorType.TemporaryProblem);
 		}
 	}
@@ -361,7 +361,7 @@ function detectPotentialLoop(storyRecord, client, lines, logger) {
 			return true;
 		}
 	} catch (error) {
-		logger.error(error, 'Error while trying to detect potential loop.');
+		logger.error(error, 'Error while trying to detect potential loop in story %s.', storyRecord.id);
 	}
 	return false;
 }
@@ -382,7 +382,7 @@ export async function restartStory(userId, client, logger) {
 		if (error.type === 'story-error') {
 			throw newError(StoryErrorType.StoryNotContinueable);
 		} else {
-			logger.error(error, 'Error while trying to load current story.');
+			logger.error(error, 'Error while trying to load current story for user %s.', userId);
 			throw newError(StoryErrorType.TemporaryProblem);
 		}
 	}
@@ -406,7 +406,7 @@ export async function getCurrentStoryState(userId, logger) {
 		if (error.type === 'story-error') {
 			throw newError(StoryErrorType.StoryNotContinueable);
 		} else {
-			logger.error(error, 'Error while trying to load current story.');
+			logger.error(error, 'Error while trying to load current story for user %s.', userId);
 			throw newError(StoryErrorType.TemporaryProblem);
 		}
 	}

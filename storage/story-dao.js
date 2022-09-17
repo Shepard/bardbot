@@ -188,7 +188,12 @@ export function findMatchingStories(guildId, searchInput, logger, publishedOnly)
 		}
 		return statement.all({ guildId, pattern }).map(mapRowToStoryRecord);
 	} catch (e) {
-		logger.error(e);
+		logger.error(
+			e,
+			'Error while trying to find matching stories in guild %s for search string %s',
+			guildId,
+			searchInput
+		);
 		return [];
 	}
 }

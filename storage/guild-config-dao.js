@@ -70,6 +70,9 @@ registerDbInitialisedListener(() => {
  * this is handled and a minimal configuration object is returned.
  */
 export function getGuildConfig(guildId, logger) {
+	if (!guildId) {
+		return {};
+	}
 	try {
 		const config = getGuildConfigStatement.get({ id: guildId });
 		if (config) {
@@ -84,7 +87,7 @@ export function getGuildConfig(guildId, logger) {
 		}
 		return { id: guildId };
 	} catch (e) {
-		logger.error(e);
+		logger.error(e, 'Error while trying to fetch config for guild %s from database', guildId);
 		return { id: guildId };
 	}
 }

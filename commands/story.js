@@ -35,8 +35,6 @@ const startingStoryMessages = new RandomMessageProvider()
 	.add(t => t('reply.starting-story5'))
 	.add(t => t('reply.starting-story6'));
 
-// TODO check that all log statements contain enough context
-
 const storyCommand = {
 	// Configuration for registering the command
 	configuration: {
@@ -114,16 +112,18 @@ const storyCommand = {
 		}
 	},
 	async componentInteraction(interaction, innerCustomId, { t, logger }) {
-		// TODO since not all interactions arriving here have the guild context, we could enhance the logger with the guildId from the story in some cases.
-
 		if (innerCustomId.startsWith('choice ')) {
 			const choiceIndex = parseInt(innerCustomId.substring('choice '.length));
+			// The logger won't have the guildId in this case since this interaction happens outside of a guild.
+			// To fix this we'd have to fetch the guildId from the story first and enhance the logger as done for the start button below.
+			// Since that's awkward, the better solution is to make sure log statements provide enough other context for solving problems.
 			await handleChoiceSelection(interaction, choiceIndex, t, logger);
 		} else if (innerCustomId.startsWith('start ')) {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('start '.length, spaceIndex);
 			const guildId = innerCustomId.substring(spaceIndex + 1);
-			await startStoryWithId(interaction, storyId, guildId, t, logger);
+			const innerLogger = logger.child({ interactionId: interaction.id, guildId });
+			await startStoryWithId(interaction, storyId, guildId, t, innerLogger);
 		} else if (innerCustomId.startsWith('restart')) {
 			await handleRestartStory(interaction, t, logger);
 		} else if (innerCustomId.startsWith('stop')) {
@@ -195,7 +195,7 @@ async function handleShowStories(interaction, t, logger) {
 		try {
 			guildStories = getStories(guildId, true);
 		} catch (error) {
-			logger.error(error, 'Error while trying to fetch stories from db');
+			logger.error(error, 'Error while trying to fetch stories for guild %s from database', guildId);
 			await t.privateReplyShared(interaction, 'show-stories-failure');
 			return;
 		}
@@ -223,7 +223,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 	try {
 		story = getStory(storyId, interaction.guildId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to fetch story from db');
+		logger.error(error, 'Error while trying to fetch story %s from database', storyId);
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
 		return;
 	}
