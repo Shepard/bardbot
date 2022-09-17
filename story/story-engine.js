@@ -6,6 +6,7 @@
 
 import inkjs from 'inkjs';
 import { ErrorType } from 'inkjs/engine/Error.js';
+import { MessageEmbed } from 'discord.js';
 import { quote } from '@discordjs/builders';
 import { parseCharacters, parseMetadata } from './story-information-extractor.js';
 import {
@@ -27,7 +28,8 @@ import { getGuildConfig } from '../storage/guild-config-dao.js';
 import {
 	MESSAGE_ACTION_ROW_LIMIT,
 	ACTION_ROW_BUTTON_LIMIT,
-	MESSAGE_CONTENT_CHARACTER_LIMIT
+	EMBED_DESCRIPTION_CHARACTER_LIMIT,
+	COLOUR_DISCORD_YELLOW
 } from '../util/discord-constants.js';
 import { translate } from '../util/i18n.js';
 import { splitTextAtWhitespace } from '../util/helpers.js';
@@ -516,9 +518,15 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				message += '\n' + translate('commands.story.editor-report.no-repeat', { lng: locale });
 
 				// This *might* split up a quoted line but it's probably unlikely enough that it doesn't matter, it just looks a bit ugly/confusing then.
-				const messages = splitTextAtWhitespace(message, MESSAGE_CONTENT_CHARACTER_LIMIT);
+				const messages = splitTextAtWhitespace(message, EMBED_DESCRIPTION_CHARACTER_LIMIT);
 				const dmChannel = await guildMember.createDM();
-				await Promise.all(messages.map(msg => dmChannel.send(msg)));
+				await Promise.all(
+					messages.map(msg =>
+						dmChannel.send({
+							embeds: [new MessageEmbed().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
+						})
+					)
+				);
 
 				markIssueAsReported(storyRecord.id, reportType);
 			}
@@ -562,13 +570,19 @@ async function resetStoryPlayStateAndInformPlayer(userId, storyRecord, guild, lo
 	// Make sure the user is still in the guild.
 	if (guildMember) {
 		const dmChannel = await guildMember.createDM();
-		await dmChannel.send(
-			translate('commands.config-story.story-state-reset-notification', {
-				storyTitle: storyRecord.title,
-				serverName: guild.name,
-				lng: locale
-			})
-		);
+		await dmChannel.send({
+			embeds: [
+				new MessageEmbed()
+					.setDescription(
+						translate('commands.config-story.story-state-reset-notification', {
+							storyTitle: storyRecord.title,
+							serverName: guild.name,
+							lng: locale
+						})
+					)
+					.setColor(COLOUR_DISCORD_YELLOW)
+			]
+		});
 
 		// TODO start story and send intro again? otherwise the user has to manually trigger the state command.
 	}
