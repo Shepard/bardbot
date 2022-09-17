@@ -357,6 +357,11 @@ async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
 				case StoryErrorType.StoryNotContinueable:
 					await errorReply(interaction, t.user('reply.could-not-continue-story'));
 					return;
+				case StoryErrorType.TemporaryProblem:
+					// Re-enable the buttons so user can try again.
+					await resetSelectionButtons(interaction);
+					await errorReply(interaction, t.user('reply.temporary-problem'));
+					return;
 				case StoryErrorType.CouldNotSaveState: {
 					const components = [
 						{
@@ -399,6 +404,9 @@ async function handleRestartStory(interaction, t, logger) {
 					return;
 				case StoryErrorType.StoryNotContinueable:
 					await errorReply(interaction, t.user('reply.story-state-fetch-failure'));
+					return;
+				case StoryErrorType.TemporaryProblem:
+					await errorReply(interaction, t.user('reply.temporary-problem'));
 					return;
 				case StoryErrorType.CouldNotSaveState: {
 					const components = [
@@ -455,6 +463,9 @@ async function handleShowState(interaction, t, logger) {
 					return;
 				case StoryErrorType.StoryNotContinueable:
 					await errorReply(interaction, t.user('reply.story-state-fetch-failure'));
+					return;
+				case StoryErrorType.TemporaryProblem:
+					await errorReply(interaction, t.user('reply.temporary-problem'));
 					return;
 			}
 		}

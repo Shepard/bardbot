@@ -533,6 +533,7 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'story-intro2': 'Die Geschichte wird Dir über mehrere Zeilen Text erzählt und immer wieder mal wirst Du mehrere Buttons sehen, die Dir die Wahl geben, wie Du in der Geschichte fortfahren willst. Du kannst jedes Mal nur einen der Buttons drücken, also wähle weise!',
 				'no-story-running': 'Zur Zeit scheinst Du keine Geschichte zu spielen.',
 				'could-not-continue-story': 'In der Geschichte ist ein Fehler aufgetreten und sie kann nicht fortgesetzt werden.',
+				'temporary-problem': 'Beim Versuch, die Geschichte fortzusetzen, ist ein Fehler aufgetreten. Dies könnte ein temporäres Problem sein. Versuch es bitte später nochmal.',
 				'invalid-choice': 'Leider war diese Auswahl ungültig. Entweder liegt ein Problem mit der Geschichte vor, oder Du hast einen veralteten Button angeklickt.',
 				'too-many-choices': '(Leider will Dir die Geschichte mehr Auswahlen anbieten, als ich verarbeiten kann. Daher zeige ich Dir nur die ersten {{choiceLimit}}.)',
 				'stop-story-failure': 'Beim Versuch, die Geschichte zu stoppen, ist ein Fehler aufgetreten.',

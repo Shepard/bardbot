@@ -541,6 +541,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'story-intro2': 'The story will be told to you as lines of text and every so often you will see multiple buttons, giving you a choice of how to continue in the story. You can only press one of the buttons each time, so choose wisely!',
 				'no-story-running': "You don't seem to have a story running at the moment.",
 				'could-not-continue-story': 'The story run into an error and cannot be continued.',
+				'temporary-problem': 'I ran into a problem trying to continue the story. This might be a temporary issue. Please try again later.',
 				'invalid-choice': 'Unfortunately this choice was invalid. Either there is a problem with the story or you clicked on an outdated button.',
 				'too-many-choices': '(Unfortunately the story wants to give you more choices than I can handle, so you only see the first {{choiceLimit}}.)',
 				'stop-story-failure': 'There was an error trying to stop the story.',

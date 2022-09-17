@@ -40,6 +40,7 @@ export const StoryErrorType = Object.freeze({
 	StoryNotStartable: 'StoryNotStartable',
 	NoStoryRunning: 'NoStoryRunning',
 	StoryNotContinueable: 'StoryNotContinueable',
+	TemporaryProblem: 'TemporaryProblem',
 	InvalidChoice: 'InvalidChoice',
 	CouldNotSaveState: 'CouldNotSaveState',
 	TimeBudgetExceeded: 'TimeBudgetExceeded'
@@ -70,16 +71,8 @@ function newError(storyErrorType) {
 	return error;
 }
 
-async function loadStory(storyId, logger) {
-	let storyContent;
-	try {
-		storyContent = await loadStoryContent(storyId);
-	} catch (error) {
-		// If this was a file not found error, we could theoretically throw a StoryNotFound error.
-		// But it would point to an inconsistent state between the database and the harddrive so better to just log it and send the user a generic error.
-		logger.error(error, 'Error while trying to read story file');
-		throw error;
-	}
+async function loadStory(storyId) {
+	const storyContent = await loadStoryContent(storyId);
 	try {
 		return new inkjs.Story(storyContent);
 	} catch (error) {
@@ -110,13 +103,15 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 	}
 	if (storyRecord !== null) {
 		try {
-			inkStory = await loadStory(storyRecord.id, logger);
+			inkStory = await loadStory(storyRecord.id);
 		} catch (error) {
 			if (error.type === 'story-error') {
 				// Usually this should've been captured when the user tried to upload the file and the file would've been rejected.
 				// But theoretically it could happen when a story was already created, we update the Ink engine and the story file becomes incompatible.
 				const issueDetails = error.message;
 				informStoryEditor(client, storyRecord, EditorReportType.InkError, issueDetails, [], logger);
+			} else {
+				logger.error(error, 'Error while trying to load story.');
 			}
 			throw newError(StoryErrorType.StoryNotStartable);
 		}
@@ -161,13 +156,17 @@ export async function continueStory(userId, choiceIndex, client, logger) {
 	try {
 		storyData = await loadCurrentStory(userId, logger);
 	} catch (error) {
-		// TODO we have to differentiate here between a file system error (which hopefully would be a temporary issue and the user might be able to continue the story later on),
-		//  or an error in the story itself in which case we cancelled it and have to tell the user.
-
-		// It is very unlikely we end up here since the same error would have happened when trying to start the story already.
-		// So we probably don't need to tell the uploader about it.
-
-		throw newError(StoryErrorType.StoryNotContinueable);
+		if (error.type === 'story-error') {
+			// If it's a story error, we cancelled the story for the user, so we need to tell them.
+			// We don't log it since it's not a system error but rather a user error (the user being the uploader).
+			// It is very unlikely we end up here since the same error would have happened when trying to start the story already.
+			// So we probably don't need to tell the uploader about it.
+			throw newError(StoryErrorType.StoryNotContinueable);
+		} else {
+			// Other errors like database errors and file system errors might be temporary.
+			logger.error(error, 'Error while trying to load current story.');
+			throw newError(StoryErrorType.TemporaryProblem);
+		}
 	}
 
 	if (storyData === null) {
@@ -197,7 +196,7 @@ async function loadCurrentStory(userId, logger) {
 
 	let inkStory;
 	try {
-		inkStory = await loadStory(currentStoryAndState.storyRecord.id, logger);
+		inkStory = await loadStory(currentStoryAndState.storyRecord.id);
 	} catch (error) {
 		// Usually this should've been captured when the user tried to upload the file and the file would've been rejected.
 		// But theoretically it could happen when a story was already created, we update the Ink engine and the story file becomes incompatible.
@@ -214,7 +213,17 @@ async function loadCurrentStory(userId, logger) {
 	}
 
 	if (currentStoryAndState.storyState !== null) {
-		inkStory.state.LoadJson(currentStoryAndState.storyState);
+		try {
+			inkStory.state.LoadJson(currentStoryAndState.storyState);
+		} catch (error) {
+			error.type = 'story-error';
+			try {
+				clearCurrentStoryPlay(userId);
+			} catch (error) {
+				logger.error(error, 'Story state could not be cleared in database for user %s.', userId);
+			}
+			throw error;
+		}
 	}
 
 	return { inkStory, storyRecord: currentStoryAndState.storyRecord };
@@ -368,13 +377,12 @@ export async function restartStory(userId, client, logger) {
 	try {
 		storyData = await loadCurrentStory(userId, logger);
 	} catch (error) {
-		// TODO we have to differentiate here between a file system error (which hopefully would be a temporary issue and the user might be able to continue the story later on),
-		//  or an error in the story itself in which case we cancelled it and have to tell the user.
-
-		// It is very unlikely we end up here since the same error would have happened when trying to start the story already.
-		// So we probably don't need to tell the uploader about it.
-
-		throw newError(StoryErrorType.StoryNotContinueable);
+		if (error.type === 'story-error') {
+			throw newError(StoryErrorType.StoryNotContinueable);
+		} else {
+			logger.error(error, 'Error while trying to load current story.');
+			throw newError(StoryErrorType.TemporaryProblem);
+		}
 	}
 
 	if (storyData === null) {
@@ -393,13 +401,12 @@ export async function getCurrentStoryState(userId, logger) {
 	try {
 		storyData = await loadCurrentStory(userId, logger);
 	} catch (error) {
-		// TODO we have to differentiate here between a file system error (which hopefully would be a temporary issue and the user might be able to continue the story later on),
-		//  or an error in the story itself in which case we cancelled it and have to tell the user.
-
-		// It is very unlikely we end up here since the same error would have happened when trying to start the story already.
-		// So we probably don't need to tell the uploader about it.
-
-		throw newError(StoryErrorType.StoryNotContinueable);
+		if (error.type === 'story-error') {
+			throw newError(StoryErrorType.StoryNotContinueable);
+		} else {
+			logger.error(error, 'Error while trying to load current story.');
+			throw newError(StoryErrorType.TemporaryProblem);
+		}
 	}
 
 	if (storyData === null) {
