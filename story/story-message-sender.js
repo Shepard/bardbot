@@ -122,21 +122,19 @@ function appendTextMessages(messages, lines, characters) {
 			previousLineWasStandalone = false;
 		}
 
-		for (let tag of line.tags) {
-			// TODO drop support for this tag in favour of just writing URLs as text. we might want to detect those via regex anyway
-			//  and treat them as standalone lines so the author doesn't have to use a standalone tag on them.
-			//  because when combined with other lines, Discord will show the full URL in text and append the image to the end of the block which is not usually what you want in a story.
-			if (tag.startsWith('IMAGE: ')) {
-				flushMessageText();
-				const imageUrl = tag.substring('IMAGE: '.length);
-				// TODO some form of url validation? additional markup? mime-type check?
-				if (imageUrl) {
-					messages.push({ content: imageUrl.trim() });
-				}
-			} else if (tag.toUpperCase() === 'STANDALONE') {
-				flushMessageText();
-				previousLineWasStandalone = true;
-			}
+		// Lines including URLs are automatically set to standalone. This makes sure that images Discord detects from URLs in text are not shown
+		// at the very bottom of a long block of automatically combined lines of text, but where the author intended them to show up,
+		// without requiring the author to mark up every image URL with the STANDALONE tag.
+		// The URL detection is obviously very rough, but it doesn't need to be perfect. It just needs to catch most of the cases.
+		// For all others, the author can help out by using a STANDALONE tag or by living with the fact, that a line wasn't bundled up with others.
+		// (Which is not something authors should care about anyway, it's just an optimisation to send messages out faster.)
+		if (
+			lineText.indexOf('http://') > 0 ||
+			lineText.indexOf('https://') > 0 ||
+			line.tags.find(tag => tag.toUpperCase() === 'STANDALONE')
+		) {
+			flushMessageText();
+			previousLineWasStandalone = true;
 		}
 
 		if (codePointLength(lineText) > messageLimit) {
