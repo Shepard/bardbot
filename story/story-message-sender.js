@@ -112,8 +112,7 @@ function appendTextMessages(messages, lines, characters) {
 			flushMessageText();
 		}
 
-		// TODO case insensistive checking
-		if (line.tags.includes('PAUSE')) {
+		if (line.tags.find(tag => tag.toUpperCase() === 'PAUSE')) {
 			flushMessageText();
 			messages.push({ specialHandling: SpecialHandling.Delay });
 		}
@@ -134,8 +133,7 @@ function appendTextMessages(messages, lines, characters) {
 				if (imageUrl) {
 					messages.push({ content: imageUrl.trim() });
 				}
-			} else if (tag === 'STANDALONE') {
-				// TODO case insensistive checking
+			} else if (tag.toUpperCase() === 'STANDALONE') {
 				flushMessageText();
 				previousLineWasStandalone = true;
 			}
@@ -280,9 +278,8 @@ function parseChoiceButtonStyles(choices) {
 		let text = choice.text;
 		let style = Constants.MessageButtonStyles.SECONDARY;
 		const separatorIndex = text.indexOf(':');
-		// TODO case insensistive checking
-		if (text.startsWith('STYLE_') && separatorIndex > 0) {
-			const styleRaw = text.substring('STYLE_'.length, separatorIndex);
+		if (text.toUpperCase().startsWith('STYLE_') && separatorIndex > 0) {
+			const styleRaw = text.substring('STYLE_'.length, separatorIndex).toUpperCase();
 			switch (styleRaw) {
 				case 'PRIMARY':
 					style = Constants.MessageButtonStyles.PRIMARY;
