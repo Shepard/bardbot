@@ -120,8 +120,10 @@ const storyCommand = {
 			const choiceIndex = parseInt(innerCustomId.substring('choice '.length));
 			await handleChoiceSelection(interaction, choiceIndex, t, logger);
 		} else if (innerCustomId.startsWith('start ')) {
-			const storyId = innerCustomId.substring('start '.length);
-			await startStoryWithId(interaction, storyId, t, logger);
+			const spaceIndex = innerCustomId.lastIndexOf(' ');
+			const storyId = innerCustomId.substring('start '.length, spaceIndex);
+			const guildId = innerCustomId.substring(spaceIndex + 1);
+			await startStoryWithId(interaction, storyId, guildId, t, logger);
 		} else if (innerCustomId.startsWith('restart')) {
 			await handleRestartStory(interaction, t, logger);
 		} else if (innerCustomId.startsWith('stop')) {
@@ -136,8 +138,13 @@ const storyCommand = {
 	}
 };
 
-function getStartButton(t, storyId) {
-	return getTranslatedStoryButton(t, 'start-button-label', 'start ' + storyId, Constants.MessageButtonStyles.SUCCESS);
+function getStartButton(t, storyId, guildId) {
+	return getTranslatedStoryButton(
+		t,
+		'start-button-label',
+		'start ' + storyId + ' ' + guildId,
+		Constants.MessageButtonStyles.SUCCESS
+	);
 }
 
 function getRestartButton(t) {
@@ -172,6 +179,10 @@ function getStoryButtonId(innerCustomId) {
 	return getCustomIdForCommandRouting(storyCommand, innerCustomId);
 }
 
+export function getStartStoryButtonId(storyId, guildId) {
+	return getStoryButtonId('start ' + storyId + ' ' + guildId);
+}
+
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	const storyId = interaction.options.getString('title');
@@ -204,7 +215,7 @@ async function handleShowStories(interaction, t, logger) {
 export async function postStory(storyId, publicly, interaction, guildConfig, logger) {
 	// Make sure we use a translator tailored to this command when called from somewhere else, so that we can get to the right tanslations.
 	const storyT = getTranslatorForInteraction(interaction, storyCommand, guildConfig);
-	await postStoryInner(storyId, true, interaction, storyT, logger);
+	await postStoryInner(storyId, publicly, interaction, storyT, logger);
 }
 
 async function postStoryInner(storyId, publicly, interaction, t, logger) {
@@ -237,10 +248,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 	const components = [
 		{
 			type: Constants.MessageComponentTypes.ACTION_ROW,
-			components: [getStartButton(publicly ? t.guild : t.user, storyId)],
-			allowed_mentions: {
-				parse: []
-			}
+			components: [getStartButton(publicly ? t.guild : t.user, storyId, interaction.guildId)]
 		}
 	];
 	await interaction.reply({
@@ -266,20 +274,20 @@ function getStoryEmbed(metadata, message) {
 
 async function handleStartStory(interaction, t, logger) {
 	const storyId = interaction.options.getString('title', true);
-	await startStoryWithId(interaction, storyId, t, logger);
+	await startStoryWithId(interaction, storyId, interaction.guildId, t, logger);
 }
 
-async function startStoryWithId(interaction, storyId, t, logger) {
+async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		const stepData = await startStory(interaction.user.id, storyId, interaction.guildId, interaction.client, logger);
+		const stepData = await startStory(interaction.user.id, storyId, guildId, interaction.client, logger);
 
 		await interaction.editReply({
 			content: startingStoryMessages.any(t.user),
 			ephemeral: true
 		});
-		// TODO put buttons in there
+		// TODO put buttons in there. they would need the guildId since this interaction might be outside of a guild.
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
 		await sendStoryStepData(interaction, stepData, t, getStoryButtonId);
 	} catch (error) {

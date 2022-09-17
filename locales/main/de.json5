@@ -239,7 +239,8 @@
 			'metadata-dialog-title-field-label': 'Titel',
 			'metadata-dialog-author-field-label': 'Autor:in',
 			'metadata-dialog-teaser-field-label': 'Anreißer',
-			'story-state-reset-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen musste. Die Geschichte fängt nochmal von vorn an.',
+			'story-updated-and-stopped-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen und die Geschichte für Dich stoppen musste. Du kannst sie nochmal von vorn anfangen, indem Du den Button unten anklickst.',
+			'restart-button-label': 'Geschichte wieder starten',
 			reply: {
 				'wrong-content-type': 'Die von Dir hochgeladene Datei hat das falsche Dateiformat. Lade bitte eine .json-Datei hoch, die von einer Ink-Datei kompiliert wurde. Der Typ Deiner Datei ist "{{providedType}}".',
 				'file-too-large': 'Die von Dir hochgeladene Datei ist zu groß. Ich kann nur Geschichten bis zu {{maxFileSize, bytes}} akzeptieren.',

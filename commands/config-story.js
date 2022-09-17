@@ -20,8 +20,8 @@ import {
 	disableButtons,
 	sendListReply
 } from '../util/interaction-util.js';
-import { probeStory, StoryErrorType, resetStoryPlayStateAndInformPlayers } from '../story/story-engine.js';
-import { postStory } from './story.js';
+import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../story/story-engine.js';
+import { postStory, getStartStoryButtonId } from './story.js';
 import { trimText } from '../util/helpers.js';
 
 // TODO check that all log statements contain enough context
@@ -347,7 +347,7 @@ async function handleEditStory(interaction, t, logger) {
 	if (storyData) {
 		try {
 			replaceStoryContent(storyId, storyData.storyContent);
-			resetStoryPlayStateAndInformPlayers(story, interaction.client, logger);
+			stopStoryPlayAndInformPlayers(story, interaction.client, getStartStoryButtonId, logger);
 			dataChanged = true;
 		} catch (error) {
 			logger.error(error, 'Error while trying to update file of story.');
@@ -448,10 +448,7 @@ async function handleShowStories(interaction, t, logger) {
 		const components = [
 			{
 				type: Constants.MessageComponentTypes.ACTION_ROW,
-				components: buttons,
-				allowed_mentions: {
-					parse: []
-				}
+				components: buttons
 			}
 		];
 		await interaction.reply({

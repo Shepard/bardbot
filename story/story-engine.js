@@ -6,7 +6,7 @@
 
 import inkjs from 'inkjs';
 import { ErrorType } from 'inkjs/engine/Error.js';
-import { MessageEmbed } from 'discord.js';
+import { Constants, MessageEmbed } from 'discord.js';
 import { quote } from '@discordjs/builders';
 import { parseCharacters, parseMetadata } from './story-information-extractor.js';
 import {
@@ -534,7 +534,7 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 	}
 }
 
-export async function resetStoryPlayStateAndInformPlayers(storyRecord, client, logger) {
+export async function stopStoryPlayAndInformPlayers(storyRecord, client, getStartStoryButtonId, logger) {
 	try {
 		const guild = await client.guilds.fetch(storyRecord.guildId);
 		// Make sure the bot is still in this guild.
@@ -544,13 +544,15 @@ export async function resetStoryPlayStateAndInformPlayers(storyRecord, client, l
 			const currentPlayers = getCurrentPlayers(storyRecord.id);
 			await Promise.allSettled(
 				currentPlayers.map(userId => {
-					return resetStoryPlayStateAndInformPlayer(userId, storyRecord, guild, locale).catch(error => {
-						logger.error(
-							error,
-							'Error while trying to inform player about story play state being reset. Story id: %s',
-							storyRecord.id
-						);
-					});
+					return stopStoryPlayAndInformPlayer(userId, storyRecord, guild, locale, getStartStoryButtonId).catch(
+						error => {
+							logger.error(
+								error,
+								'Error while trying to inform player about story play state being reset. Story id: %s',
+								storyRecord.id
+							);
+						}
+					);
 				})
 			);
 		}
@@ -563,8 +565,8 @@ export async function resetStoryPlayStateAndInformPlayers(storyRecord, client, l
 	}
 }
 
-async function resetStoryPlayStateAndInformPlayer(userId, storyRecord, guild, locale) {
-	resetStoryPlayState(userId);
+async function stopStoryPlayAndInformPlayer(userId, storyRecord, guild, locale, getStartStoryButtonId) {
+	clearCurrentStoryPlay(userId);
 
 	const guildMember = await guild.members.fetch(userId);
 	// Make sure the user is still in the guild.
@@ -574,16 +576,29 @@ async function resetStoryPlayStateAndInformPlayer(userId, storyRecord, guild, lo
 			embeds: [
 				new MessageEmbed()
 					.setDescription(
-						translate('commands.config-story.story-state-reset-notification', {
+						translate('commands.config-story.story-updated-and-stopped-notification', {
 							storyTitle: storyRecord.title,
 							serverName: guild.name,
 							lng: locale
 						})
 					)
 					.setColor(COLOUR_DISCORD_YELLOW)
+			],
+			components: [
+				{
+					type: Constants.MessageComponentTypes.ACTION_ROW,
+					components: [
+						{
+							type: Constants.MessageComponentTypes.BUTTON,
+							style: Constants.MessageButtonStyles.SUCCESS,
+							label: translate('commands.config-story.restart-button-label', {
+								lng: locale
+							}),
+							custom_id: getStartStoryButtonId(storyRecord.id, guild.id)
+						}
+					]
+				}
 			]
 		});
-
-		// TODO start story and send intro again? otherwise the user has to manually trigger the state command.
 	}
 }

@@ -244,7 +244,8 @@
 			'metadata-dialog-title-field-label': 'Title',
 			'metadata-dialog-author-field-label': 'Author',
 			'metadata-dialog-teaser-field-label': 'Teaser',
-			'story-state-reset-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress. The story will start from the beginning.',
+			'story-updated-and-stopped-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress and stop the story for you. You can start from the beginning by pressing the button below.',
+			'restart-button-label': 'Start playing again',
 			reply: {
 				'wrong-content-type': 'The file you uploaded has the wrong file type. Please upload a .json file compiled from an Ink file. The type of your file is "{{providedType}}".',
 				'file-too-large': 'The file you uploaded is too large. I can only accept stories of up to {{maxFileSize, bytes}}.',
