@@ -278,15 +278,14 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId) {
 function parseChoiceButtonStyles(choices) {
 	return choices.map(choice => {
 		let text = choice.text;
-		// TODO test how it looks when using SECONDARY as default.
-		let style = Constants.MessageButtonStyles.PRIMARY;
+		let style = Constants.MessageButtonStyles.SECONDARY;
 		const separatorIndex = text.indexOf(':');
 		// TODO case insensistive checking
 		if (text.startsWith('STYLE_') && separatorIndex > 0) {
 			const styleRaw = text.substring('STYLE_'.length, separatorIndex);
 			switch (styleRaw) {
-				case 'SECONDARY':
-					style = Constants.MessageButtonStyles.SECONDARY;
+				case 'PRIMARY':
+					style = Constants.MessageButtonStyles.PRIMARY;
 					break;
 				case 'SUCCESS':
 					style = Constants.MessageButtonStyles.SUCCESS;
