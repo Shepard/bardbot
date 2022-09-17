@@ -217,7 +217,6 @@ export async function replaceStoryContent(storyId, storyContent) {
 }
 
 async function writeStoryFile(storyId, storyContent) {
-	// TODO will this overwrite or append
 	await fsPromises.writeFile(getStoryFilePath(storyId), storyContent);
 }
 
@@ -226,8 +225,7 @@ function getStoryFilePath(storyId) {
 }
 
 export async function loadStoryContent(storyId) {
-	// TODO stripping BOM might not be necessary if I write the files to disk myself.
-	return (await fsPromises.readFile(getStoryFilePath(storyId), 'UTF-8')).replace(/^\uFEFF/, ''); //strips the BOM
+	return await fsPromises.readFile(getStoryFilePath(storyId), 'UTF-8');
 }
 
 export function changeStoryMetadata(storyId, { title, author = '', teaser = '' }) {
