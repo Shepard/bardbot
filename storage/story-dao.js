@@ -52,10 +52,12 @@ registerDbInitialisedListener(() => {
 		'INSERT INTO story(id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp) ' +
 			"VALUES(:id, :guildId, :editorId, :title, :author, :teaser, 'Draft', unixepoch())"
 	);
+	// Even though the id is unique across all guilds, this still validates if the story is for the right guild.
+	// Otherwise, with a very small chance, a story in guild A might get deleted, freeing up its id, and a story in guild B gets created with the same UUID.
 	getStoryStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			'FROM story WHERE id = :storyId'
+			'FROM story WHERE id = :storyId AND guild_id = :guildId'
 	);
 	getStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
@@ -78,19 +80,19 @@ registerDbInitialisedListener(() => {
 			"FROM story WHERE guild_id = :guildId AND status = 'Published' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	changeStoryMetadataStatement = db.prepare(
-		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId'
+		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
 	);
 	// Changing the story editor clears all reporting flags (but not the counter, since that could be abused).
 	// Since someone else is now responsible for warnings about this story, they might not have seen existing ones before.
 	changeStoryEditorStatement = db.prepare(
 		'UPDATE story SET editor_id = :editorId, last_changed_timestamp = unixepoch(), reported_ink_error = 0, reported_ink_warning = 0, ' +
-			'reported_maximum_choice_number_exceeded = 0, reported_potential_loop_detected = 0 WHERE id = :storyId'
+			'reported_maximum_choice_number_exceeded = 0, reported_potential_loop_detected = 0 WHERE id = :storyId AND guild_id = :guildId'
 	);
 	changeStoryStatusStatement = db.prepare(
-		'UPDATE story SET status = :status, last_changed_timestamp = unixepoch() WHERE id = :storyId'
+		'UPDATE story SET status = :status, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
 	);
 	changeStoryStatusConditionallyStatement = db.prepare(
-		'UPDATE story SET status = :status, last_changed_timestamp = unixepoch() WHERE id = :storyId AND status = :previousExpectedStatus'
+		'UPDATE story SET status = :status, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId AND status = :previousExpectedStatus'
 	);
 	markInkErrorAsReported = db.prepare(
 		'UPDATE story SET reported_ink_error = 1, last_changed_timestamp = unixepoch() WHERE id = :storyId'
@@ -157,9 +159,8 @@ export async function addStory(storyContent, { title = '', author = '', teaser =
  * @returns An object containing various properties about the story - or null if no story was found.
  * @throws Caller has to handle potential database errors.
  */
-// TODO pass guildId as well and validate against that. probably return null if it doesn't match? check all callers.
-export function getStory(storyId) {
-	const row = getStoryStatement.get({ storyId });
+export function getStory(storyId, guildId) {
+	const row = getStoryStatement.get({ storyId, guildId });
 	if (row) {
 		return mapRowToStoryRecord(row);
 	}
@@ -227,36 +228,36 @@ export async function loadStoryContent(storyId) {
 	return await fsPromises.readFile(getStoryFilePath(storyId), 'UTF-8');
 }
 
-export function changeStoryMetadata(storyId, { title, author = '', teaser = '' }) {
+export function changeStoryMetadata(storyId, guildId, { title, author = '', teaser = '' }) {
 	return db.transaction(() => {
-		const info = changeStoryMetadataStatement.run({ title, author, teaser, storyId });
+		const info = changeStoryMetadataStatement.run({ title, author, teaser, storyId, guildId });
 		if (info.changes > 0) {
-			moveStoryToTesting(storyId);
+			moveStoryToTesting(storyId, guildId);
 			return true;
 		}
 		return false;
 	})();
 }
 
-export function changeStoryEditor(storyId, editorId) {
-	const info = changeStoryEditorStatement.run({ editorId, storyId });
+export function changeStoryEditor(storyId, guildId, editorId) {
+	const info = changeStoryEditorStatement.run({ editorId, storyId, guildId });
 	return info.changes > 0;
 }
 
-export function moveStoryToTesting(storyId) {
-	return setStatus(storyId, StoryStatus.Testing, StoryStatus.Draft);
+export function moveStoryToTesting(storyId, guildId) {
+	return setStatus(storyId, guildId, StoryStatus.Testing, StoryStatus.Draft);
 }
 
-export function publishStory(storyId) {
-	return setStatus(storyId, StoryStatus.Published);
+export function publishStory(storyId, guildId) {
+	return setStatus(storyId, guildId, StoryStatus.Published);
 }
 
-function setStatus(storyId, status, previousExpectedStatus) {
+function setStatus(storyId, guildId, status, previousExpectedStatus) {
 	let info;
 	if (previousExpectedStatus) {
-		info = changeStoryStatusConditionallyStatement.run({ status, storyId, previousExpectedStatus });
+		info = changeStoryStatusConditionallyStatement.run({ status, storyId, guildId, previousExpectedStatus });
 	} else {
-		info = changeStoryStatusStatement.run({ status, storyId });
+		info = changeStoryStatusStatement.run({ status, storyId, guildId });
 	}
 	return info.changes > 0;
 }
@@ -293,7 +294,7 @@ export function markIssueAsReported(storyId, editorReportType) {
 			info = markPotentialLoopDetectedAsReported.run({ storyId });
 			break;
 		default:
-		// TODO throw error?
+			throw new Error('Unknown editor report type: ' + editorReportType);
 	}
 	return info?.changes > 0;
 }

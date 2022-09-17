@@ -210,7 +210,7 @@ export async function postStory(storyId, publicly, interaction, guildConfig, log
 async function postStoryInner(storyId, publicly, interaction, t, logger) {
 	let story = null;
 	try {
-		story = getStory(storyId);
+		story = getStory(storyId, interaction.guildId);
 	} catch (error) {
 		logger.error(error, 'Error while trying to fetch story from db');
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
@@ -273,7 +273,7 @@ async function startStoryWithId(interaction, storyId, t, logger) {
 	await interaction.deferReply({ ephemeral: true });
 
 	try {
-		const stepData = await startStory(interaction.user.id, storyId, interaction.client, logger);
+		const stepData = await startStory(interaction.user.id, storyId, interaction.guildId, interaction.client, logger);
 
 		await interaction.editReply({
 			content: startingStoryMessages.any(t.user),

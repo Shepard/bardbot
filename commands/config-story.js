@@ -327,7 +327,7 @@ async function handleEditStory(interaction, t, logger) {
 	// Otherwise we might be writing a file for a non-existing story.
 	let story = null;
 	try {
-		story = getStory(storyId);
+		story = getStory(storyId, interaction.guildId);
 	} catch (error) {
 		logger.error(error, 'Error while trying to fetch story from db');
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
@@ -359,7 +359,7 @@ async function handleEditStory(interaction, t, logger) {
 	const editorId = interaction.options.getUser('editor')?.id;
 	if (editorId && editorId !== interaction.client.user.id) {
 		try {
-			changeStoryEditor(storyId, editorId);
+			changeStoryEditor(storyId, interaction.guildId, editorId);
 			dataChanged = true;
 		} catch (error) {
 			logger.error(error, 'Error while trying to change editor of story.');
@@ -417,7 +417,7 @@ async function handleShowStories(interaction, t, logger) {
 	if (storyId) {
 		let story = null;
 		try {
-			story = getStory(storyId);
+			story = getStory(storyId, interaction.guildId);
 		} catch (error) {
 			logger.error(error, 'Error while trying to fetch story from db');
 			await errorReply(interaction, t.userShared('story-db-fetch-error'));
@@ -527,14 +527,13 @@ function getConfigStoryButtonId(innerCustomId) {
 async function handleTriggerEditMetadataDialog(interaction, storyId, t, logger) {
 	let storyRecord = null;
 	try {
-		storyRecord = getStory(storyId);
+		storyRecord = getStory(storyId, interaction.guildId);
 	} catch (e) {
 		logger.error(e, 'Error while trying to fetch story from db');
 		await errorReply(interaction, t.userShared('story-db-fetch-error'));
 		return;
 	}
-	// TODO guild validation might go into getStory
-	if (!storyRecord || storyRecord.guildId !== interaction.guildId) {
+	if (!storyRecord) {
 		await errorReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
@@ -592,8 +591,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 
 	let found;
 	try {
-		// TODO validate the story is in the right guild. maybe pass guild id to changeStoryMetadata?
-		found = changeStoryMetadata(storyId, { title, author, teaser });
+		found = changeStoryMetadata(storyId, interaction.guildId, { title, author, teaser });
 	} catch (error) {
 		if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
 			// TODO if the user opens the dialog again, the fields will all be empty (unless something was stored before).
@@ -609,7 +607,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 	if (found) {
 		let storyRecord;
 		try {
-			storyRecord = getStory(storyId);
+			storyRecord = getStory(storyId, interaction.guildId);
 		} catch (error) {
 			logger.error(error, 'Error while trying to fetch story after editing its metadata.');
 			await errorReply(interaction, t.user('reply.edit-failure'));
@@ -649,8 +647,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 async function handlePublishStory(interaction, storyId, t, logger) {
 	let found;
 	try {
-		// TODO validate the story is in the right guild. maybe pass guild id to publishStory?
-		found = publishStory(storyId);
+		found = publishStory(storyId, interaction.guildId);
 	} catch (error) {
 		logger.error(error, 'Error while trying to publish story.');
 		await errorReply(interaction, t.user('reply.publish-failure'));

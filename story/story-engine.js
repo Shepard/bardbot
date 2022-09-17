@@ -88,7 +88,7 @@ async function loadStory(storyId, logger) {
 	}
 }
 
-export async function startStory(userId, storyId, client, logger) {
+export async function startStory(userId, storyId, guildId, client, logger) {
 	if (hasCurrentStoryPlay(userId)) {
 		throw newError(StoryErrorType.AlreadyPlayingDifferentStory);
 	}
@@ -96,7 +96,7 @@ export async function startStory(userId, storyId, client, logger) {
 	let inkStory;
 	let storyRecord;
 	try {
-		storyRecord = getStory(storyId);
+		storyRecord = getStory(storyId, guildId);
 	} catch (error) {
 		logger.error(error, 'Error while trying to find story in database');
 		throw newError(StoryErrorType.StoryNotStartable);
