@@ -174,7 +174,7 @@
 							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
 						},
 						editor: {
-							name: 'editor',
+							name: 'herausgebende-person',
 							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
 						}
 					}
@@ -192,7 +192,7 @@
 							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
 						},
 						editor: {
-							name: 'editor',
+							name: 'herausgebende-person',
 							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
 						}
 					}
@@ -231,13 +231,13 @@
 			'story-line': '{{title}} (von {{author}}) [{{status}}]',
 			'story-status-Testing': 'Im Test',
 			'story-status-Published': 'Veröffentlicht',
-			'show-field-editor': 'Editor:in',
+			'show-field-editor': 'Herausgebende Person',
 			'show-field-status': 'Status',
 			'edit-metadata-button-label': 'Metadaten bearbeiten',
 			'publish-button-label': 'Geschichte veröffentlichen',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
 			'metadata-dialog-title-field-label': 'Titel',
-			'metadata-dialog-author-field-label': 'Autor:in',
+			'metadata-dialog-author-field-label': 'Verfassende Person',
 			'metadata-dialog-teaser-field-label': 'Anreißer',
 			'story-updated-and-stopped-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen und die Geschichte für Dich stoppen musste. Du kannst sie nochmal von vorn anfangen, indem Du den Button unten anklickst.',
 			'restart-button-label': 'Geschichte wieder starten',
@@ -532,6 +532,7 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'starting-story6': 'Darf ich Dich auf Deine Direktnachrichten verweisen, wo wir unverzüglich Deine Reise beginnen mögen.',
 				'story-intro1': 'Du spielst jetzt diese Geschichte. Du kannst sie neu starten oder aufhören, sie zu spielen, verlierst dann aber Deinen Fortschritt.',
 				'story-intro2': 'Die Geschichte wird Dir über mehrere Zeilen Text erzählt und immer wieder mal wirst Du mehrere Buttons sehen, die Dir die Wahl geben, wie Du in der Geschichte fortfahren willst. Du kannst jedes Mal nur einen der Buttons drücken, also wähle weise!',
+				'story-intro3': 'Der Inhalt dieser Geschichte liegt in der alleinigen Verantwortung seiner Herausgebenden und ist nicht mit diesem Bot oder seinen Entwickelnden in Beziehung zu setzen. Bei Problemen mit dem Inhalt, wende Dich bitte an die Administrierenden des Servers.',
 				'no-story-running': 'Zur Zeit scheinst Du keine Geschichte zu spielen.',
 				'could-not-continue-story': 'In der Geschichte ist ein Fehler aufgetreten und sie kann nicht fortgesetzt werden.',
 				'temporary-problem': 'Beim Versuch, die Geschichte fortzusetzen, ist ein Fehler aufgetreten. Dies könnte ein temporäres Problem sein. Versuch es bitte später nochmal.',

@@ -336,9 +336,11 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 }
 
 async function sendStoryIntro(interaction, metadata, t) {
-	// TODO add disclaimer that the content of the story is the sole responsibility of the author and the bot cannot be held responsible for it.
-	//  similarly for /narrate, /alt, /goto, /bookmark? maybe not for command reply but somewhere else.
-	await sendStoryEmbed(interaction, metadata, t.user('reply.story-intro1') + '\n' + t.user('reply.story-intro2'));
+	await sendStoryEmbed(
+		interaction,
+		metadata,
+		t.user('reply.story-intro1') + '\n' + t.user('reply.story-intro2') + '\n' + t.user('reply.story-intro3')
+	);
 }
 
 async function sendStoryEmbed(interaction, metadata, message) {

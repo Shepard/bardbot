@@ -540,6 +540,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'starting-story6': 'May I direct you to your direct messages, where we shall hastily begin your journey.',
 				'story-intro1': 'You are now playing this story. You can restart it or stop playing it at any time, however you will lose your progress.',
 				'story-intro2': 'The story will be told to you as lines of text and every so often you will see multiple buttons, giving you a choice of how to continue in the story. You can only press one of the buttons each time, so choose wisely!',
+				'story-intro3': 'The content of this story is the sole responsibility of its publishers and not associated with this bot or its developers. For any problems with the content, please contact the administrators of the server.',
 				'no-story-running': "You don't seem to have a story running at the moment.",
 				'could-not-continue-story': 'The story run into an error and cannot be continued.',
 				'temporary-problem': 'I ran into a problem trying to continue the story. This might be a temporary issue. Please try again later.',
