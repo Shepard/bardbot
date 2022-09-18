@@ -23,6 +23,7 @@ import {
 import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../story/story-engine.js';
 import { postStory, getStartStoryButtonId } from './story.js';
 import { trimText } from '../util/helpers.js';
+import { updateCommandsAfterConfigChange } from './config.js';
 
 const MAX_STORY_FILE_SIZE = 1000000;
 // Limiting the length of the title to this so that the title is a valid option label in the autocomplete for stories.
@@ -401,6 +402,8 @@ async function handleEditStory(interaction, t, logger) {
 		content: 'Deleting stories has not been implemented yet. *shrug*',
 		ephemeral: true
 	});
+
+	await updateCommandsAfterConfigChange(interaction, t, logger);
 }*/
 
 /**
@@ -634,6 +637,8 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 			],
 			ephemeral: true
 		});
+
+		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
 		await errorReply(interaction, t.userShared('story-not-found'));
 	}
@@ -651,6 +656,8 @@ async function handlePublishStory(interaction, storyId, t, logger) {
 	if (found) {
 		await disableButtons(interaction);
 		await t.privateReply(interaction, 'reply.publish-success');
+
+		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
 		await errorReply(interaction, t.userShared('story-not-found'));
 	}

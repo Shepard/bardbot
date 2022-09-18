@@ -39,7 +39,7 @@ registerDbInitialisedListener(() => {
 	findMatchingAltsStatement = db.prepare(
 		"SELECT name, usable_by_id, usable_by_type FROM alt WHERE guild_id = :guildId AND name LIKE :pattern ESCAPE '#' ORDER BY name"
 	);
-	countAltsStatement = db.prepare('SELECT count(id) AS number FROM alt WHERE guild_id = :guildId');
+	countAltsStatement = db.prepare('SELECT count(id) FROM alt WHERE guild_id = :guildId').pluck();
 	editAltStatement = db.prepare(
 		'UPDATE alt SET name = :name, usable_by_id = :usableById, usable_by_type = :usableByType, avatar_url = :avatarUrl WHERE id = :id'
 	);
@@ -135,7 +135,7 @@ export function findMatchingAlts(guildId, searchInput, logger) {
 export function getNumberOfAlts(guildId, logger) {
 	try {
 		const result = countAltsStatement.get({ guildId });
-		return result?.number ?? 0;
+		return result ?? 0;
 	} catch (e) {
 		logger.error(e);
 		return 0;

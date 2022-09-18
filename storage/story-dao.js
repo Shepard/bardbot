@@ -29,6 +29,7 @@ let getStoriesStatement = null;
 let getPublishedStoriesStatement = null;
 let findMatchingStoriesStatement = null;
 let findMatchingPublishedStoriesStatement = null;
+let countStoriesStatement = null;
 let changeStoryMetadataStatement = null;
 let changeStoryEditorStatement = null;
 let changeStoryStatusStatement = null;
@@ -59,6 +60,7 @@ registerDbInitialisedListener(() => {
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			'FROM story WHERE id = :storyId AND guild_id = :guildId'
 	);
+	// TODO later: also exclude 'ToBeDeleted' stories (and in a few other queries as well).
 	getStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
@@ -79,6 +81,9 @@ registerDbInitialisedListener(() => {
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			"FROM story WHERE guild_id = :guildId AND status = 'Published' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
+	countStoriesStatement = db
+		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft'")
+		.pluck();
 	changeStoryMetadataStatement = db.prepare(
 		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
 	);
@@ -214,6 +219,21 @@ function mapRowToStoryRecord(row) {
 		reportedPotentialLoopDetected: !!row.reported_potential_loop_detected,
 		timeBudgetExceededCount: row.time_budget_exceeded_count
 	};
+}
+
+/**
+ * Counts the number of stories that exist in a guild.
+ * @param {string} guildId The id of the guild to search.
+ * @returns {number} The number of stories that exist. 0 if there are none or if an error occurred during the database fetching.
+ */
+export function getNumberOfStories(guildId, logger) {
+	try {
+		const result = countStoriesStatement.get({ guildId });
+		return result ?? 0;
+	} catch (error) {
+		logger.error(error, 'Error while trying to count stories in guild %', guildId);
+		return 0;
+	}
 }
 
 export async function replaceStoryContent(storyId, storyContent) {

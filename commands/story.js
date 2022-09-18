@@ -7,7 +7,14 @@ import {
 	getCurrentStoryState
 } from '../story/story-engine.js';
 import { sendStoryStepData } from '../story/story-message-sender.js';
-import { getStory, getStories, findMatchingStories, clearCurrentStoryPlay, StoryStatus } from '../storage/story-dao.js';
+import {
+	getStory,
+	getStories,
+	findMatchingStories,
+	getNumberOfStories,
+	clearCurrentStoryPlay,
+	StoryStatus
+} from '../storage/story-dao.js';
 import { AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
 import {
 	errorReply,
@@ -78,6 +85,10 @@ const storyCommand = {
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
 			}
 		]
+	},
+	// Test function to check if the command should apply to a guild
+	guard(client, guild, guildConfig, logger) {
+		return getNumberOfStories(guild.id, logger) > 0;
 	},
 	// Handler for when the command is used
 	async execute(interaction, { t, logger }) {
