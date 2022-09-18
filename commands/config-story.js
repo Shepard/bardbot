@@ -188,11 +188,12 @@ async function handleCreateStory(interaction, t, logger) {
 
 	const storyData = await loadStoryFromParameter(interaction, true, t);
 	if (storyData) {
-		// If no editor is supplied, default to the user who uploaded the story.
-		let editorId = interaction.options.getUser('editor')?.id ?? interaction.user.id;
-		// We don't allow picking the bot itself as the editor. In this case we just silently default to the current user as well.
-		if (editorId === interaction.client.user.id) {
-			editorId = interaction.user.id;
+		const editor = interaction.options.getUser('editor');
+		// If no editor is supplied or we can't accept the selected user, default to the user who uploaded the story.
+		let editorId = interaction.user.id;
+		// We don't allow picking the bot itself or any other bot (cause we can't DM those) as the editor.
+		if (editor && editor.id !== interaction.client.user.id && !editor.bot) {
+			editorId = editor.id;
 		}
 
 		// Make sure the metadata found in the story file will fit into the text fields in the edit metadata dialog.
@@ -363,8 +364,9 @@ async function handleEditStory(interaction, t, logger) {
 		}
 	}
 
-	const editorId = interaction.options.getUser('editor')?.id;
-	if (editorId && editorId !== interaction.client.user.id) {
+	const editor = interaction.options.getUser('editor');
+	if (editor && editor.id !== interaction.client.user.id && !editor.bot) {
+		const editorId = editor.id;
 		try {
 			changeStoryEditor(storyId, interaction.guildId, editorId);
 			dataChanged = true;
