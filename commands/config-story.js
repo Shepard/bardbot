@@ -210,6 +210,7 @@ async function handleCreateStory(interaction, t, logger) {
 		// But downloading and probing the story and writing it to disk might take longer than that, so not risking it.
 
 		// TODO if the title was successfully set, we could change the reply a bit and already show the story embed and a publish button.
+		//  the edit metadata button style would then change to SECONDARY.
 		const reply = {
 			content: t.user('reply.story-draft-created'),
 			components: [
@@ -378,7 +379,13 @@ async function handleEditStory(interaction, t, logger) {
 		components: [
 			{
 				type: Constants.MessageComponentTypes.ACTION_ROW,
-				components: [getEditMetadataButton(t, storyId)]
+				components: [
+					getEditMetadataButton(
+						t,
+						storyId,
+						dataChanged ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.PRIMARY
+					)
+				]
 			}
 		],
 		ephemeral: true
@@ -441,7 +448,7 @@ async function handleShowStories(interaction, t, logger) {
 			{ name: t.user('show-field-editor'), value: userMention(story.editorId), inline: false },
 			{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
 		]);
-		const buttons = [getEditMetadataButton(t, storyId)];
+		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
 		if (story.status === StoryStatus.Testing) {
 			buttons.push(getPublishButton(t, storyId));
 		}
@@ -488,8 +495,8 @@ async function handlePostStory(interaction, t, logger, guildConfig) {
 	await postStory(storyId, true, interaction, guildConfig, logger);
 }
 
-function getEditMetadataButton(t, storyId) {
-	return getTranslatedConfigStoryButton(t, 'edit-metadata-button-label', 'edit-metadata ' + storyId);
+function getEditMetadataButton(t, storyId, style) {
+	return getTranslatedConfigStoryButton(t, 'edit-metadata-button-label', 'edit-metadata ' + storyId, style);
 }
 
 // TODO this could be confused with posting the story. there's no clear enough explanation what this does. maybe rename it (and the status) to "Release" ("Released")?
@@ -620,7 +627,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 			storyEmbed.setDescription(teaser);
 		}
 		let content = t.user('reply.story-metadata-updated');
-		const buttons = [getEditMetadataButton(t, storyId)];
+		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
 		// TODO later: "Playtest" button
 		if (storyRecord.status === StoryStatus.Testing) {
 			content += '\n' + t.user('reply.story-possible-actions-in-testing');
