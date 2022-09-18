@@ -233,6 +233,7 @@
 			'story-status-Published': 'Veröffentlicht',
 			'show-field-editor': 'Herausgebende Person',
 			'show-field-status': 'Status',
+			'undo-delete-button-label': 'Löschung rückgängig machen',
 			'edit-metadata-button-label': 'Metadaten bearbeiten',
 			'publish-button-label': 'Geschichte veröffentlichen',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
@@ -256,6 +257,10 @@
 				'edit-metadata-prompt': 'Du kannst die Metadaten der Geschichte bearbeiten, indem Du den Button unten anklickst.',
 				'story-metadata-updated': 'Die Metadaten wurden geändert. Und so sieht Deine Geschichte jetzt aus.',
 				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, oder Du kannst sie jetzt veröffentlichen.',
+				'delete-failure': 'Löschen der Geschichte fehlgeschlagen.',
+				'delete-success': 'Die Geschichte "{{storyTitle}}" wurde entfernt und wird zu einem späteren Zeitpunkt vollständig gelöscht. Du kannst das rückgängig machen, indem Du den Button unten anklickst. Alle aktuellen Durchläufe wurden für die Spielenden allerdings gestoppt und dies kann nicht rückgängig gemacht werden.',
+				'undo-delete-failure': 'Wiederherstellen der Geschichte fehlgeschlagen.',
+				'undo-delete-success': 'Die Geschichte wurde wiederhergestellt und wird nicht gelöscht. Alle, die sie zuvor gespielt haben, müssen sie allerdings selbst wieder starten.',
 				'publish-success': 'Die Geschichte ist jetzt live und bereit, von allen gespielt zu werden.',
 				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
 				'show-stories': 'Die folgenden Geschichten gibt es zur Zeit auf diesem Server. Benutze `/konfig-geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.'

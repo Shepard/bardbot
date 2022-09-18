@@ -10,6 +10,8 @@ import {
 	changeStoryMetadata,
 	changeStoryEditor,
 	publishStory,
+	markStoryForDeletion,
+	setStoryStatus,
 	StoryStatus
 } from '../storage/story-dao.js';
 import { AUTOCOMPLETE_CHOICE_LIMIT, COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT } from '../util/discord-constants.js';
@@ -79,7 +81,7 @@ const configStoryCommand = {
 					}
 				]
 			},
-			/*{
+			{
 				name: 'delete',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
@@ -91,7 +93,7 @@ const configStoryCommand = {
 						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
 					}
 				]
-			},*/
+			},
 			{
 				name: 'show',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
@@ -127,8 +129,8 @@ const configStoryCommand = {
 			await handleCreateStory(interaction, t, logger);
 		} else if (subcommand === 'edit') {
 			await handleEditStory(interaction, t, logger);
-			//} else if (subcommand === 'delete') {
-			//	await handleDeleteStory(interaction, t, logger);
+		} else if (subcommand === 'delete') {
+			await handleDeleteStory(interaction, t, logger);
 		} else if (subcommand === 'show') {
 			await handleShowStories(interaction, t, logger);
 		} else if (subcommand === 'post') {
@@ -163,6 +165,11 @@ const configStoryCommand = {
 		if (innerCustomId.startsWith('edit-metadata ')) {
 			const storyId = innerCustomId.substring('edit-metadata '.length);
 			await handleTriggerEditMetadataDialog(interaction, storyId, t, logger);
+		} else if (innerCustomId.startsWith('undo-delete ')) {
+			const spaceIndex = innerCustomId.lastIndexOf(' ');
+			const storyId = innerCustomId.substring('undo-delete '.length, spaceIndex);
+			const previousStatus = innerCustomId.substring(spaceIndex + 1);
+			await handleUndoDeleteStory(interaction, storyId, previousStatus, t, logger);
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
 			await handlePublishStory(interaction, storyId, t, logger);
@@ -398,20 +405,61 @@ async function handleEditStory(interaction, t, logger) {
 	}
 }
 
-/*async function handleDeleteStory(interaction, t, logger) {
-	// TODO later: implement
-	//  deleting a story will delete all current and past plays of it from players.
-	//  do I want to request confirmation first?
-	//  or maybe put the story into a ToBeDeleted status, provide an undo button in the success message, and only clean up ToBeDeleted stories after a while.
-	//  ToBeDeleted stories don't show up in any list.
-	//  need to decide if this would still interrupt a user's play of the story.
-	await interaction.reply({
-		content: 'Deleting stories has not been implemented yet. *shrug*',
-		ephemeral: true
-	});
+async function handleDeleteStory(interaction, t, logger) {
+	const storyId = interaction.options.getString('title');
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
-}*/
+	let story;
+	try {
+		// TODO should the players be informed?
+		story = markStoryForDeletion(storyId, interaction.guildId);
+	} catch (error) {
+		logger.error(error, 'Error while trying to mark story %s for deletion.', storyId);
+		await errorReply(interaction, t.user('reply.delete-failure'));
+		return;
+	}
+
+	if (story) {
+		await interaction.reply({
+			content: t.user('reply.delete-success', { storyTitle: story.title }),
+			components: [
+				{
+					type: Constants.MessageComponentTypes.ACTION_ROW,
+					components: [getUndoDeleteButton(t, storyId, story.status)]
+				}
+			],
+			ephemeral: true
+		});
+
+		await updateCommandsAfterConfigChange(interaction, t, logger);
+	} else {
+		await errorReply(interaction, t.userShared('story-not-found'));
+	}
+}
+
+async function handleUndoDeleteStory(interaction, storyId, previousStatus, t, logger) {
+	if (StoryStatus[previousStatus] !== previousStatus) {
+		logger.warn("Invalid previous status '%s' received for undoing deletion of story %s.", previousStatus, storyId);
+		await errorReply(interaction, t.user('reply.undo-delete-failure'));
+		return;
+	}
+
+	let found;
+	try {
+		found = setStoryStatus(storyId, interaction.guildId, previousStatus, StoryStatus.ToBeDeleted);
+	} catch (error) {
+		logger.error(error, 'Error while trying to undo delete of story %s.', storyId);
+		await errorReply(interaction, t.user('reply.undo-delete-failure'));
+		return;
+	}
+
+	if (found) {
+		await disableButtons(interaction);
+		await t.privateReply(interaction, 'reply.undo-delete-success');
+		await updateCommandsAfterConfigChange(interaction, t, logger);
+	} else {
+		await errorReply(interaction, t.userShared('story-not-found'));
+	}
+}
 
 /**
  * The difference to "/story show" is that it will show stories that are not visible to others
@@ -497,6 +545,10 @@ async function handlePostStory(interaction, t, logger, guildConfig) {
 
 function getEditMetadataButton(t, storyId, style) {
 	return getTranslatedConfigStoryButton(t, 'edit-metadata-button-label', 'edit-metadata ' + storyId, style);
+}
+
+function getUndoDeleteButton(t, storyId, previousStatus) {
+	return getTranslatedConfigStoryButton(t, 'undo-delete-button-label', 'undo-delete ' + storyId + ' ' + previousStatus);
 }
 
 // TODO this could be confused with posting the story. there's no clear enough explanation what this does. maybe rename it (and the status) to "Release" ("Released")?
@@ -658,6 +710,7 @@ async function handlePublishStory(interaction, storyId, t, logger) {
 	} catch (error) {
 		logger.error(error, 'Error while trying to publish story %s.', storyId);
 		await errorReply(interaction, t.user('reply.publish-failure'));
+		return;
 	}
 
 	if (found) {
@@ -674,6 +727,8 @@ async function handlePublishStory(interaction, storyId, t, logger) {
 
 	// TODO later: via config commands you can publish a story for everyone or selectively or you can set unlock triggers
 	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
+
+	// TODO later: have a button for moving a story back to testing?
 }
 
 export default configStoryCommand;

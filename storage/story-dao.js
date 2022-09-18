@@ -15,7 +15,8 @@ export const EditorReportType = Object.freeze({
 export const StoryStatus = Object.freeze({
 	Draft: 'Draft',
 	Testing: 'Testing',
-	Published: 'Published'
+	Published: 'Published',
+	ToBeDeleted: 'ToBeDeleted'
 });
 
 const storyFilesDir = FILES_DIR + path.sep + 'stories';
@@ -40,10 +41,13 @@ let markMaximumChoiceNumberExceededAsReported = null;
 let markPotentialLoopDetectedAsReported = null;
 let increaseTimeBudgetExceededCounterStatement = null;
 let clearWarningFlagsAndCountersStatement = null;
+let getStoriesToDeleteStatement = null;
+let deleteObsoleteStoriesStatement = null;
 let getStoryPlayStatement = null;
 let hasStoryPlayStatement = null;
 let addStoryPlayStatement = null;
 let clearStoryPlayStatement = null;
+let clearStoryPlaysStatement = null;
 let saveStoryPlayStateStatement = null;
 let resetStoryPlayStateStatement = null;
 let getCurrentPlayersStatement = null;
@@ -60,11 +64,10 @@ registerDbInitialisedListener(() => {
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			'FROM story WHERE id = :storyId AND guild_id = :guildId'
 	);
-	// TODO later: also exclude 'ToBeDeleted' stories (and in a few other queries as well).
 	getStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND status != 'Draft' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted' ORDER BY title"
 	);
 	getPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
@@ -74,7 +77,7 @@ registerDbInitialisedListener(() => {
 	findMatchingStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND status != 'Draft' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	findMatchingPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
@@ -82,7 +85,7 @@ registerDbInitialisedListener(() => {
 			"FROM story WHERE guild_id = :guildId AND status = 'Published' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	countStoriesStatement = db
-		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft'")
+		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted'")
 		.pluck();
 	changeStoryMetadataStatement = db.prepare(
 		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
@@ -118,6 +121,18 @@ registerDbInitialisedListener(() => {
 		'UPDATE story SET reported_ink_error = 0, reported_ink_warning = 0, reported_maximum_choice_number_exceeded = 0, ' +
 			'reported_potential_loop_detected = 0, time_budget_exceeded_count = 0, last_changed_timestamp = unixepoch() WHERE id = :storyId'
 	);
+	// We could use unixepoch() here but the advantage of passing it in from the outside is that
+	// we can pass the same value to the delete query to make sure they return the same result.
+	getStoriesToDeleteStatement = db
+		.prepare(
+			"SELECT id FROM story WHERE status == 'Draft' OR status == 'ToBeDeleted' AND :secondsSinceEpoch - last_changed_timestamp > 60 * 60 * 24"
+		)
+		.pluck();
+	// This should also delete related plays via ON DELETE CASCADE.
+	// TODO later: test this for past plays once implemented. current plays won't exist for stories in that status anyway.
+	deleteObsoleteStoriesStatement = db.prepare(
+		"DELETE FROM story WHERE status == 'Draft' OR status == 'ToBeDeleted' AND :secondsSinceEpoch - last_changed_timestamp > 60 * 60 * 24"
+	);
 	getStoryPlayStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count, ' +
@@ -126,6 +141,7 @@ registerDbInitialisedListener(() => {
 	hasStoryPlayStatement = db.prepare('SELECT story_id FROM story_play WHERE user_id = :userId').pluck();
 	addStoryPlayStatement = db.prepare('INSERT INTO story_play(user_id, story_id) VALUES(:userId, :storyId)');
 	clearStoryPlayStatement = db.prepare('DELETE FROM story_play WHERE user_id = :userId');
+	clearStoryPlaysStatement = db.prepare('DELETE FROM story_play WHERE story_id = :storyId');
 	saveStoryPlayStateStatement = db.prepare('UPDATE story_play SET state_json = :stateJson WHERE user_id = :userId');
 	resetStoryPlayStateStatement = db.prepare('UPDATE story_play SET state_json = NULL WHERE user_id = :userId');
 	getCurrentPlayersStatement = db.prepare('SELECT user_id FROM story_play WHERE story_id = :storyId').pluck();
@@ -245,6 +261,10 @@ async function writeStoryFile(storyId, storyContent) {
 	await fsPromises.writeFile(getStoryFilePath(storyId), storyContent);
 }
 
+async function deleteStoryFile(storyId) {
+	await fsPromises.rm(getStoryFilePath(storyId));
+}
+
 function getStoryFilePath(storyId) {
 	return storyFilesDir + path.sep + storyId + '.json';
 }
@@ -270,14 +290,32 @@ export function changeStoryEditor(storyId, guildId, editorId) {
 }
 
 function moveStoryToTesting(storyId, guildId) {
-	return setStatus(storyId, guildId, StoryStatus.Testing, StoryStatus.Draft);
+	return setStoryStatus(storyId, guildId, StoryStatus.Testing, StoryStatus.Draft);
 }
 
 export function publishStory(storyId, guildId) {
-	return setStatus(storyId, guildId, StoryStatus.Published);
+	return setStoryStatus(storyId, guildId, StoryStatus.Published);
 }
 
-function setStatus(storyId, guildId, status, previousExpectedStatus) {
+/**
+ * Marks a story for automatic deletion at a later point (by setting its status to ToBeDeleted).
+ * The story will not appear in any lists or searches anymore.
+ * Also clears current plays for everyone playing the story.
+ * @returns The story record of the story in its state before being marked for deletion, so that it can be restored later on, or null if the story was not found.
+ */
+export function markStoryForDeletion(storyId, guildId) {
+	return db.transaction(() => {
+		const story = getStory(storyId, guildId);
+		if (story) {
+			setStoryStatus(storyId, guildId, StoryStatus.ToBeDeleted);
+			clearCurrentStoryPlays(storyId);
+			return story;
+		}
+		return null;
+	})();
+}
+
+export function setStoryStatus(storyId, guildId, status, previousExpectedStatus) {
 	let info;
 	if (previousExpectedStatus) {
 		info = changeStoryStatusConditionallyStatement.run({ status, storyId, guildId, previousExpectedStatus });
@@ -334,7 +372,32 @@ function clearWarningFlagsAndCounters(storyId) {
 	return info.changes > 0;
 }
 
-// TODO later: deleteStory; will delete db record, current and past plays (automatically via cascade) and file
+export async function cleanupStories(logger) {
+	const storyIds = db.transaction(() => {
+		const secondsSinceEpoch = Math.floor(Date.now() / 1000);
+		const storiesToDelete = getStoriesToDeleteStatement.all({ secondsSinceEpoch });
+		const info = deleteObsoleteStoriesStatement.run({ secondsSinceEpoch });
+		if (info.changes !== storiesToDelete.length) {
+			// This should not happen since we only use one db connection so far and everything runs on it in serial.
+			logger.error(
+				'Number of selected stories to delete (%d) did not match number of stories deleted (%d) in cleanup.',
+				storiesToDelete.length,
+				info.changes
+			);
+		}
+		return storiesToDelete;
+	})();
+
+	await Promise.allSettled(
+		storyIds.map(storyId =>
+			deleteStoryFile(storyId).catch(error =>
+				logger.error(error, 'Error while trying to delete file for story %s', storyId)
+			)
+		)
+	);
+
+	return storyIds.length;
+}
 
 export function getCurrentStoryPlay(userId) {
 	const row = getStoryPlayStatement.get({ userId });
@@ -357,6 +420,10 @@ export function saveCurrentStoryPlay(userId, storyId) {
 
 export function clearCurrentStoryPlay(userId) {
 	clearStoryPlayStatement.run({ userId });
+}
+
+function clearCurrentStoryPlays(storyId) {
+	clearStoryPlaysStatement.run({ storyId });
 }
 
 export function saveStoryPlayState(userId, stateJson) {
