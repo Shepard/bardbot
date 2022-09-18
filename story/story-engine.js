@@ -467,7 +467,12 @@ function informStoryEditor(client, storyRecord, reportType, issueDetails, lastLi
 		// This should be a fire-and-forget action for the caller
 		// (so that the reporting doesn't interfere with playing the story)
 		// so we just log it and don't throw it further up the chain.
-		logger.error(error, 'Error while trying to inform story editor about story issues. Story id: %s', storyRecord.id)
+		logger.error(
+			error,
+			'Error while trying to inform story editor %s about story issues. Story id: %s',
+			storyRecord.editorId,
+			storyRecord.id
+		)
 	);
 }
 
@@ -548,7 +553,8 @@ export async function stopStoryPlayAndInformPlayers(storyRecord, client, getStar
 						error => {
 							logger.error(
 								error,
-								'Error while trying to inform player about story play state being reset. Story id: %s',
+								'Error while trying to inform player %s about story play state being reset. Story id: %s',
+								userId,
 								storyRecord.id
 							);
 						}
