@@ -344,7 +344,7 @@ async function sendStoryIntro(interaction, metadata, t) {
 }
 
 async function sendStoryEmbed(interaction, metadata, message) {
-	// TODO Restart and stop buttons? Secondary so they're not too inviting.
+	// TODO Restart and stop buttons? Secondary so they're not too inviting. they would need the guildId since this interaction might be outside of a guild.
 	//  see also interaction.reply in handleShowState which would also need the button. maybe extract a method creating the whole message.
 	await interaction.user.send({
 		embeds: [getStoryEmbed(metadata, message)]
