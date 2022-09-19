@@ -116,12 +116,14 @@ export async function ensureWebhookCorrectness(client, guildId) {
 			})
 		);
 
-		logger.info(
-			'Webhook correctness for guild %s ensured. %d webhook(s) created, %d webhook(s) deleted.',
-			guildId,
-			createdCounter,
-			deletedCounter
-		);
+		if (createdCounter > 0 || deletedCounter > 0) {
+			logger.info(
+				'Webhook correctness for guild %s ensured. %d webhook(s) created, %d webhook(s) deleted.',
+				guildId,
+				createdCounter,
+				deletedCounter
+			);
+		}
 	} catch (e) {
 		logger.error(e, 'Error while trying to ensure webhook correctness for guild %s', guildId);
 		// TODO If the error was that the guild was not found, remove the configuration we have stored for the guild.
