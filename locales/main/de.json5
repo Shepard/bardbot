@@ -510,10 +510,10 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 					description: 'Siehe welche Geschichte Du aktuell spielst und was die letzte Interaktion darin war.'
 				}
 			},
-			'start-button-label': 'Geschichte starten',
-			'state-button-label': 'Zustand aktueller Geschichte prüfen',
-			'stop-button-label': 'Aktuelle Geschichte stoppen',
-			'restart-button-label': 'Aktuelle Geschichte neustarten',
+			'start-button-label': 'Geschichte spielen',
+			'state-button-label': 'Stand aktueller Geschichte prüfen',
+			'stop-button-label': 'Aktuelle Geschichte aufhören',
+			'restart-button-label': 'Aktuelle Geschichte neu beginnen',
 			'story-line': '{{title}} (von {{author}})',
 			'choice-buttons-header': 'Bitte wähle:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
