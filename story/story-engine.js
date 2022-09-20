@@ -19,7 +19,6 @@ import {
 	saveStoryPlayState,
 	resetStoryPlayState,
 	EditorReportType,
-	hasIssueBeenReported,
 	markIssueAsReported,
 	increaseTimeBudgetExceededCounter,
 	getCurrentPlayers
@@ -477,7 +476,7 @@ function informStoryEditor(client, storyRecord, reportType, issueDetails, lastLi
 }
 
 async function informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger) {
-	if (!hasIssueBeenReported(storyRecord, reportType)) {
+	if (!storyRecord.hasIssueBeenReported(reportType)) {
 		const guild = await client.guilds.fetch(storyRecord.guildId);
 		// Make sure the bot is still in this guild.
 		if (guild) {

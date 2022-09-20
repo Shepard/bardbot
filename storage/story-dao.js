@@ -19,6 +19,39 @@ export const StoryStatus = Object.freeze({
 	ToBeDeleted: 'ToBeDeleted'
 });
 
+class StoryRecord {
+	constructor(resultRow) {
+		this.id = resultRow.id;
+		this.guildId = resultRow.guild_id;
+		this.editorId = resultRow.editor_id;
+		this.title = resultRow.title;
+		this.author = resultRow.author;
+		this.teaser = resultRow.teaser;
+		this.status = resultRow.status;
+		this.lastChanged = resultRow.last_changed_timestamp;
+		this.reportedInkError = !!resultRow.reported_ink_error;
+		this.reportedInkWarning = !!resultRow.reported_ink_warning;
+		this.reportedMaximumChoiceNumberExceeded = !!resultRow.reported_maximum_choice_number_exceeded;
+		this.reportedPotentialLoopDetected = !!resultRow.reported_potential_loop_detected;
+		this.timeBudgetExceededCount = resultRow.time_budget_exceeded_count;
+	}
+
+	hasIssueBeenReported(editorReportType) {
+		switch (editorReportType) {
+			case EditorReportType.InkError:
+				return this.reportedInkError;
+			case EditorReportType.InkWarning:
+				return this.reportedInkWarning;
+			case EditorReportType.MaximumChoiceNumberExceeded:
+				return this.reportedMaximumChoiceNumberExceeded;
+			case EditorReportType.PotentialLoopDetected:
+				return this.reportedPotentialLoopDetected;
+			default:
+				return false;
+		}
+	}
+}
+
 const storyFilesDir = FILES_DIR + path.sep + 'stories';
 if (!fs.existsSync(storyFilesDir)) {
 	fs.mkdirSync(storyFilesDir);
@@ -183,7 +216,7 @@ export async function addStory(storyContent, { title = '', author = '', teaser =
 export function getStory(storyId, guildId) {
 	const row = getStoryStatement.get({ storyId, guildId });
 	if (row) {
-		return mapRowToStoryRecord(row);
+		return new StoryRecord(row);
 	}
 	return null;
 }
@@ -195,7 +228,7 @@ export function getStories(guildId, publishedOnly) {
 	} else {
 		statement = getStoriesStatement;
 	}
-	return statement.all({ guildId }).map(mapRowToStoryRecord);
+	return statement.all({ guildId }).map(row => new StoryRecord(row));
 }
 
 export function findMatchingStories(guildId, searchInput, logger, publishedOnly) {
@@ -207,7 +240,7 @@ export function findMatchingStories(guildId, searchInput, logger, publishedOnly)
 		} else {
 			statement = findMatchingStoriesStatement;
 		}
-		return statement.all({ guildId, pattern }).map(mapRowToStoryRecord);
+		return statement.all({ guildId, pattern }).map(row => new StoryRecord(row));
 	} catch (e) {
 		logger.error(
 			e,
@@ -217,24 +250,6 @@ export function findMatchingStories(guildId, searchInput, logger, publishedOnly)
 		);
 		return [];
 	}
-}
-
-function mapRowToStoryRecord(row) {
-	return {
-		id: row.id,
-		guildId: row.guild_id,
-		editorId: row.editor_id,
-		title: row.title,
-		author: row.author,
-		teaser: row.teaser,
-		status: row.status,
-		lastChanged: row.last_changed_timestamp,
-		reportedInkError: !!row.reported_ink_error,
-		reportedInkWarning: !!row.reported_ink_warning,
-		reportedMaximumChoiceNumberExceeded: !!row.reported_maximum_choice_number_exceeded,
-		reportedPotentialLoopDetected: !!row.reported_potential_loop_detected,
-		timeBudgetExceededCount: row.time_budget_exceeded_count
-	};
 }
 
 /**
@@ -330,22 +345,6 @@ export function setStoryStatus(storyId, guildId, status, previousExpectedStatus)
 	return info.changes > 0;
 }
 
-// TODO if story is a prototype instance, this could be a function on the prototype.
-export function hasIssueBeenReported(story, editorReportType) {
-	switch (editorReportType) {
-		case EditorReportType.InkError:
-			return story.reportedInkError;
-		case EditorReportType.InkWarning:
-			return story.reportedInkWarning;
-		case EditorReportType.MaximumChoiceNumberExceeded:
-			return story.reportedMaximumChoiceNumberExceeded;
-		case EditorReportType.PotentialLoopDetected:
-			return story.reportedPotentialLoopDetected;
-		default:
-			return false;
-	}
-}
-
 export function markIssueAsReported(storyId, editorReportType) {
 	let info = null;
 	switch (editorReportType) {
@@ -408,7 +407,7 @@ export function getCurrentStoryPlay(userId) {
 	const row = getStoryPlayStatement.get({ userId });
 	if (row) {
 		return {
-			storyRecord: mapRowToStoryRecord(row),
+			storyRecord: new StoryRecord(row),
 			storyState: row.state_json
 		};
 	}
