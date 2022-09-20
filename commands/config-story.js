@@ -8,7 +8,9 @@ import {
 	getStories,
 	findMatchingStories,
 	changeStoryMetadata,
+	completeStoryMetadata,
 	changeStoryEditor,
+	moveStoryToTesting,
 	publishStory,
 	markStoryForDeletion,
 	setStoryStatus,
@@ -106,24 +108,11 @@ const configStoryCommand = {
 						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
 					}
 				]
-			},
-			{
-				name: 'post',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
-				options: [
-					{
-						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
-						required: true,
-						autocomplete: true,
-						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
-					}
-				]
 			}
 		]
 	},
 	// Handler for when the command is used
-	async execute(interaction, { t, logger, guildConfig }) {
+	async execute(interaction, { t, logger }) {
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'create') {
 			await handleCreateStory(interaction, t, logger);
@@ -133,8 +122,6 @@ const configStoryCommand = {
 			await handleDeleteStory(interaction, t, logger);
 		} else if (subcommand === 'show') {
 			await handleShowStories(interaction, t, logger);
-		} else if (subcommand === 'post') {
-			await handlePostStory(interaction, t, logger, guildConfig);
 		} else {
 			await t.privateReplyShared(interaction, 'unknown-command');
 		}
@@ -161,7 +148,7 @@ const configStoryCommand = {
 			await t.privateReplyShared(interaction, 'unknown-command');
 		}
 	},
-	async componentInteraction(interaction, innerCustomId, { t, logger }) {
+	async componentInteraction(interaction, innerCustomId, { t, logger, guildConfig }) {
 		if (innerCustomId.startsWith('edit-metadata ')) {
 			const storyId = innerCustomId.substring('edit-metadata '.length);
 			await handleTriggerEditMetadataDialog(interaction, storyId, t, logger);
@@ -172,7 +159,7 @@ const configStoryCommand = {
 			await handleUndoDeleteStory(interaction, storyId, previousStatus, t, logger);
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
-			await handlePublishStory(interaction, storyId, t, logger);
+			await handlePublishStory(interaction, storyId, t, guildConfig, logger);
 		} else {
 			await t.privateReplyShared(interaction, 'unknown-command');
 		}
@@ -196,8 +183,10 @@ async function handleCreateStory(interaction, t, logger) {
 			editorId = editor.id;
 		}
 
+		const initialTitle = storyData.metadata.title;
+
 		// Make sure the metadata found in the story file will fit into the text fields in the edit metadata dialog.
-		storyData.metadata.title = trimText(storyData.metadata.title, MAX_TITLE_LENGTH);
+		storyData.metadata.title = trimText(storyData.metadata.title, MAX_TITLE_LENGTH).trim();
 		storyData.metadata.author = trimText(storyData.metadata.author, MAX_AUTHOR_LENGTH);
 		storyData.metadata.teaser = trimText(storyData.metadata.teaser, MAX_TEASER_LENGTH);
 
@@ -205,7 +194,7 @@ async function handleCreateStory(interaction, t, logger) {
 		try {
 			// The story will be created, prefilled with metadata found in the story file.
 			// Since there might have been none and we need at least a title to make it listable,
-			// the story will be in draft state for now. The user will have to press a button to edit the metadata before they can publish it.
+			// the story will be in draft state for now.
 			storyId = await createStory(storyData, editorId, interaction.guildId);
 		} catch (error) {
 			logger.error(error, 'Error while trying to add story in guild %s.', interaction.guildId);
@@ -213,27 +202,72 @@ async function handleCreateStory(interaction, t, logger) {
 			return;
 		}
 
-		// We could try showing the dialog for editing metadata straight away without asking the user to press a button.
-		// But we would have to be sure that we're replying with the dialog within 3 seconds since dialogs can't be deferred.
-		// But downloading and probing the story and writing it to disk might take longer than that, so not risking it.
+		let reply;
+		let inTesting = false;
+		if (storyData.metadata.title && storyData.metadata.title === initialTitle) {
+			// There was a title in the tags of the story file and we didn't have to alter it.
+			// The story should therefore be ready to be published. We can forward it to Testing straight away!
+			try {
+				moveStoryToTesting(storyId, interaction.guildId);
+				inTesting = true;
+			} catch (error) {
+				logger.error(error, 'Error while trying to move story %s to testing after creating it.', storyId);
+				await errorReply(interaction, t.user('reply.create-story-failure'));
+				return;
+			}
 
-		// TODO if the title was successfully set, we could change the reply a bit and already show the story embed and a publish button.
-		//  the edit metadata button style would then change to SECONDARY.
-		const reply = {
-			content: t.user('reply.story-draft-created'),
-			components: [
-				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
-					components: [getEditMetadataButton(t, storyId)]
-				}
-			],
-			ephemeral: true
-		};
+			// TODO styling with colour and picture, shared with /story show
+			const storyEmbed = new MessageEmbed().setTitle(storyData.metadata.title);
+			if (storyData.metadata.author) {
+				storyEmbed.setAuthor({ name: storyData.metadata.author });
+			}
+			if (storyData.metadata.teaser) {
+				storyEmbed.setDescription(storyData.metadata.teaser);
+			}
+			let content = t.user('reply.story-test-created') + '\n' + t.user('reply.story-possible-actions-in-testing');
+			// TODO later: "Playtest" button
+			const buttons = [
+				getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY),
+				getPublishButton(t, storyId)
+			];
+			reply = {
+				content,
+				embeds: [storyEmbed],
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: buttons
+					}
+				],
+				ephemeral: true
+			};
+		} else {
+			// Otherwise we should ask the user to complete / check the metadata first.
+			// They will have to press a button to edit the metadata before they can publish it.
+			// We could try showing the dialog for editing metadata straight away without asking the user to press a button.
+			// But we would have to be sure that we're replying with the dialog within 3 seconds since dialogs can't be deferred.
+			// But downloading and probing the story and writing it to disk might take longer than that, so not risking it.
+			reply = {
+				content: t.user('reply.story-draft-created'),
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: [getEditMetadataButton(t, storyId)]
+					}
+				],
+				ephemeral: true
+			};
+		}
+
 		// loadStoryFromParameter might've sent a warning reply already.
 		if (interaction.replied) {
 			await interaction.followUp(reply);
 		} else {
 			await interaction.editReply(reply);
+		}
+
+		if (inTesting) {
+			await updateCommandsAfterConfigChange(interaction, t, logger);
 		}
 	}
 	// else we have to assume that the user was already replied to in loadStoryFromParameter.
@@ -412,6 +446,8 @@ async function handleDeleteStory(interaction, t, logger) {
 
 	let story;
 	try {
+		// The problem with not deleting it straight away is that the title isn't freed up for another story straight away.
+		// For testing, this is annoying. But in practice, this shouldn't be much of a problem.
 		// TODO should the players be informed?
 		story = markStoryForDeletion(storyId, interaction.guildId);
 	} catch (error) {
@@ -540,11 +576,6 @@ async function handleShowStories(interaction, t, logger) {
 	}
 }
 
-async function handlePostStory(interaction, t, logger, guildConfig) {
-	const storyId = interaction.options.getString('title', true);
-	await postStory(storyId, true, interaction, guildConfig, logger);
-}
-
 function getEditMetadataButton(t, storyId, style) {
 	return getTranslatedConfigStoryButton(t, 'edit-metadata-button-label', 'edit-metadata ' + storyId, style);
 }
@@ -553,7 +584,6 @@ function getUndoDeleteButton(t, storyId, previousStatus) {
 	return getTranslatedConfigStoryButton(t, 'undo-delete-button-label', 'undo-delete ' + storyId + ' ' + previousStatus);
 }
 
-// TODO this could be confused with posting the story. there's no clear enough explanation what this does. maybe rename it (and the status) to "Release" ("Released")?
 function getPublishButton(t, storyId) {
 	return getTranslatedConfigStoryButton(
 		t,
@@ -646,15 +676,22 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 	if (!title) {
 		// Shouldn't happen if the dialog considers that the field ist required.
 		await errorReply(interaction, t.user('reply.edit-failure'));
+		return;
 	}
 
 	let found;
 	try {
-		found = changeStoryMetadata(storyId, interaction.guildId, { title, author, teaser });
+		found = completeStoryMetadata(storyId, interaction.guildId, { title, author, teaser });
 	} catch (error) {
 		if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-			// TODO if the user opens the dialog again, the fields will all be empty (unless something was stored before).
-			//  maybe we want to save the rest of the data at least then and not advance the status.
+			// We can't store the title since there's already another story with the same title.
+			// So we can't forward the story to Testing yet either (if it was in Draft).
+			// But we can at least store the rest of the metadata so that this is not lost when the user reopens the dialog.
+			try {
+				changeStoryMetadata(storyId, interaction.guildId, { author, teaser });
+			} catch (error) {
+				logger.error(error, 'Error while trying to edit metadata of story %s.', storyId);
+			}
 			await warningReply(interaction, t.user('reply.edit-failure-title-not-unique'));
 		} else {
 			logger.error(error, 'Error while trying to edit metadata of story %s.', storyId);
@@ -705,7 +742,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 	}
 }
 
-async function handlePublishStory(interaction, storyId, t, logger) {
+async function handlePublishStory(interaction, storyId, t, guildConfig, logger) {
 	let found;
 	try {
 		found = publishStory(storyId, interaction.guildId);
@@ -717,7 +754,7 @@ async function handlePublishStory(interaction, storyId, t, logger) {
 
 	if (found) {
 		await disableButtons(interaction);
-		await t.privateReply(interaction, 'reply.publish-success');
+		await postStory(storyId, true, interaction, guildConfig, logger);
 
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {

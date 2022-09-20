@@ -242,7 +242,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 		await errorReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
-	if (story.status !== StoryStatus.Published) {
+	if (publicly && story.status !== StoryStatus.Published) {
 		await warningReply(interaction, t.user('reply.story-not-published'));
 		return;
 	}
@@ -262,12 +262,17 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 			components: [getStartButton(publicly ? t.guild : t.user, storyId, interaction.guildId)]
 		}
 	];
-	await interaction.reply({
+	const message = {
 		content,
 		embeds: [storyEmbed],
 		components,
 		ephemeral: !publicly
-	});
+	};
+	if (interaction.replied) {
+		await interaction.followUp(message);
+	} else {
+		await interaction.reply(message);
+	}
 }
 
 function getStoryEmbed(metadata, message) {

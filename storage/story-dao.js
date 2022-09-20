@@ -273,7 +273,12 @@ export async function loadStoryContent(storyId) {
 	return await fsPromises.readFile(getStoryFilePath(storyId), 'UTF-8');
 }
 
-export function changeStoryMetadata(storyId, guildId, { title, author = '', teaser = '' }) {
+export function changeStoryMetadata(storyId, guildId, { title = '', author = '', teaser = '' }) {
+	const info = changeStoryMetadataStatement.run({ title, author, teaser, storyId, guildId });
+	return info.changes > 0;
+}
+
+export function completeStoryMetadata(storyId, guildId, { title, author = '', teaser = '' }) {
 	return db.transaction(() => {
 		const info = changeStoryMetadataStatement.run({ title, author, teaser, storyId, guildId });
 		if (info.changes > 0) {
@@ -289,7 +294,7 @@ export function changeStoryEditor(storyId, guildId, editorId) {
 	return info.changes > 0;
 }
 
-function moveStoryToTesting(storyId, guildId) {
+export function moveStoryToTesting(storyId, guildId) {
 	return setStoryStatus(storyId, guildId, StoryStatus.Testing, StoryStatus.Draft);
 }
 
