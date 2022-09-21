@@ -305,7 +305,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 		});
 		// TODO put buttons in there. they would need the guildId since this interaction might be outside of a guild.
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
-		await sendStoryStepData(interaction, stepData, t, getStoryButtonId);
+		await sendStoryStepData(interaction, stepData, t, getStoryButtonId, getStartStoryButtonId(storyId, guildId));
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {
@@ -373,7 +373,13 @@ async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
 
 	try {
 		const stepData = await continueStory(interaction.user.id, choiceIndex, interaction.client, logger);
-		await sendStoryStepData(interaction, stepData, t, getStoryButtonId);
+		await sendStoryStepData(
+			interaction,
+			stepData,
+			t,
+			getStoryButtonId,
+			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+		);
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {
@@ -421,7 +427,13 @@ async function handleRestartStory(interaction, t, logger) {
 		const stepData = await restartStory(interaction.user.id, interaction.client, logger);
 		await t.privateReply(interaction, 'reply.reset-story-success');
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
-		await sendStoryStepData(interaction, stepData, t, getStoryButtonId);
+		await sendStoryStepData(
+			interaction,
+			stepData,
+			t,
+			getStoryButtonId,
+			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+		);
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {
@@ -480,7 +492,13 @@ async function handleShowState(interaction, t, logger) {
 				embeds: [getStoryEmbed(stepData.storyRecord, t.user('reply.story-state-repeat'))]
 			});
 		}
-		await sendStoryStepData(interaction, stepData, t, getStoryButtonId);
+		await sendStoryStepData(
+			interaction,
+			stepData,
+			t,
+			getStoryButtonId,
+			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+		);
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {

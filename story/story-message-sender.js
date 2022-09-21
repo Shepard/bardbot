@@ -31,8 +31,8 @@ const SpecialHandling = Object.freeze({
  * @param t A translator.
  * @param getStoryButtonId A function for getting a custom id for a button that routes back to the story command.
  */
-export async function sendStoryStepData(interaction, stepData, t, getStoryButtonId) {
-	const messages = getMessagesToSend(stepData, t, getStoryButtonId);
+export async function sendStoryStepData(interaction, stepData, t, getStoryButtonId, startButtonId) {
+	const messages = getMessagesToSend(stepData, t, getStoryButtonId, startButtonId);
 	// TODO test if this can become an issue considering the warning on https://discord.com/developers/docs/resources/user#create-dm.
 	//  if malicious users manage to get the bot to contact too many users at once
 	//  (either by starting stories (incl. sendStoryIntro in story.js), or by getting informed about story errors, or by getting informed about story state being reset)
@@ -53,7 +53,7 @@ export async function sendStoryStepData(interaction, stepData, t, getStoryButton
  * Takes the provided stepData and turns it into messages with choice buttons appended, ready to be sent out to Discord.
  * Some of the messages do not represent messages to be sent directly to Discord but rather instructions for special handling in sendStoryStepData.
  */
-function getMessagesToSend(stepData, t, getStoryButtonId) {
+function getMessagesToSend(stepData, t, getStoryButtonId, startButtonId) {
 	const messages = [];
 
 	if (stepData.lines.length > 0) {
@@ -62,6 +62,10 @@ function getMessagesToSend(stepData, t, getStoryButtonId) {
 
 	if (stepData.choices.length > 0) {
 		appendChoiceButtons(messages, stepData.choices, t, getStoryButtonId);
+	}
+
+	if (stepData.isEnd) {
+		appendEndMessage(messages, t, startButtonId);
 	}
 
 	return messages;
@@ -185,6 +189,8 @@ function getCharacterMessage(messageText, character) {
 		characterEmbed.setColor(character.colour);
 	}
 
+	// TODO messages can contain multiple embeds -> combine embeds from different character speeches
+	//  or even wrapped embeds from one character into single messages as much as possible
 	return {
 		embeds: [characterEmbed]
 	};
@@ -321,4 +327,25 @@ function getChoiceButton(t, choice, choicesTooLong, getStoryButtonId) {
 		label,
 		custom_id: getStoryButtonId('choice ' + choice.index)
 	};
+}
+
+function appendEndMessage(messages, t, startButtonId) {
+	const endEmbed = new MessageEmbed().setDescription(t.user('reply.story-outro'));
+	const replayButton = {
+		type: Constants.MessageComponentTypes.BUTTON,
+		style: Constants.MessageButtonStyles.SECONDARY,
+		label: t.user('replay-button-label'),
+		custom_id: startButtonId
+	};
+	messages.push({
+		embeds: [endEmbed],
+		components: [
+			{
+				type: Constants.MessageComponentTypes.ACTION_ROW,
+				components: [replayButton]
+			}
+		]
+	});
+	// TODO later: story-engine could attach more properties describing the state at the end. was it a good or bad end? are there more ends? any unlocks?
+	//  "By playing through this story, you've unlocked story XYZ."
 }

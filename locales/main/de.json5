@@ -507,6 +507,7 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			'story-line': '{{title}} (von {{author}})',
 			'choice-buttons-header': 'Bitte wähle:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			'replay-button-label': 'Geschichte wiederholen',
 			reply: {
 				'show-stories': 'Die folgenden Geschichten stehen zur Verfügung. Benutze `/geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 				'story-not-published': 'Diese Geschichte konnte nicht öffentlich gepostet werden, da sie noch nicht veröffentlicht ist.',
@@ -539,7 +540,8 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'reset-story-success': 'Geschichte erfolgreich neugestartet.',
 				'story-state-fetch-failure': 'Beim Versuch, den aktuellen Zustand der Geschichte zu laden, ist ein Fehler aufgetreten.',
 				'story-state-success': 'Für Details zur aktuell gespielten Geschichte, schaue in Deinen Direktnachrichten.',
-				'story-state-repeat': 'Du spielst diese Geschichte. Folgendes ist zuletzt passiert …'
+				'story-state-repeat': 'Du spielst diese Geschichte. Folgendes ist zuletzt passiert …',
+				'story-outro': "Du hast die Geschichte erfolgreich beendet! Aber vielleicht ist das nicht der einzige Weg, wie es enden kann? Versuch's nochmal, um es herauszufinden!"
 			},
 			'editor-report': {
 				intro: 'Es sind Probleme mit Deiner Geschichte "{{storyTitle}}" im Server "{{serverName}}" aufgetreten:',

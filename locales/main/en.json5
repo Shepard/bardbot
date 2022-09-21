@@ -515,6 +515,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 			'story-line': '{{title}} (by {{author}})',
 			'choice-buttons-header': 'Please choose:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			'replay-button-label': 'Replay story',
 			reply: {
 				'show-stories': 'The following stories are available to play. Use `/story show <title>` to find out details about a particular story.',
 				'story-not-published': 'This story could not be posted publicly because it has not been published yet.',
@@ -547,7 +548,8 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'reset-story-success': 'Story successfully reset.',
 				'story-state-fetch-failure': 'There was an error trying to load the current story state.',
 				'story-state-success': 'Check your direct messages to see details about your currently played story.',
-				'story-state-repeat': 'You are playing this story. This is where we left off…'
+				'story-state-repeat': 'You are playing this story. This is where we left off…',
+				'story-outro': "You successfully finished the story! But maybe this isn't the only way this can end? Try again to find out!"
 			},
 			'editor-report': {
 				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',

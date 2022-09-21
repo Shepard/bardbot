@@ -300,8 +300,8 @@ function storyStep(userId, inkStory, storyRecord, client, logger) {
 	}
 
 	if (stepData.choices.length === 0) {
-		const endStoryLines = endStory(userId, logger);
-		stepData.lines = stepData.lines.concat(endStoryLines);
+		endStory(userId, logger);
+		stepData.isEnd = true;
 	}
 
 	return stepData;
@@ -443,12 +443,6 @@ function endStory(userId, logger) {
 		logger.error(error, 'Story state could not be cleared in database for user %s.', userId);
 	}
 	// TODO save story as finished. also check which ending we got (how does the story signal that? can we query the current knot? maybe the state of a specific variable?) and store that.
-	// TODO provide proper message (by returning lines)
-	//  "You successfully finished the story! But maybe this isn't the only way this can end? Try again to find out!"
-	//  "By playing through this story, you've unlocked story XYZ."
-	//  maybe a replay button? story-message-sender might add that.
-	//  maybe just signal end to story-message-sender and it can send some lines itself in an embed.
-	return [{ text: 'THE END', tags: ['STANDALONE'] }];
 }
 
 export function probeStory(storyContent) {
