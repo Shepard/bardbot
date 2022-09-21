@@ -280,6 +280,7 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId) {
 function parseChoiceButtonStyles(choices) {
 	return choices.map(choice => {
 		let text = choice.text;
+		// TODO later: global tag for default button style
 		let style = Constants.MessageButtonStyles.SECONDARY;
 		const separatorIndex = text.indexOf(':');
 		if (text.toUpperCase().startsWith('STYLE_') && separatorIndex > 0) {

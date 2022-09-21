@@ -5,20 +5,19 @@
  * If the name needs spaces it can be wrapped in double quotes.
  * URL and colour value are optional. The "#" of the colour value is optional because it needs to be escaped in Ink which is awkward.
  * Examples:
- * CHARACTER Doctor
+ * CHARACTER:Doctor
  * charactEr: "Darth Vader" 000
- * Character Robespierre https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Robespierre_Ducreux.jpeg/181px-Robespierre_Ducreux.jpeg
+ * Character:  Robespierre https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Robespierre_Ducreux.jpeg/181px-Robespierre_Ducreux.jpeg
  * character: "Elizabeth II" https://upload.wikimedia.org/wikipedia/commons/6/66/Queen_Elizabeth_II_on_3_June_2019.jpg #9cc6c5
  */
 const CHARACTER_TAG_REGEXP =
-	/^character(?::)? (?:([^\s]+)|(?:"([^"]+)"))(?: (?<url>http[^\s]+))?(?: (?<colour>#?(?:[0-9a-fA-F]{3}){1,2}))?$/i;
+	/^character:\s*(?:([^\s]+)|(?:"([^"]+)"))(?:\s+(?<url>http[^\s]+))?(?:\s+(?<colour>#?(?:[0-9a-fA-F]{3}){1,2}))?$/i;
 
-// TODO allow "title:bla" (so no space), same for the others
-const TITLE_TAG_REGEXP = /^title(?::)? (.+)$/i;
+const TITLE_TAG_REGEXP = /^title:(.+)$/i;
 
-const AUTHOR_TAG_REGEXP = /^author(?::)? (.+)$/i;
+const AUTHOR_TAG_REGEXP = /^author:(.+)$/i;
 
-const TEASER_TAG_REGEXP = /^teaser(?::)? (.+)$/i;
+const TEASER_TAG_REGEXP = /^teaser:(.+)$/i;
 
 /**
  * Parses definitions of characters of the story from the global tags of the story.
