@@ -550,7 +550,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'story-state-fetch-failure': 'There was an error trying to load the current story state.',
 				'story-state-success': 'Check your direct messages to see details about your currently played story.',
 				'story-state-repeat': 'You are playing this story. This is where we left off…',
-				'story-outro': "You successfully finished the story! But maybe this isn't the only way this can end? Try again to find out!"
+				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!"
 			},
 			'editor-report': {
 				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',
