@@ -442,7 +442,7 @@ function endStory(userId, logger) {
 	} catch (error) {
 		logger.error(error, 'Story state could not be cleared in database for user %s.', userId);
 	}
-	// TODO save story as finished. also check which ending we got (how does the story signal that? can we query the current knot? maybe the state of a specific variable?) and store that.
+	// TODO later: save story as finished. also check which ending we got (how does the story signal that? can we query the current knot? maybe the state of a specific variable?) and store that.
 	//  if the user was the editor if the story or the story was in testing, don't record it as played? depends what I want to do with that information.
 }
 
