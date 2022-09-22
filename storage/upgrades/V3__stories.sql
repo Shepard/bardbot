@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS story (
 
 CREATE TABLE IF NOT EXISTS story_play (
 	user_id TEXT PRIMARY KEY,
-	story_id TEXT NOT NULL REFERENCES story(id),
+	story_id TEXT NOT NULL REFERENCES story(id) ON DELETE CASCADE,
 	state_json TEXT
 ) WITHOUT ROWID;
 

@@ -202,16 +202,6 @@
 						}
 					}
 				},
-				delete: {
-					name: 'delete',
-					description: 'Delete a story, along with all current and past plays of it',
-					options: {
-						title: {
-							name: 'title',
-							description: 'The title of the existing story to delete.'
-						}
-					}
-				},
 				show: {
 					name: 'show',
 					description: 'List currently existing stories on this server.',
@@ -228,6 +218,7 @@
 			'story-status-Published': 'Published',
 			'show-field-editor': 'Editor',
 			'show-field-status': 'Status',
+			'delete-button-label': 'Delete story',
 			'undo-delete-button-label': 'Undo deletion',
 			'edit-metadata-button-label': 'Edit metadata',
 			'playtest-button-label': 'Playtest story',
@@ -255,7 +246,8 @@
 				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
 				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use `/config-story show <title>` there and click the publish button in the reply to that.',
 				'delete-failure': 'Deleting the story failed.',
-				'delete-success': 'The story "{{storyTitle}}" has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
+				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
+				'delete-success': 'The story has successfully been deleted.',
 				'undo-delete-failure': 'Restoring the story failed.',
 				'undo-delete-success': 'The story has been restored and will not be deleted. Members that were playing it will have to start it again themselves.',
 				'publish-failure': 'Publishing the story failed.',

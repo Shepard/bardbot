@@ -68,6 +68,7 @@ let changeStoryMetadataStatement = null;
 let changeStoryEditorStatement = null;
 let changeStoryStatusStatement = null;
 let changeStoryStatusConditionallyStatement = null;
+let deleteStoryStatement = null;
 let markInkErrorAsReported = null;
 let markInkWarningAsReported = null;
 let markMaximumChoiceNumberExceededAsReported = null;
@@ -135,6 +136,7 @@ registerDbInitialisedListener(() => {
 	changeStoryStatusConditionallyStatement = db.prepare(
 		'UPDATE story SET status = :status, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId AND status = :previousExpectedStatus'
 	);
+	deleteStoryStatement = db.prepare('DELETE FROM story WHERE id = :storyId AND guild_id = :guildId');
 	markInkErrorAsReported = db.prepare(
 		'UPDATE story SET reported_ink_error = 1, last_changed_timestamp = unixepoch() WHERE id = :storyId'
 	);
@@ -162,7 +164,6 @@ registerDbInitialisedListener(() => {
 		)
 		.pluck();
 	// This should also delete related plays via ON DELETE CASCADE.
-	// TODO later: test this for past plays once implemented. current plays won't exist for stories in that status anyway.
 	deleteObsoleteStoriesStatement = db.prepare(
 		"DELETE FROM story WHERE status == 'Draft' OR status == 'ToBeDeleted' AND :secondsSinceEpoch - last_changed_timestamp > 60 * 60 * 24"
 	);
@@ -321,7 +322,6 @@ export function publishStory(storyId, guildId) {
  * Marks a story for automatic deletion at a later point (by setting its status to ToBeDeleted).
  * The story will not appear in any lists or searches anymore.
  * Also clears current plays for everyone playing the story.
- * @returns The story record of the story in its state before being marked for deletion, so that it can be restored later on, or null if the story was not found.
  */
 export function markStoryForDeletion(storyId, guildId) {
 	return db.transaction(() => {
@@ -329,9 +329,9 @@ export function markStoryForDeletion(storyId, guildId) {
 		if (story) {
 			setStoryStatus(storyId, guildId, StoryStatus.ToBeDeleted);
 			clearCurrentStoryPlays(storyId);
-			return story;
+			return true;
 		}
-		return null;
+		return false;
 	})();
 }
 
@@ -342,6 +342,11 @@ export function setStoryStatus(storyId, guildId, status, previousExpectedStatus)
 	} else {
 		info = changeStoryStatusStatement.run({ status, storyId, guildId });
 	}
+	return info.changes > 0;
+}
+
+export function deleteStory(storyId, guildId) {
+	const info = deleteStoryStatement.run({ storyId, guildId });
 	return info.changes > 0;
 }
 

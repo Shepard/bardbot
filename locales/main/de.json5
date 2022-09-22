@@ -197,16 +197,6 @@
 						}
 					}
 				},
-				delete: {
-					name: 'löschen',
-					description: 'Lösche eine Geschichte, sowie alle aktuellen und vergangenen Durchläufe davon.',
-					options: {
-						title: {
-							name: 'titel',
-							description: 'Der Name einer bestehenden Geschichte, die gelöscht werden soll.'
-						}
-					}
-				},
 				show: {
 					name: 'zeigen',
 					description: 'Listet auf diesem Server zur Zeit bestehende Geschichten auf.',
@@ -223,6 +213,7 @@
 			'story-status-Published': 'Veröffentlicht',
 			'show-field-editor': 'Herausgebende Person',
 			'show-field-status': 'Status',
+			'delete-button-label': 'Geschichte löschen',
 			'undo-delete-button-label': 'Löschung rückgängig machen',
 			'edit-metadata-button-label': 'Metadaten bearbeiten',
 			'playtest-button-label': 'Testdurchlauf',
@@ -250,7 +241,8 @@
 				'story-metadata-updated': 'Die Metadaten wurden geändert. Und so sieht Deine Geschichte jetzt aus.',
 				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, Du kannst einen Testdurchlauf starten, oder Du kannst sie jetzt veröffentlichen. Die Veröffentlichung wird eine öffentlich sichtbare Nachricht in diesem Kanal posten. Wenn Du sie lieber in einem anderen Kanal posten würdest, kannst Du dort `/config-story show <title>` verwenden und den Veröffentlichen-Button in der Antwort darauf anklicken.',
 				'delete-failure': 'Löschen der Geschichte fehlgeschlagen.',
-				'delete-success': 'Die Geschichte "{{storyTitle}}" wurde entfernt und wird zu einem späteren Zeitpunkt vollständig gelöscht. Du kannst das rückgängig machen, indem Du den Button unten anklickst. Alle aktuellen Durchläufe wurden für die Spielenden allerdings gestoppt und dies kann nicht rückgängig gemacht werden.',
+				'marked-for-deletion-success': 'Die Geschichte wurde entfernt und wird zu einem späteren Zeitpunkt vollständig gelöscht. Du kannst das rückgängig machen, indem Du den Button unten anklickst. Alle aktuellen Durchläufe wurden für die Spielenden allerdings gestoppt und dies kann nicht rückgängig gemacht werden.',
+				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
 				'undo-delete-failure': 'Wiederherstellen der Geschichte fehlgeschlagen.',
 				'undo-delete-success': 'Die Geschichte wurde wiederhergestellt und wird nicht gelöscht. Alle, die sie zuvor gespielt haben, müssen sie allerdings selbst wieder starten.',
 				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',

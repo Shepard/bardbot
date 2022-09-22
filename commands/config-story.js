@@ -14,6 +14,7 @@ import {
 	publishStory,
 	markStoryForDeletion,
 	setStoryStatus,
+	deleteStory,
 	StoryStatus
 } from '../storage/story-dao.js';
 import { AUTOCOMPLETE_CHOICE_LIMIT, COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT } from '../util/discord-constants.js';
@@ -84,19 +85,6 @@ const configStoryCommand = {
 				]
 			},
 			{
-				name: 'delete',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
-				options: [
-					{
-						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
-						required: true,
-						autocomplete: true,
-						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
-					}
-				]
-			},
-			{
 				name: 'show',
 				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
 				options: [
@@ -118,8 +106,6 @@ const configStoryCommand = {
 			await handleCreateStory(interaction, t, logger);
 		} else if (subcommand === 'edit') {
 			await handleEditStory(interaction, t, logger);
-		} else if (subcommand === 'delete') {
-			await handleDeleteStory(interaction, t, logger);
 		} else if (subcommand === 'show') {
 			await handleShowStories(interaction, t, logger);
 		} else {
@@ -158,6 +144,9 @@ const configStoryCommand = {
 		if (innerCustomId.startsWith('edit-metadata ')) {
 			const storyId = innerCustomId.substring('edit-metadata '.length);
 			await handleTriggerEditMetadataDialog(interaction, storyId, t, logger);
+		} else if (innerCustomId.startsWith('delete ')) {
+			const storyId = innerCustomId.substring('delete '.length);
+			await handleDeleteStory(interaction, storyId, t, logger);
 		} else if (innerCustomId.startsWith('undo-delete ')) {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('undo-delete '.length, spaceIndex);
@@ -447,32 +436,52 @@ async function handleEditStory(interaction, t, logger) {
 	}
 }
 
-async function handleDeleteStory(interaction, t, logger) {
-	const storyId = interaction.options.getString('title');
-
-	let story;
+async function handleDeleteStory(interaction, storyId, t, logger) {
+	let story = null;
 	try {
-		// The problem with not deleting it straight away is that the title isn't freed up for another story straight away.
-		// For testing, this is annoying. But in practice, this shouldn't be much of a problem.
-		// TODO should the players be informed?
-		story = markStoryForDeletion(storyId, interaction.guildId);
+		story = getStory(storyId, interaction.guildId);
 	} catch (error) {
-		logger.error(error, 'Error while trying to mark story %s for deletion.', storyId);
-		await errorReply(interaction, t.user('reply.delete-failure'));
+		logger.error(error, 'Error while trying to fetch story %s from database', storyId);
+		await errorReply(interaction, t.userShared('story-db-fetch-error'));
 		return;
 	}
 
 	if (story) {
-		await interaction.reply({
-			content: t.user('reply.delete-success', { storyTitle: story.title }),
-			components: [
-				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
-					components: [getUndoDeleteButton(t, storyId, story.status)]
-				}
-			],
-			ephemeral: true
-		});
+		if (story.status === StoryStatus.Published) {
+			// Deleting stories that have already been published is a bit more "catastrophic",
+			// so to prevent user error, they don't get deleted straight away.
+			// They just get made unavailable and the user can undo this.
+			// After some time, they will be deleted completely.
+			try {
+				// TODO should the players be informed?
+				markStoryForDeletion(storyId, interaction.guildId);
+			} catch (error) {
+				logger.error(error, 'Error while trying to mark story %s for deletion.', storyId);
+				await errorReply(interaction, t.user('reply.delete-failure'));
+				return;
+			}
+			await disableButtons(interaction);
+			await interaction.followUp({
+				content: t.user('reply.marked-for-deletion-success'),
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: [getUndoDeleteButton(t, storyId, story.status)]
+					}
+				],
+				ephemeral: true
+			});
+		} else {
+			try {
+				deleteStory(storyId, interaction.guildId);
+			} catch (error) {
+				logger.error(error, 'Error while trying to delete story %s.', storyId);
+				await errorReply(interaction, t.user('reply.delete-failure'));
+				return;
+			}
+			await disableButtons(interaction);
+			await t.privateReply(interaction, 'reply.delete-success');
+		}
 
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
@@ -545,9 +554,9 @@ async function handleShowStories(interaction, t, logger) {
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
 		} else if (story.status === StoryStatus.Published) {
-			// TODO "unpublish" button for moving a story back to testing?
+			// TODO "unpublish" button for moving a story back to testing? should stop current plays.
 		}
-		// TODO later: delete button?
+		buttons.push(getDeleteButton(t, storyId));
 		const components = [
 			{
 				type: Constants.MessageComponentTypes.ACTION_ROW,
@@ -591,6 +600,15 @@ function getEditMetadataButton(t, storyId, style) {
 
 function getUndoDeleteButton(t, storyId, previousStatus) {
 	return getTranslatedConfigStoryButton(t, 'undo-delete-button-label', 'undo-delete ' + storyId + ' ' + previousStatus);
+}
+
+function getDeleteButton(t, storyId) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'delete-button-label',
+		'delete ' + storyId,
+		Constants.MessageButtonStyles.DANGER
+	);
 }
 
 function getPublishButton(t, storyId) {
