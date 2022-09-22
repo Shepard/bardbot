@@ -111,7 +111,13 @@ const storyCommand = {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'title') {
 			// TODO later: not all stories might be available to the current user straight away. some might get unlocked by finishing other stories. saved as flags for user.
-			const matchingStories = findMatchingStories(interaction.guildId, focusedOption.value, logger, true);
+			const matchingStories = findMatchingStories(
+				interaction.guildId,
+				interaction.user.id,
+				focusedOption.value,
+				logger,
+				true
+			);
 			let result = matchingStories.map(story => ({ name: story.title, value: story.id }));
 			// Limit to the maximum number of results Discord accepts.
 			result = result.slice(0, Math.min(result.length, AUTOCOMPLETE_CHOICE_LIMIT + 1));
@@ -204,7 +210,7 @@ async function handleShowStories(interaction, t, logger) {
 		// TODO later: not all stories might be available to the current user straight away. some might get unlocked by finishing other stories. saved as flags for user.
 		let guildStories = null;
 		try {
-			guildStories = getStories(guildId, true);
+			guildStories = getStories(guildId, interaction.user.id, true);
 		} catch (error) {
 			logger.error(error, 'Error while trying to fetch stories for guild %s from database', guildId);
 			await t.privateReplyShared(interaction, 'show-stories-failure');

@@ -105,7 +105,7 @@ registerDbInitialisedListener(() => {
 	getPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND status = 'Published' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and editor_id = :userId)) ORDER BY title"
 	);
 	findMatchingStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
@@ -115,7 +115,7 @@ registerDbInitialisedListener(() => {
 	findMatchingPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND status = 'Published' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and editor_id = :userId)) AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	countStoriesStatement = db
 		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted'")
@@ -221,26 +221,26 @@ export function getStory(storyId, guildId) {
 	return null;
 }
 
-export function getStories(guildId, publishedOnly) {
+export function getStories(guildId, userId, publishedOrByUserOnly) {
 	let statement;
-	if (publishedOnly) {
+	if (publishedOrByUserOnly) {
 		statement = getPublishedStoriesStatement;
 	} else {
 		statement = getStoriesStatement;
 	}
-	return statement.all({ guildId }).map(row => new StoryRecord(row));
+	return statement.all({ guildId, userId }).map(row => new StoryRecord(row));
 }
 
-export function findMatchingStories(guildId, searchInput, logger, publishedOnly) {
+export function findMatchingStories(guildId, userId, searchInput, logger, publishedOrByUserOnly) {
 	try {
 		const pattern = escapeSearchInputToLikePattern(searchInput);
 		let statement;
-		if (publishedOnly) {
+		if (publishedOrByUserOnly) {
 			statement = findMatchingPublishedStoriesStatement;
 		} else {
 			statement = findMatchingStoriesStatement;
 		}
-		return statement.all({ guildId, pattern }).map(row => new StoryRecord(row));
+		return statement.all({ guildId, userId, pattern }).map(row => new StoryRecord(row));
 	} catch (e) {
 		logger.error(
 			e,

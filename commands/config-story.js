@@ -129,7 +129,13 @@ const configStoryCommand = {
 	async autocomplete(interaction, { logger }) {
 		const focusedOption = interaction.options.getFocused(true);
 		if (focusedOption.name === 'title') {
-			const matchingStories = findMatchingStories(interaction.guildId, focusedOption.value, logger, false);
+			const matchingStories = findMatchingStories(
+				interaction.guildId,
+				interaction.user.id,
+				focusedOption.value,
+				logger,
+				false
+			);
 			let result = matchingStories.map(story => ({ name: story.title, value: story.id }));
 			// Limit to the maximum number of results Discord accepts.
 			result = result.slice(0, Math.min(result.length, AUTOCOMPLETE_CHOICE_LIMIT + 1));
@@ -225,9 +231,9 @@ async function handleCreateStory(interaction, t, logger) {
 				storyEmbed.setDescription(storyData.metadata.teaser);
 			}
 			let content = t.user('reply.story-test-created') + '\n' + t.user('reply.story-possible-actions-in-testing');
-			// TODO later: "Playtest" button
 			const buttons = [
 				getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY),
+				getPlaytestButton(t, storyId, interaction.guildId),
 				getPublishButton(t, storyId)
 			];
 			reply = {
@@ -536,7 +542,10 @@ async function handleShowStories(interaction, t, logger) {
 		]);
 		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
 		if (story.status === StoryStatus.Testing) {
+			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
+		} else if (story.status === StoryStatus.Published) {
+			// TODO "unpublish" button for moving a story back to testing?
 		}
 		// TODO later: delete button?
 		const components = [
@@ -553,7 +562,7 @@ async function handleShowStories(interaction, t, logger) {
 	} else {
 		let guildStories = null;
 		try {
-			guildStories = getStories(guildId, false);
+			guildStories = getStories(guildId, interaction.user.id, false);
 		} catch (error) {
 			logger.error(error, 'Error while trying to fetch stories in guild %s from database', guildId);
 			await t.privateReplyShared(interaction, 'show-stories-failure');
@@ -591,6 +600,15 @@ function getPublishButton(t, storyId) {
 		'publish ' + storyId,
 		Constants.MessageButtonStyles.SUCCESS
 	);
+}
+
+function getPlaytestButton(t, storyId, guildId) {
+	return {
+		type: Constants.MessageComponentTypes.BUTTON,
+		style: Constants.MessageButtonStyles.SECONDARY,
+		label: t.user('playtest-button-label'),
+		custom_id: getStartStoryButtonId(storyId, guildId)
+	};
 }
 
 function getTranslatedConfigStoryButton(t, translationKey, innerCustomId, style) {
@@ -719,9 +737,9 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 		}
 		let content = t.user('reply.story-metadata-updated');
 		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
-		// TODO later: "Playtest" button
 		if (storyRecord.status === StoryStatus.Testing) {
 			content += '\n' + t.user('reply.story-possible-actions-in-testing');
+			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
 		}
 		await interaction.update({
@@ -761,13 +779,8 @@ async function handlePublishStory(interaction, storyId, t, guildConfig, logger) 
 		await errorReply(interaction, t.userShared('story-not-found'));
 	}
 
-	// TODO later: provide a way for uploader to test and edit an unpublished story.
-	//  stories in testing will show up in /config-story autocomplete / show commands for every user who can use the command and in /story autocomplete / show commands for the editor.
-
 	// TODO later: via config commands you can publish a story for everyone or selectively or you can set unlock triggers
 	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
-
-	// TODO later: have a button for moving a story back to testing?
 }
 
 export default configStoryCommand;
