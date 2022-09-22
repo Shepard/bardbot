@@ -261,7 +261,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 		content = postIntroMessages.any(t.guild);
 	}
 
-	const storyEmbed = getStoryEmbed(story, story.teaser);
+	const storyEmbed = getDefaultStoryEmbed(story);
 	const components = [
 		{
 			type: Constants.MessageComponentTypes.ACTION_ROW,
@@ -294,6 +294,10 @@ function getStoryEmbed(metadata, message) {
 	return storyIntroEmbed;
 }
 
+export function getDefaultStoryEmbed(metadata) {
+	return getStoryEmbed(metadata, metadata.teaser);
+}
+
 async function handleStartStory(interaction, t, logger) {
 	const storyId = interaction.options.getString('title', true);
 	await startStoryWithId(interaction, storyId, interaction.guildId, t, logger);
@@ -309,7 +313,6 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 			content: startingStoryMessages.any(t.user),
 			ephemeral: true
 		});
-		// TODO put buttons in there. they would need the guildId since this interaction might be outside of a guild.
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
 		await sendStoryStepData(interaction, stepData, t, getStoryButtonId, getStartStoryButtonId(storyId, guildId));
 	} catch (error) {

@@ -26,7 +26,7 @@ import {
 	sendListReply
 } from '../util/interaction-util.js';
 import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../story/story-engine.js';
-import { postStory, getStartStoryButtonId } from './story.js';
+import { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
 import { trimText } from '../util/helpers.js';
 import { updateCommandsAfterConfigChange } from './config.js';
 
@@ -211,14 +211,7 @@ async function handleCreateStory(interaction, t, logger) {
 				return;
 			}
 
-			// TODO styling with colour and picture, shared with /story show
-			const storyEmbed = new MessageEmbed().setTitle(storyData.metadata.title);
-			if (storyData.metadata.author) {
-				storyEmbed.setAuthor({ name: storyData.metadata.author });
-			}
-			if (storyData.metadata.teaser) {
-				storyEmbed.setDescription(storyData.metadata.teaser);
-			}
+			const storyEmbed = getDefaultStoryEmbed(storyData.metadata);
 			let content = t.user('reply.story-test-created') + '\n' + t.user('reply.story-possible-actions-in-testing');
 			const buttons = [
 				getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY),
@@ -537,14 +530,7 @@ async function handleShowStories(interaction, t, logger) {
 			return;
 		}
 
-		// TODO styling with colour and picture, shared with /story show
-		const storyEmbed = new MessageEmbed().setTitle(story.title);
-		if (story.author) {
-			storyEmbed.setAuthor({ name: story.author });
-		}
-		if (story.teaser) {
-			storyEmbed.setDescription(story.teaser);
-		}
+		const storyEmbed = getDefaultStoryEmbed(story);
 		storyEmbed.addFields([
 			{ name: t.user('show-field-editor'), value: userMention(story.editorId), inline: false },
 			{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
@@ -745,14 +731,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
-		// TODO styling with colour and picture, shared with /story show
-		const storyEmbed = new MessageEmbed().setTitle(title);
-		if (author) {
-			storyEmbed.setAuthor({ name: author });
-		}
-		if (teaser) {
-			storyEmbed.setDescription(teaser);
-		}
+		const storyEmbed = getDefaultStoryEmbed({ title, author, teaser });
 		let content = t.user('reply.story-metadata-updated');
 		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
 		if (storyRecord.status === StoryStatus.Testing) {
