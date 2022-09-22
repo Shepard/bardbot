@@ -168,7 +168,7 @@ async function handleCreateStory(interaction, t, logger) {
 	// Downloading and testing the story and writing it to disk can take a while, so we defer the reply to get more time to reply.
 	await interaction.deferReply({ ephemeral: true });
 
-	const storyData = await loadStoryFromParameter(interaction, true, t);
+	const storyData = await loadStoryFromParameter(interaction, true, t, logger);
 	if (storyData) {
 		const editor = interaction.options.getUser('editor');
 		// If no editor is supplied or we can't accept the selected user, default to the user who uploaded the story.
@@ -293,7 +293,7 @@ async function createStory(storyData, editorId, guildId) {
 	return addStory(storyData.storyContent, storyData.metadata, editorId, guildId);
 }
 
-async function loadStoryFromParameter(interaction, required, t) {
+async function loadStoryFromParameter(interaction, required, t, logger) {
 	const storyFileAttachment = interaction.options.getAttachment('ink-file', required);
 	if (!required && !storyFileAttachment) {
 		return null;
@@ -314,13 +314,13 @@ async function loadStoryFromParameter(interaction, required, t) {
 
 	let storyContent = '';
 	try {
-		// TODO check response code. we can validate statuses: https://github.com/axios/axios#handling-errors
 		const response = await axios.get(storyFileAttachment.url, {
 			// Stop it from parsing the JSON, we want it as a string so we can store it.
 			transformResponse: data => data
 		});
 		storyContent = response.data;
 	} catch (error) {
+		logger.error(error, 'Error while trying to fetch story file attachment.');
 		await errorReply(interaction, t.user('reply.could-not-load-file'));
 		return null;
 	}
@@ -377,7 +377,7 @@ async function handleEditStory(interaction, t, logger) {
 
 	let dataChanged = false;
 
-	const storyData = await loadStoryFromParameter(interaction, false, t);
+	const storyData = await loadStoryFromParameter(interaction, false, t, logger);
 	// If this was null, it could mean we either didn't get the parameter and so we don't need to do anything with it,
 	// or there was an error and the client was already replied to.
 	// When it's present though, we save the story.
