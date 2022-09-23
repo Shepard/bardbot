@@ -19,6 +19,8 @@ const AUTHOR_TAG_REGEXP = /^author:(.+)$/i;
 
 const TEASER_TAG_REGEXP = /^teaser:(.+)$/i;
 
+const DEFAULT_BUTTON_STYLE_TAG_REGEXP = /^default-button-style:\s*(primary|secondary|success|danger)$/i;
+
 /**
  * Parses definitions of characters of the story from the global tags of the story.
  * @returns A map mapping the name of the character to an object with more information, like a icon URL or a colour to use for that character.
@@ -44,6 +46,18 @@ export function parseCharacters(inkStory) {
 	}
 
 	return characters;
+}
+
+export function parseDefaultButtonStyle(inkStory) {
+	if (inkStory.globalTags) {
+		for (let tag of inkStory.globalTags) {
+			const match = tag.match(DEFAULT_BUTTON_STYLE_TAG_REGEXP);
+			if (match) {
+				return match[1].toUpperCase();
+			}
+		}
+	}
+	return '';
 }
 
 export function parseMetadata(inkStory) {

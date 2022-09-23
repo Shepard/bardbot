@@ -8,7 +8,7 @@ import inkjs from 'inkjs';
 import { ErrorType } from 'inkjs/engine/Error.js';
 import { Constants, MessageEmbed } from 'discord.js';
 import { quote } from '@discordjs/builders';
-import { parseCharacters, parseMetadata } from './story-information-extractor.js';
+import { parseCharacters, parseDefaultButtonStyle, parseMetadata } from './story-information-extractor.js';
 import {
 	getStory,
 	loadStoryContent,
@@ -147,6 +147,7 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 	}
 	stepData.storyRecord = storyRecord;
 	stepData.characters = parseCharacters(inkStory);
+	stepData.defaultButtonStyle = parseDefaultButtonStyle(inkStory);
 
 	return stepData;
 }
@@ -185,6 +186,7 @@ export async function continueStory(userId, choiceIndex, client, logger) {
 	const stepData = storyStep(userId, storyData.inkStory, storyData.storyRecord, client, logger);
 	stepData.storyRecord = storyData.storyRecord;
 	stepData.characters = parseCharacters(storyData.inkStory);
+	stepData.defaultButtonStyle = parseDefaultButtonStyle(storyData.inkStory);
 
 	return stepData;
 }
@@ -393,6 +395,7 @@ export async function restartStory(userId, client, logger) {
 	const stepData = storyStep(userId, storyData.inkStory, storyData.storyRecord, client, logger);
 	stepData.storyRecord = storyData.storyRecord;
 	stepData.characters = parseCharacters(storyData.inkStory);
+	stepData.defaultButtonStyle = parseDefaultButtonStyle(storyData.inkStory);
 
 	return stepData;
 }
@@ -433,6 +436,7 @@ export async function getCurrentStoryState(userId, logger) {
 		storyRecord: storyData.storyRecord
 	};
 	stepData.characters = parseCharacters(storyData.inkStory);
+	stepData.defaultButtonStyle = parseDefaultButtonStyle(storyData.inkStory);
 	return stepData;
 }
 

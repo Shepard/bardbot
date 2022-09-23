@@ -65,7 +65,7 @@ function getMessagesToSend(stepData, t, getStoryButtonId, startButtonId) {
 	}
 
 	if (stepData.choices.length > 0) {
-		appendChoiceButtons(messages, stepData.choices, t, getStoryButtonId);
+		appendChoiceButtons(messages, stepData.choices, t, getStoryButtonId, stepData.defaultButtonStyle);
 	}
 
 	if (stepData.isEnd) {
@@ -203,7 +203,7 @@ function getCharacterMessage(messageText, character) {
 /**
  * Creates buttons for the choices available to the user and appends them to the messages.
  */
-function appendChoiceButtons(messages, choices, t, getStoryButtonId) {
+function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButtonStyleRaw) {
 	// This is the message we append the buttons to.
 	// Since every message needs some content, we can't send a message with only buttons.
 	// So we first need to determine/create that message.
@@ -211,7 +211,8 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId) {
 	// > Components will be able to be sent without message content/embed. even tho mason strongly objects, it looks like they're going to do it.
 	let buttonMessage;
 
-	choices = parseChoiceButtonStyles(choices);
+	let defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, Constants.MessageButtonStyles.SECONDARY);
+	choices = parseChoiceButtonStyles(choices, defaultButtonStyle);
 
 	// If any of the choices are too long to fit into a button label,
 	// list all the choices with their numbers before the buttons to provide the full text
@@ -279,31 +280,35 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId) {
  * E.g. a choice text of "STYLE_SECONDARY:regular choice text" will result in the button style "SECONDARY" and the choice text "regular choice text".
  * Available styles are: SECONDARY, SUCCESS, DANGER. The default style if none is provided using this syntax is PRIMARY.
  * @param choices An array of Ink choice objects.
+ * @param defaultButtonStyle The button style to fall back on if none is found in a choice label.
  * @returns An array of new choice objects with potentially modified text properties and new style properties.
  */
-function parseChoiceButtonStyles(choices) {
+function parseChoiceButtonStyles(choices, defaultButtonStyle) {
 	return choices.map(choice => {
 		let text = choice.text;
-		// TODO later: global tag for default button style
-		let style = Constants.MessageButtonStyles.SECONDARY;
+		let style = defaultButtonStyle;
 		const separatorIndex = text.indexOf(':');
 		if (text.toUpperCase().startsWith('STYLE_') && separatorIndex > 0) {
 			const styleRaw = text.substring('STYLE_'.length, separatorIndex).toUpperCase();
-			switch (styleRaw) {
-				case 'PRIMARY':
-					style = Constants.MessageButtonStyles.PRIMARY;
-					break;
-				case 'SUCCESS':
-					style = Constants.MessageButtonStyles.SUCCESS;
-					break;
-				case 'DANGER':
-					style = Constants.MessageButtonStyles.DANGER;
-					break;
-			}
+			style = mapButtonStyle(styleRaw, style);
 			text = text.substring(separatorIndex + 1);
 		}
 		return { ...choice, text, style };
 	});
+}
+
+function mapButtonStyle(styleRaw, defaultStyle) {
+	switch (styleRaw) {
+		case 'PRIMARY':
+			return Constants.MessageButtonStyles.PRIMARY;
+		case 'SECONDARY':
+			return Constants.MessageButtonStyles.SECONDARY;
+		case 'SUCCESS':
+			return Constants.MessageButtonStyles.SUCCESS;
+		case 'DANGER':
+			return Constants.MessageButtonStyles.DANGER;
+	}
+	return defaultStyle;
 }
 
 function findLastRegularMessage(messages) {
