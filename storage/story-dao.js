@@ -428,7 +428,8 @@ export function saveCurrentStoryPlay(userId, storyId) {
 }
 
 export function clearCurrentStoryPlay(userId) {
-	clearStoryPlayStatement.run({ userId });
+	const info = clearStoryPlayStatement.run({ userId });
+	return info.changes > 0;
 }
 
 function clearCurrentStoryPlays(storyId) {

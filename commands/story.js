@@ -497,14 +497,19 @@ async function handleRestartStory(interaction, t, logger) {
 }
 
 async function handleStopStory(interaction, t, logger) {
+	let found;
 	try {
-		clearCurrentStoryPlay(interaction.user.id);
+		found = clearCurrentStoryPlay(interaction.user.id);
 	} catch (error) {
 		logger.error(error, 'Error while trying to clear current story play for user %s in database.', interaction.user.id);
 		await t.privateReply(interaction, 'reply.stop-story-failure');
 		return;
 	}
-	await t.privateReply(interaction, 'reply.stop-story-success');
+	if (!found) {
+		await t.privateReply(interaction, 'reply.no-story-running');
+	} else {
+		await t.privateReply(interaction, 'reply.stop-story-success');
+	}
 }
 
 async function handleShowState(interaction, t, logger) {
