@@ -226,8 +226,8 @@
 			'story-updated-and-stopped-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen und die Geschichte für Dich stoppen musste. Du kannst sie nochmal von vorn anfangen, indem Du den Button unten anklickst.',
 			'restart-button-label': 'Geschichte wieder starten',
 			'show-stories-title': 'Die folgenden Geschichten gibt es zur Zeit auf diesem Server.',
-			'show-stories-title-details': 'Benutze `/konfig-geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 			reply: {
+				'max-stories-reached': 'Du hast die maximale Anzahl an Geschichten für diesen Server erreicht. Leider kann ich keine weitere annehmen. Bitte lösche erst Geschichten, die Du nicht mehr brauchst.',
 				'wrong-content-type': 'Die von Dir hochgeladene Datei hat das falsche Dateiformat. Lade bitte eine .json-Datei hoch, die von einer Ink-Datei kompiliert wurde. Der Typ Deiner Datei ist "{{providedType}}".',
 				'file-too-large': 'Die von Dir hochgeladene Datei ist zu groß. Ich kann nur Geschichten bis zu {{maxFileSize, bytes}} akzeptieren.',
 				'could-not-load-file': 'Die von Dir hochgeladene Datei konnte nicht von Discord empfangen werden.',
@@ -242,7 +242,7 @@
 				'story-updated': 'Deine Änderungen an der Geschichte wurden gespeichert. Wenn Du willst, kannst Du auch die Metadaten der Geschichte bearbeiten.',
 				'edit-metadata-prompt': 'Du kannst die Metadaten der Geschichte bearbeiten, indem Du den Button unten anklickst.',
 				'story-metadata-updated': 'Die Metadaten wurden geändert. Und so sieht Deine Geschichte jetzt aus.',
-				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, Du kannst einen Testdurchlauf starten, oder Du kannst sie jetzt veröffentlichen. Die Veröffentlichung wird eine öffentlich sichtbare Nachricht in diesem Kanal posten. Wenn Du sie lieber in einem anderen Kanal posten würdest, kannst Du dort `/config-story show <title>` verwenden und den Veröffentlichen-Button in der Antwort darauf anklicken.',
+				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, Du kannst einen Testdurchlauf starten, oder Du kannst sie jetzt veröffentlichen. Die Veröffentlichung wird eine öffentlich sichtbare Nachricht in diesem Kanal posten. Wenn Du sie lieber in einem anderen Kanal posten würdest, kannst Du dort `/config-story show` verwenden, die Geschichte auswählen und den Veröffentlichen-Button in der Antwort darauf anklicken.',
 				'delete-failure': 'Löschen der Geschichte fehlgeschlagen.',
 				'marked-for-deletion-success': 'Die Geschichte wurde entfernt und wird zu einem späteren Zeitpunkt vollständig gelöscht. Du kannst das rückgängig machen, indem Du den Button unten anklickst. Alle aktuellen Durchläufe wurden für die Spielenden allerdings gestoppt und dies kann nicht rückgängig gemacht werden.',
 				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
@@ -506,7 +506,6 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'replay-button-label': 'Geschichte wiederholen',
 			'show-stories-title': 'Die folgenden Geschichten stehen zur Verfügung.',
-			'show-stories-title-details': 'Benutze `/geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 			reply: {
 				'story-not-published': 'Diese Geschichte konnte nicht öffentlich gepostet werden, da sie noch nicht veröffentlicht ist.',
 				'post-intro1': 'Mir wurde kürzlich diese Geschichte berichtet. Möchtest Du sie hören?',

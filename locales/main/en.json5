@@ -231,8 +231,8 @@
 			'story-updated-and-stopped-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress and stop the story for you. You can start from the beginning by pressing the button below.',
 			'restart-button-label': 'Start playing again',
 			'show-stories-title': 'The following stories currently exist on this server.',
-			'show-stories-title-details': 'Use `/config-story show <title>` to find out details about a particular story.',
 			reply: {
+				'max-stories-reached': "You have reached the maximum number of stories for this server, I cannot accept any more. Please delete any stories you don't need first.",
 				'wrong-content-type': 'The file you uploaded has the wrong file type. Please upload a .json file compiled from an Ink file. The type of your file is "{{providedType}}".',
 				'file-too-large': 'The file you uploaded is too large. I can only accept stories of up to {{maxFileSize, bytes}}.',
 				'could-not-load-file': 'The file you uploaded could not be received from Discord.',
@@ -247,7 +247,7 @@
 				'story-updated': "Your changes to the story have been saved. If you want to, you can also edit the story's metadata.",
 				'edit-metadata-prompt': "You can edit the story's metadata by pressing the button below.",
 				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
-				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use `/config-story show <title>` there and click the publish button in the reply to that.',
+				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use `/config-story show` there, select the story and click the publish button in the reply to that.',
 				'delete-failure': 'Deleting the story failed.',
 				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
 				'delete-success': 'The story has successfully been deleted.',
@@ -514,7 +514,6 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'replay-button-label': 'Replay story',
 			'show-stories-title': 'The following stories are available to play.',
-			'show-stories-title-details': 'Use `/story show <title>` to find out details about a particular story.',
 			reply: {
 				'story-not-published': 'This story could not be posted publicly because it has not been published yet.',
 				'post-intro1': 'I have recently been told this story. Do you want to hear it?',

@@ -3,6 +3,7 @@ import { quote, userMention } from '@discordjs/builders';
 import axios from 'axios';
 import {
 	addStory,
+	getNumberOfStories,
 	replaceStoryContent,
 	getStory,
 	getStories,
@@ -22,19 +23,17 @@ import {
 	COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT,
 	SELECT_CHOICE_LIMIT
 } from '../util/discord-constants.js';
-import {
-	getCustomIdForCommandRouting,
-	errorReply,
-	warningReply,
-	disableButtons,
-	sendListReply
-} from '../util/interaction-util.js';
+import { getCustomIdForCommandRouting, errorReply, warningReply, disableButtons } from '../util/interaction-util.js';
 import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../story/story-engine.js';
 import { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
 import { trimText } from '../util/helpers.js';
 import { updateCommandsAfterConfigChange } from './config.js';
 
+// To make sure malicious guilds can't fill up the bot's hard drive,
+// we limit both the file size of story files and the number of stories per guild.
 const MAX_STORY_FILE_SIZE = 1000000;
+// This is based on how many stories we can show in a select menu which is useful for the show command.
+const MAX_STORIES_PER_GUILD = SELECT_CHOICE_LIMIT;
 // Limiting the length of the title to this so that the title is a valid option label in the autocomplete for stories.
 const MAX_TITLE_LENGTH = COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT;
 // Just choosing a limit that is aligned with the title length here.
@@ -168,8 +167,11 @@ const configStoryCommand = {
 };
 
 async function handleCreateStory(interaction, t, logger) {
-	// TODO later: limit the number of stories allowed for a guild (to prevent malicious guilds from filling up the HD),
-	//  including drafts, testing, published, excluding to-be-deleted stories.
+	const numStories = getNumberOfStories(interaction.guildId, logger, true);
+	if (numStories + 1 > MAX_STORIES_PER_GUILD) {
+		await errorReply(interaction, t.user('reply.max-stories-reached'));
+		return null;
+	}
 
 	// Downloading and testing the story and writing it to disk can take a while, so we defer the reply to get more time to reply.
 	await interaction.deferReply({ ephemeral: true });
@@ -590,39 +592,29 @@ async function handleShowStories(interaction, t, logger) {
 				return story.title;
 			})
 			.sort(collator.compare);
-		if (guildStories.length <= SELECT_CHOICE_LIMIT) {
-			const embedTitle = t.user('show-stories-title');
-			const titlesText = storyTitles.join('\n');
-			const options = guildStories.map(story => ({
-				label: story.title,
-				value: story.id
-			}));
-			await interaction.reply({
-				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
-				components: [
-					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
-						components: [
-							{
-								type: Constants.MessageComponentTypes.SELECT_MENU,
-								custom_id: getConfigStoryComponentId('show'),
-								placeholder: t.userShared('show-story-details-select-label'),
-								options
-							}
-						]
-					}
-				],
-				ephemeral: true
-			});
-		} else {
-			await sendListReply(
-				interaction,
-				storyTitles,
-				t.user('show-stories-title') + ' ' + t.user('show-stories-title-details'),
-				false,
-				true
-			);
-		}
+		const embedTitle = t.user('show-stories-title');
+		const titlesText = storyTitles.join('\n');
+		const options = guildStories.map(story => ({
+			label: story.title,
+			value: story.id
+		}));
+		await interaction.reply({
+			embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+			components: [
+				{
+					type: Constants.MessageComponentTypes.ACTION_ROW,
+					components: [
+						{
+							type: Constants.MessageComponentTypes.SELECT_MENU,
+							custom_id: getConfigStoryComponentId('show'),
+							placeholder: t.userShared('show-story-details-select-label'),
+							options
+						}
+					]
+				}
+			],
+			ephemeral: true
+		});
 	}
 }
 

@@ -64,6 +64,7 @@ let getPublishedStoriesStatement = null;
 let findMatchingStoriesStatement = null;
 let findMatchingPublishedStoriesStatement = null;
 let countStoriesStatement = null;
+let countAllStoriesStatement = null;
 let changeStoryMetadataStatement = null;
 let changeStoryEditorStatement = null;
 let changeStoryStatusStatement = null;
@@ -121,6 +122,7 @@ registerDbInitialisedListener(() => {
 	countStoriesStatement = db
 		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted'")
 		.pluck();
+	countAllStoriesStatement = db.prepare('SELECT count(id) FROM story WHERE guild_id = :guildId').pluck();
 	changeStoryMetadataStatement = db.prepare(
 		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
 	);
@@ -258,9 +260,14 @@ export function findMatchingStories(guildId, userId, searchInput, logger, publis
  * @param {string} guildId The id of the guild to search.
  * @returns {number} The number of stories that exist. 0 if there are none or if an error occurred during the database fetching.
  */
-export function getNumberOfStories(guildId, logger) {
+export function getNumberOfStories(guildId, logger, all) {
 	try {
-		const result = countStoriesStatement.get({ guildId });
+		let result;
+		if (all) {
+			result = countAllStoriesStatement.get({ guildId });
+		} else {
+			result = countStoriesStatement.get({ guildId });
+		}
 		return result ?? 0;
 	} catch (error) {
 		logger.error(error, 'Error while trying to count stories in guild %', guildId);

@@ -15,14 +15,13 @@ import {
 	clearCurrentStoryPlay,
 	StoryStatus
 } from '../storage/story-dao.js';
-import { AUTOCOMPLETE_CHOICE_LIMIT, SELECT_CHOICE_LIMIT } from '../util/discord-constants.js';
+import { AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
 import {
 	errorReply,
 	warningReply,
 	markSelectedButton,
 	resetSelectionButtons,
-	getCustomIdForCommandRouting,
-	sendListReply
+	getCustomIdForCommandRouting
 } from '../util/interaction-util.js';
 import { getTranslatorForInteraction } from '../util/i18n.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
@@ -245,39 +244,29 @@ async function handleShowStories(interaction, t, logger) {
 				return story.title;
 			})
 			.sort(collator.compare);
-		if (guildStories.length <= SELECT_CHOICE_LIMIT) {
-			const embedTitle = t.user('show-stories-title');
-			const titlesText = storyTitles.join('\n');
-			const options = guildStories.map(story => ({
-				label: story.title,
-				value: story.id
-			}));
-			await interaction.reply({
-				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
-				components: [
-					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
-						components: [
-							{
-								type: Constants.MessageComponentTypes.SELECT_MENU,
-								custom_id: getStoryComponentId('show'),
-								placeholder: t.userShared('show-story-details-select-label'),
-								options
-							}
-						]
-					}
-				],
-				ephemeral: true
-			});
-		} else {
-			await sendListReply(
-				interaction,
-				storyTitles,
-				t.user('show-stories-title') + ' ' + t.user('show-stories-title-details'),
-				false,
-				true
-			);
-		}
+		const embedTitle = t.user('show-stories-title');
+		const titlesText = storyTitles.join('\n');
+		const options = guildStories.map(story => ({
+			label: story.title,
+			value: story.id
+		}));
+		await interaction.reply({
+			embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+			components: [
+				{
+					type: Constants.MessageComponentTypes.ACTION_ROW,
+					components: [
+						{
+							type: Constants.MessageComponentTypes.SELECT_MENU,
+							custom_id: getStoryComponentId('show'),
+							placeholder: t.userShared('show-story-details-select-label'),
+							options
+						}
+					]
+				}
+			],
+			ephemeral: true
+		});
 	}
 }
 
