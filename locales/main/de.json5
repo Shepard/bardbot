@@ -9,6 +9,7 @@
 		'story-db-fetch-error': 'Ein Fehler ist beim Versuch, die Geschichte in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
 		'story-not-found': 'Ich konnte diese Geschichte nicht finden.',
 		'show-stories-failure': 'Ein Fehler ist aufgetreten beim Versuch, die Geschichten dieses Servers in der Datenbank zu finden. Bitte versuch es später nochmal.',
+		'show-story-details-select-label': 'Zeige Details zu einer Geschichte',
 		'webhook-validation-error': {
 			'name-length': 'Name muss zwischen 1 und 80 Zeichen lang sein.',
 			clyde: "Das Wort 'clyde' ist von Discord reserviert und darf nirgendwo im Namen vorkommen, egal in welcher Groß- oder Kleinschreibung."
@@ -224,6 +225,8 @@
 			'metadata-dialog-teaser-field-label': 'Anreißer',
 			'story-updated-and-stopped-notification': 'Die Geschichte "{{storyTitle}}", die Du gerade auf "{{serverName}}" spielst, wurde aktualisiert. Leider heißt das, dass ich Deinen Fortschritt zurücksetzen und die Geschichte für Dich stoppen musste. Du kannst sie nochmal von vorn anfangen, indem Du den Button unten anklickst.',
 			'restart-button-label': 'Geschichte wieder starten',
+			'show-stories-title': 'Die folgenden Geschichten gibt es zur Zeit auf diesem Server.',
+			'show-stories-title-details': 'Benutze `/konfig-geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 			reply: {
 				'wrong-content-type': 'Die von Dir hochgeladene Datei hat das falsche Dateiformat. Lade bitte eine .json-Datei hoch, die von einer Ink-Datei kompiliert wurde. Der Typ Deiner Datei ist "{{providedType}}".',
 				'file-too-large': 'Die von Dir hochgeladene Datei ist zu groß. Ich kann nur Geschichten bis zu {{maxFileSize, bytes}} akzeptieren.',
@@ -245,8 +248,7 @@
 				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
 				'undo-delete-failure': 'Wiederherstellen der Geschichte fehlgeschlagen.',
 				'undo-delete-success': 'Die Geschichte wurde wiederhergestellt und wird nicht gelöscht. Alle, die sie zuvor gespielt haben, müssen sie allerdings selbst wieder starten.',
-				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
-				'show-stories': 'Die folgenden Geschichten gibt es zur Zeit auf diesem Server. Benutze `/konfig-geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.'
+				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.'
 			}
 		},
 		config: {
@@ -503,8 +505,9 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			'choice-buttons-header': 'Bitte wähle:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'replay-button-label': 'Geschichte wiederholen',
+			'show-stories-title': 'Die folgenden Geschichten stehen zur Verfügung.',
+			'show-stories-title-details': 'Benutze `/geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 			reply: {
-				'show-stories': 'Die folgenden Geschichten stehen zur Verfügung. Benutze `/geschichte zeigen <titel>` um Details über eine bestimmte Geschichte zu erfahren.',
 				'story-not-published': 'Diese Geschichte konnte nicht öffentlich gepostet werden, da sie noch nicht veröffentlicht ist.',
 				'post-intro1': 'Mir wurde kürzlich diese Geschichte berichtet. Möchtest Du sie hören?',
 				'post-intro2': "Es gibt ein neues Abenteuer zu erleben. Sollen wir's uns anschauen?",

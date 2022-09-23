@@ -17,7 +17,11 @@ import {
 	deleteStory,
 	StoryStatus
 } from '../storage/story-dao.js';
-import { AUTOCOMPLETE_CHOICE_LIMIT, COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import {
+	AUTOCOMPLETE_CHOICE_LIMIT,
+	COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT,
+	SELECT_CHOICE_LIMIT
+} from '../util/discord-constants.js';
 import {
 	getCustomIdForCommandRouting,
 	errorReply,
@@ -155,6 +159,8 @@ const configStoryCommand = {
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
 			await handlePublishStory(interaction, storyId, t, guildConfig, logger);
+		} else if (innerCustomId.startsWith('show')) {
+			await handleShowStories(interaction, t, logger);
 		} else {
 			await t.privateReplyShared(interaction, 'unknown-command');
 		}
@@ -446,7 +452,7 @@ async function handleDeleteStory(interaction, storyId, t, logger) {
 			// They just get made unavailable and the user can undo this.
 			// After some time, they will be deleted completely.
 			try {
-				// TODO should the players be informed?
+				// TODO should the players be informed? probably not, that's just too risky as DM spam. make a public post about it? nah...
 				markStoryForDeletion(storyId, interaction.guildId);
 			} catch (error) {
 				logger.error(error, 'Error while trying to mark story %s for deletion.', storyId);
@@ -514,7 +520,15 @@ async function handleUndoDeleteStory(interaction, storyId, previousStatus, t, lo
  */
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
-	const storyId = interaction.options.getString('title');
+	let storyId;
+	if (
+		interaction.componentType === Constants.MessageComponentTypes[Constants.MessageComponentTypes.SELECT_MENU] &&
+		interaction.values?.length
+	) {
+		storyId = interaction.values[0];
+	} else {
+		storyId = interaction.options?.getString('title');
+	}
 
 	if (storyId) {
 		let story = null;
@@ -576,7 +590,39 @@ async function handleShowStories(interaction, t, logger) {
 				return story.title;
 			})
 			.sort(collator.compare);
-		await sendListReply(interaction, storyTitles, t.user('reply.show-stories'), false, true);
+		if (guildStories.length <= SELECT_CHOICE_LIMIT) {
+			const embedTitle = t.user('show-stories-title');
+			const titlesText = storyTitles.join('\n');
+			const options = guildStories.map(story => ({
+				label: story.title,
+				value: story.id
+			}));
+			await interaction.reply({
+				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: Constants.MessageComponentTypes.SELECT_MENU,
+								custom_id: getConfigStoryComponentId('show'),
+								placeholder: t.userShared('show-story-details-select-label'),
+								options
+							}
+						]
+					}
+				],
+				ephemeral: true
+			});
+		} else {
+			await sendListReply(
+				interaction,
+				storyTitles,
+				t.user('show-stories-title') + ' ' + t.user('show-stories-title-details'),
+				false,
+				true
+			);
+		}
 	}
 }
 
@@ -627,11 +673,11 @@ function getConfigStoryButton(label, innerCustomId, style) {
 		type: Constants.MessageComponentTypes.BUTTON,
 		style: style ?? Constants.MessageButtonStyles.PRIMARY,
 		label,
-		custom_id: getConfigStoryButtonId(innerCustomId)
+		custom_id: getConfigStoryComponentId(innerCustomId)
 	};
 }
 
-function getConfigStoryButtonId(innerCustomId) {
+function getConfigStoryComponentId(innerCustomId) {
 	return getCustomIdForCommandRouting(configStoryCommand, innerCustomId);
 }
 

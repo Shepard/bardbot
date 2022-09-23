@@ -291,6 +291,7 @@ async function handleShowAlts(interaction, t, logger) {
 			// The database already does some sorting for us but it's not very good at proper i18n sorting.
 			.sort(collator.compare);
 		await sendListReply(interaction, altNameList, t.user('reply.show-alts'), false, true);
+		// TODO if <= 25, show them in a select, like for stories
 	}
 }
 

@@ -9,6 +9,7 @@
 		'story-db-fetch-error': 'An error occurred while trying to find the story in the database. Please try again later.',
 		'story-not-found': 'I could not find this story.',
 		'show-stories-failure': 'An error occurred while trying to find the stories of this server in the database. Please try again later.',
+		'show-story-details-select-label': 'Show details about a story',
 		'webhook-validation-error': {
 			'name-length': 'Name must be between 1 and 80 characters long.',
 			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalisation."
@@ -229,6 +230,8 @@
 			'metadata-dialog-teaser-field-label': 'Teaser',
 			'story-updated-and-stopped-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress and stop the story for you. You can start from the beginning by pressing the button below.',
 			'restart-button-label': 'Start playing again',
+			'show-stories-title': 'The following stories currently exist on this server.',
+			'show-stories-title-details': 'Use `/config-story show <title>` to find out details about a particular story.',
 			reply: {
 				'wrong-content-type': 'The file you uploaded has the wrong file type. Please upload a .json file compiled from an Ink file. The type of your file is "{{providedType}}".',
 				'file-too-large': 'The file you uploaded is too large. I can only accept stories of up to {{maxFileSize, bytes}}.',
@@ -250,8 +253,7 @@
 				'delete-success': 'The story has successfully been deleted.',
 				'undo-delete-failure': 'Restoring the story failed.',
 				'undo-delete-success': 'The story has been restored and will not be deleted. Members that were playing it will have to start it again themselves.',
-				'publish-failure': 'Publishing the story failed.',
-				'show-stories': 'The following stories currently exist on this server. Use `/config-story show <title>` to find out details about a particular story.'
+				'publish-failure': 'Publishing the story failed.'
 			}
 		},
 		config: {
@@ -511,8 +513,9 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 			'choice-buttons-header': 'Please choose:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'replay-button-label': 'Replay story',
+			'show-stories-title': 'The following stories are available to play.',
+			'show-stories-title-details': 'Use `/story show <title>` to find out details about a particular story.',
 			reply: {
-				'show-stories': 'The following stories are available to play. Use `/story show <title>` to find out details about a particular story.',
 				'story-not-published': 'This story could not be posted publicly because it has not been published yet.',
 				'post-intro1': 'I have recently been told this story. Do you want to hear it?',
 				'post-intro2': 'There is a new adventure to be had. Shall we take a look?',

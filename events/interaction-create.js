@@ -36,7 +36,7 @@ async function handleInteraction(interaction) {
 		}
 	} else if (interaction.isModalSubmit()) {
 		await handleComponent(interaction, true);
-	} else if (interaction.isButton()) {
+	} else if (interaction.isButton() || interaction.isSelectMenu()) {
 		await handleComponent(interaction, false);
 	}
 }

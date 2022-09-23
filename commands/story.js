@@ -15,7 +15,7 @@ import {
 	clearCurrentStoryPlay,
 	StoryStatus
 } from '../storage/story-dao.js';
-import { AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
+import { AUTOCOMPLETE_CHOICE_LIMIT, SELECT_CHOICE_LIMIT } from '../util/discord-constants.js';
 import {
 	errorReply,
 	warningReply,
@@ -147,6 +147,8 @@ const storyCommand = {
 			await handleStopStory(interaction, t, logger);
 		} else if (innerCustomId.startsWith('state')) {
 			await handleShowState(interaction, t, logger);
+		} else if (innerCustomId.startsWith('show')) {
+			await handleShowStories(interaction, t, logger);
 		} else {
 			// This is not an interaction we can handle.
 			// We need to reply to the interaction, otherwise it will be shown as pending and eventually failed.
@@ -198,21 +200,29 @@ function getStoryButton(label, innerCustomId, style) {
 		type: Constants.MessageComponentTypes.BUTTON,
 		style: style ?? Constants.MessageButtonStyles.PRIMARY,
 		label,
-		custom_id: getStoryButtonId(innerCustomId)
+		custom_id: getStoryComponentId(innerCustomId)
 	};
 }
 
-function getStoryButtonId(innerCustomId) {
+function getStoryComponentId(innerCustomId) {
 	return getCustomIdForCommandRouting(storyCommand, innerCustomId);
 }
 
 export function getStartStoryButtonId(storyId, guildId) {
-	return getStoryButtonId('start ' + storyId + ' ' + guildId);
+	return getStoryComponentId('start ' + storyId + ' ' + guildId);
 }
 
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
-	const storyId = interaction.options.getString('title');
+	let storyId;
+	if (
+		interaction.componentType === Constants.MessageComponentTypes[Constants.MessageComponentTypes.SELECT_MENU] &&
+		interaction.values?.length
+	) {
+		storyId = interaction.values[0];
+	} else {
+		storyId = interaction.options?.getString('title');
+	}
 
 	if (storyId) {
 		await postStoryInner(storyId, false, interaction, t, logger);
@@ -235,7 +245,39 @@ async function handleShowStories(interaction, t, logger) {
 				return story.title;
 			})
 			.sort(collator.compare);
-		await sendListReply(interaction, storyTitles, t.user('reply.show-stories'), false, true);
+		if (guildStories.length <= SELECT_CHOICE_LIMIT) {
+			const embedTitle = t.user('show-stories-title');
+			const titlesText = storyTitles.join('\n');
+			const options = guildStories.map(story => ({
+				label: story.title,
+				value: story.id
+			}));
+			await interaction.reply({
+				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: Constants.MessageComponentTypes.SELECT_MENU,
+								custom_id: getStoryComponentId('show'),
+								placeholder: t.userShared('show-story-details-select-label'),
+								options
+							}
+						]
+					}
+				],
+				ephemeral: true
+			});
+		} else {
+			await sendListReply(
+				interaction,
+				storyTitles,
+				t.user('show-stories-title') + ' ' + t.user('show-stories-title-details'),
+				false,
+				true
+			);
+		}
 	}
 }
 
@@ -324,7 +366,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 			ephemeral: true
 		});
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
-		await sendStoryStepData(interaction, stepData, t, getStoryButtonId, getStartStoryButtonId(storyId, guildId));
+		await sendStoryStepData(interaction, stepData, t, getStoryComponentId, getStartStoryButtonId(storyId, guildId));
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {
@@ -406,7 +448,7 @@ async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
 			interaction,
 			stepData,
 			t,
-			getStoryButtonId,
+			getStoryComponentId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {
@@ -460,7 +502,7 @@ async function handleRestartStory(interaction, t, logger) {
 			interaction,
 			stepData,
 			t,
-			getStoryButtonId,
+			getStoryComponentId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {
@@ -528,7 +570,7 @@ async function handleShowState(interaction, t, logger) {
 			interaction,
 			stepData,
 			t,
-			getStoryButtonId,
+			getStoryComponentId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {

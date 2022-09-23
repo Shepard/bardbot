@@ -32,6 +32,9 @@ export const COMMAND_NAME_REGEXP = /^[-_\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$
 // See https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-autocomplete
 export const AUTOCOMPLETE_CHOICE_LIMIT = 25;
 
+// See https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
+export const SELECT_CHOICE_LIMIT = 25;
+
 // See https://discord.com/developers/docs/interactions/message-components#component-object-component-structure
 export const BUTTON_LABEL_CHARACTER_LIMIT = 80;
 
