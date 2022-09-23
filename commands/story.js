@@ -164,12 +164,22 @@ function getStartButton(t, storyId, guildId) {
 	);
 }
 
-function getRestartButton(t) {
-	return getTranslatedStoryButton(t.user, 'restart-button-label', 'restart', Constants.MessageButtonStyles.DANGER);
+function getRestartButton(t, short) {
+	return getTranslatedStoryButton(
+		t.user,
+		short ? 'restart-button-label-short' : 'restart-button-label',
+		'restart',
+		short ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.DANGER
+	);
 }
 
-function getStopButton(t) {
-	return getTranslatedStoryButton(t.user, 'stop-button-label', 'stop', Constants.MessageButtonStyles.DANGER);
+function getStopButton(t, short) {
+	return getTranslatedStoryButton(
+		t.user,
+		short ? 'stop-button-label-short' : 'stop-button-label',
+		'stop',
+		short ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.DANGER
+	);
 }
 
 function getStateButton(t) {
@@ -281,15 +291,15 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 	}
 }
 
-function getStoryEmbed(metadata, message) {
+function getStoryEmbed(metadata, description) {
 	// TODO have more ways to customise this embed message via more metadata saved in the story.
 	//  maybe an image, maybe a colour for the side of the embed, maybe an author avatar, maybe a URL.
 	const storyIntroEmbed = new MessageEmbed().setTitle(metadata.title);
 	if (metadata.author) {
 		storyIntroEmbed.setAuthor({ name: metadata.author });
 	}
-	if (message) {
-		storyIntroEmbed.setDescription(message);
+	if (description) {
+		storyIntroEmbed.setDescription(description);
 	}
 	return storyIntroEmbed;
 }
@@ -364,16 +374,26 @@ async function sendStoryIntro(interaction, metadata, t) {
 	await sendStoryEmbed(
 		interaction,
 		metadata,
-		t.user('reply.story-intro1') + '\n' + t.user('reply.story-intro2') + '\n' + t.user('reply.story-intro3')
+		t.user('reply.story-intro1') + '\n' + t.user('reply.story-intro2') + '\n' + t.user('reply.story-intro3'),
+		t
 	);
 }
 
-async function sendStoryEmbed(interaction, metadata, message) {
-	// TODO Restart and stop buttons? Secondary so they're not too inviting. they would need the guildId since this interaction might be outside of a guild.
-	//  see also interaction.reply in handleShowState which would also need the button. maybe extract a method creating the whole message.
-	await interaction.user.send({
-		embeds: [getStoryEmbed(metadata, message)]
-	});
+async function sendStoryEmbed(interaction, metadata, description, t, reply) {
+	const message = {
+		embeds: [getStoryEmbed(metadata, description)],
+		components: [
+			{
+				type: Constants.MessageComponentTypes.ACTION_ROW,
+				components: [getRestartButton(t, true), getStopButton(t, true)]
+			}
+		]
+	};
+	if (reply) {
+		await interaction.reply(message);
+	} else {
+		await interaction.user.send(message);
+	}
 }
 
 async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
@@ -494,12 +514,10 @@ async function handleShowState(interaction, t, logger) {
 		if (interaction.guildId) {
 			// The status was requested via an interaction in the guild, so we first need to reply to the interaction and then send the state embed to the DMs.
 			await t.privateReply(interaction, 'reply.story-state-success');
-			await sendStoryEmbed(interaction, stepData.storyRecord, t.user('reply.story-state-repeat'));
+			await sendStoryEmbed(interaction, stepData.storyRecord, t.user('reply.story-state-repeat'), t, false);
 		} else {
 			// The status was requested by a button click in the DMs so we can reply with the state embed straightaway.
-			await interaction.reply({
-				embeds: [getStoryEmbed(stepData.storyRecord, t.user('reply.story-state-repeat'))]
-			});
+			await sendStoryEmbed(interaction, stepData.storyRecord, t.user('reply.story-state-repeat'), t, true);
 		}
 		await sendStoryStepData(
 			interaction,
