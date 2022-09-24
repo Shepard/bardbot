@@ -69,7 +69,7 @@ export function trimText(text, maxCodePoints) {
  * @returns An array of strings which are the parts of the input text.
  */
 export function splitTextAtWhitespace(text, maxCodePointsPerPart) {
-	// TODO future extension: break at word boundary chars like in regexes (and include them).
+	// TODO later: break at word boundary chars like in regexes (and include them).
 
 	const result = [];
 	let buffer = '';
@@ -84,7 +84,7 @@ export function splitTextAtWhitespace(text, maxCodePointsPerPart) {
 			if (bufferUpToWhitespace.length > 0) {
 				result.push(bufferUpToWhitespace);
 				buffer = bufferAfterWhitespace;
-				// TODO counting again could be avoided if we keep track.
+				// TODO later: counting again could be avoided if we keep track.
 				counter = codePointLength(buffer);
 			} else {
 				result.push(buffer);

@@ -454,7 +454,6 @@ async function handleDeleteStory(interaction, storyId, t, logger) {
 			// They just get made unavailable and the user can undo this.
 			// After some time, they will be deleted completely.
 			try {
-				// TODO should the players be informed? probably not, that's just too risky as DM spam. make a public post about it? nah...
 				markStoryForDeletion(storyId, interaction.guildId);
 			} catch (error) {
 				logger.error(error, 'Error while trying to mark story %s for deletion.', storyId);
@@ -556,7 +555,7 @@ async function handleShowStories(interaction, t, logger) {
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
 		} else if (story.status === StoryStatus.Published) {
-			// TODO "unpublish" button for moving a story back to testing? should stop current plays.
+			// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 		}
 		buttons.push(getDeleteButton(t, storyId));
 		const components = [

@@ -323,7 +323,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 }
 
 function getStoryEmbed(metadata, description) {
-	// TODO have more ways to customise this embed message via more metadata saved in the story.
+	// TODO later: have more ways to customise this embed message via more metadata saved in the story.
 	//  maybe an image, maybe a colour for the side of the embed, maybe an author avatar, maybe a URL.
 	const storyIntroEmbed = new MessageEmbed().setTitle(metadata.title);
 	if (metadata.author) {

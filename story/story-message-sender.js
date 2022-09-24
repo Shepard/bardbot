@@ -33,7 +33,7 @@ const SpecialHandling = Object.freeze({
  */
 export async function sendStoryStepData(interaction, stepData, t, getStoryButtonId, startButtonId) {
 	const messages = getMessagesToSend(stepData, t, getStoryButtonId, startButtonId);
-	// TODO test if this can become an issue considering the warning on https://discord.com/developers/docs/resources/user#create-dm.
+	// TODO later: test if this can become an issue considering the warning on https://discord.com/developers/docs/resources/user#create-dm.
 	//  if malicious users manage to get the bot to contact too many users at once
 	//  (either by starting stories (incl. sendStoryIntro in story.js), or by getting informed about story errors, or by getting informed about story state being reset)
 	//  they could get the bot blocked from using DMs.
@@ -144,6 +144,13 @@ function appendTextMessages(messages, lines, characters) {
 			flushMessageText();
 			previousLineWasStandalone = true;
 		}
+
+		// TODO later: tags for showing scenes as embeds, with title, description, colour, image?
+		//  maybe it consists of multiple lines, each containing title, description, field label and values etc.
+		//  that way we can use ink means to make them different each time, e.g. with queries or variables.
+		//  the first line contains tags for colour, image.
+		//  would be nice if the image could differ based on variables as well. would have to parse it from the content instead of tags probably. maybe.
+		//  adjust messageLimit to EMBED_DESCRIPTION_CHARACTER_LIMIT for this as well.
 
 		if (codePointLength(lineText) > messageLimit) {
 			// The current line exceeds the character limit of a message, so we need to split it up, preferrably at whitespace.
