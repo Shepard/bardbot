@@ -169,7 +169,7 @@ const configStoryCommand = {
 async function handleCreateStory(interaction, t, logger) {
 	const numStories = getNumberOfStories(interaction.guildId, logger, true);
 	if (numStories + 1 > MAX_STORIES_PER_GUILD) {
-		await errorReply(interaction, t.user('reply.max-stories-reached'));
+		await warningReply(interaction, t.user('reply.max-stories-reached'));
 		return null;
 	}
 
