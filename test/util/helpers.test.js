@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { chunk, codePointLength, trimText, splitTextAtWhitespace } from '../../util/helpers.js';
+import { chunk, addMonths, codePointLength, trimText, splitTextAtWhitespace } from '../../util/helpers.js';
 
 describe('helpers', () => {
 	describe('chunk()', () => {
@@ -19,17 +19,46 @@ describe('helpers', () => {
 		});
 	});
 
+	describe('addMonths()', () => {
+		it('can keep dates identical', () => {
+			const date = new Date();
+			expect(addMonths(date, 0)).to.be.deep.equal(date);
+		});
+		it('does not modify its input date', () => {
+			const date = new Date();
+			const time = date.getTime();
+			addMonths(date, 1);
+			expect(date.getTime()).to.be.equal(time);
+		});
+		it('can deal with leap years', () => {
+			const inputDate = new Date('2020-02-29T03:00:00');
+			// February can't have 29 days in a non leap year so we expect the date to be cut off at 28.
+			const expectedDate = new Date('2021-02-28T03:00:00');
+			expect(addMonths(inputDate, 12)).to.be.deep.equal(expectedDate);
+		});
+		it('can deal with year boundaries', () => {
+			const inputDate = new Date('2022-12-31T03:00:00');
+			const expectedDate = new Date('2023-01-31T03:00:00');
+			expect(addMonths(inputDate, 1)).to.be.deep.equal(expectedDate);
+		});
+		it('can subtract months', () => {
+			const inputDate = new Date('2022-12-31T03:00:00');
+			const expectedDate = new Date('2022-06-30T03:00:00');
+			expect(addMonths(inputDate, -6)).to.be.deep.equal(expectedDate);
+		});
+	});
+
 	describe('codePointLength()', () => {
 		it('can handle an empty string', () => {
 			expect(codePointLength('')).to.be.equal(0);
 		});
-		it('count surrogate pairs correctly', () => {
+		it('counts surrogate pairs correctly', () => {
 			// First confirm that this string is two UTF-16 characters long using normal length measuring.
 			expect('🤖'.length).to.be.equal(2);
-			// Now check that out method counts code points correctly.
+			// Now check that our method counts code points correctly.
 			expect(codePointLength('🤖')).to.be.equal(1);
 
-			// And some longer example
+			// And a longer example
 			expect('ab🤖cd'.length).to.be.equal(6);
 			expect(codePointLength('ab🤖cd')).to.be.equal(5);
 		});

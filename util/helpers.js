@@ -11,7 +11,6 @@ export function chunk(items, chunkSize) {
 	return chunked;
 }
 
-// TODO unit tests
 export function addMonths(inputDate, months) {
 	const date = new Date(inputDate);
 	date.setDate(1);
