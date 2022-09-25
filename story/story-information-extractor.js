@@ -32,6 +32,8 @@ export function parseCharacters(inkStory) {
 		for (let tag of inkStory.globalTags) {
 			const match = tag.match(CHARACTER_TAG_REGEXP);
 			if (match) {
+				// TODO later: restrict length of character name.
+				//  https://discord.com/developers/docs/resources/channel#embed-object-embed-limits -> author name can hold up to 256 chars.
 				const name = match[1] ? match[1].trim() : match[2].trim();
 				const character = { name };
 				if (match.groups.url) {
