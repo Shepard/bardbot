@@ -6,7 +6,7 @@
 
 import inkjs from 'inkjs';
 import { ErrorType } from 'inkjs/engine/Error.js';
-import { Constants, MessageEmbed } from 'discord.js';
+import { Constants, DiscordAPIError, MessageEmbed } from 'discord.js';
 import { quote } from '@discordjs/builders';
 import { parseCharacters, parseDefaultButtonStyle, parseMetadata } from './story-information-extractor.js';
 import {
@@ -28,7 +28,9 @@ import {
 	MESSAGE_ACTION_ROW_LIMIT,
 	ACTION_ROW_BUTTON_LIMIT,
 	EMBED_DESCRIPTION_CHARACTER_LIMIT,
-	COLOUR_DISCORD_YELLOW
+	COLOUR_DISCORD_YELLOW,
+	API_ERROR_CODE__OPENING_DMS_TOO_FAST,
+	API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER
 } from '../util/discord-constants.js';
 import { translate } from '../util/i18n.js';
 import { splitTextAtWhitespace } from '../util/helpers.js';
@@ -461,17 +463,20 @@ export function probeStory(storyContent) {
 }
 
 function informStoryEditor(client, storyRecord, reportType, issueDetails, lastLines, logger) {
-	informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger).catch(error =>
-		// This should be a fire-and-forget action for the caller
-		// (so that the reporting doesn't interfere with playing the story)
-		// so we just log it and don't throw it further up the chain.
-		logger.error(
-			error,
-			'Error while trying to inform story editor %s about story issues. Story id: %s',
-			storyRecord.editorId,
-			storyRecord.id
-		)
-	);
+	informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger).catch(error => {
+		// If we can't send DMs to this user, we don't want to log that, as it's just a setting on their side, not an error on our side.
+		if (!(error instanceof DiscordAPIError) || error.code !== API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER) {
+			// This should be a fire-and-forget action for the caller
+			// (so that the reporting doesn't interfere with playing the story)
+			// so we just log it and don't throw it further up the chain.
+			logger.error(
+				error,
+				'Error while trying to inform story editor %s about story issues. Story id: %s',
+				storyRecord.editorId,
+				storyRecord.id
+			);
+		}
+	});
 }
 
 async function informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger) {
@@ -523,13 +528,12 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				// This *might* split up a quoted line but it's probably unlikely enough that it doesn't matter, it just looks a bit ugly/confusing then.
 				const messages = splitTextAtWhitespace(message, EMBED_DESCRIPTION_CHARACTER_LIMIT);
 				const dmChannel = await guildMember.createDM();
-				await Promise.all(
-					messages.map(msg =>
-						dmChannel.send({
-							embeds: [new MessageEmbed().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
-						})
-					)
-				);
+				for (const msg of messages) {
+					// Ideally we could combine the embeds into single messages but this should happen so rarely, it's not worth the effort.
+					await dmChannel.send({
+						embeds: [new MessageEmbed().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
+					});
+				}
 
 				markIssueAsReported(storyRecord.id, reportType);
 			}
@@ -545,20 +549,30 @@ export async function stopStoryPlayAndInformPlayers(storyRecord, client, getStar
 			const guildConfig = getGuildConfig(storyRecord.guildId, logger);
 			const locale = guildConfig.language ?? guild.preferredLocale ?? 'en';
 			const currentPlayers = getCurrentPlayers(storyRecord.id);
-			await Promise.allSettled(
-				currentPlayers.map(userId => {
-					return stopStoryPlayAndInformPlayer(userId, storyRecord, guild, locale, getStartStoryButtonId).catch(
-						error => {
-							logger.error(
-								error,
-								'Error while trying to inform player %s about story play state being reset. Story id: %s',
-								userId,
-								storyRecord.id
-							);
-						}
-					);
-				})
-			);
+			let informPlayers = true;
+			for (const userId of currentPlayers) {
+				try {
+					clearCurrentStoryPlay(userId);
+					if (informPlayers) {
+						await informPlayerAboutStoppedStoryPlay(userId, storyRecord, guild, locale, getStartStoryButtonId);
+					}
+				} catch (error) {
+					// If we can't send DMs to this user, we don't want to log that, as it's just a setting on their side, not an error on our side.
+					if (!(error instanceof DiscordAPIError) || error.code !== API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER) {
+						logger.error(
+							error,
+							'Error while trying to inform player %s about story play state being reset. Story id: %s',
+							userId,
+							storyRecord.id
+						);
+					}
+					// If there are too many players, Discord might tell us we're opening DMs too fast.
+					// In this case it's better to stop informing the rest of the players and only clear their story plays.
+					if (error instanceof DiscordAPIError && error.code === API_ERROR_CODE__OPENING_DMS_TOO_FAST) {
+						informPlayers = false;
+					}
+				}
+			}
 		}
 	} catch (error) {
 		logger.error(
@@ -569,9 +583,7 @@ export async function stopStoryPlayAndInformPlayers(storyRecord, client, getStar
 	}
 }
 
-async function stopStoryPlayAndInformPlayer(userId, storyRecord, guild, locale, getStartStoryButtonId) {
-	clearCurrentStoryPlay(userId);
-
+async function informPlayerAboutStoppedStoryPlay(userId, storyRecord, guild, locale, getStartStoryButtonId) {
 	const guildMember = await guild.members.fetch(userId);
 	// Make sure the user is still in the guild.
 	if (guildMember) {

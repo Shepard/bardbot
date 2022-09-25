@@ -1,4 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { Constants, DiscordAPIError, MessageEmbed } from 'discord.js';
 import {
 	StoryErrorType,
 	startStory,
@@ -15,7 +15,7 @@ import {
 	clearCurrentStoryPlay,
 	StoryStatus
 } from '../storage/story-dao.js';
-import { AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
+import { API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER, AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
 import {
 	errorReply,
 	warningReply,
@@ -211,6 +211,10 @@ export function getStartStoryButtonId(storyId, guildId) {
 	return getStoryComponentId('start ' + storyId + ' ' + guildId);
 }
 
+function isCannotSendDMsError(error) {
+	return error instanceof DiscordAPIError && error.code === API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER;
+}
+
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	let storyId;
@@ -350,11 +354,12 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 	try {
 		const stepData = await startStory(interaction.user.id, storyId, guildId, interaction.client, logger);
 
+		await sendStoryIntro(interaction, stepData.storyRecord, t);
+		// Now we're sure we can send DMs, we can reply to the interaction, telling them to go to their DMs.
 		await interaction.editReply({
 			content: startingStoryMessages.any(t.user),
 			ephemeral: true
 		});
-		await sendStoryIntro(interaction, stepData.storyRecord, t);
 		await sendStoryStepData(interaction, stepData, t, getStoryComponentId, getStartStoryButtonId(storyId, guildId));
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -394,6 +399,20 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 					await errorReply(interaction, t.user('reply.time-budget-exceeded'));
 					return;
 			}
+		}
+
+		if (isCannotSendDMsError(error)) {
+			try {
+				clearCurrentStoryPlay(interaction.user.id);
+			} catch (error) {
+				logger.error(
+					error,
+					'Error while trying to clear current story play for user %s in database.',
+					interaction.user.id
+				);
+			}
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
 		}
 
 		// We don't know what this error is. Just rethrow and let interaction handling deal with it.
@@ -475,6 +494,13 @@ async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
 			}
 		}
 
+		if (isCannotSendDMsError(error)) {
+			// We shouldn't really end up here: If the user does not allow DMs from the bot anymore but clicks on a button in their DMs,
+			// the interaction will just fail on Discord's end and we won't even receive it.
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
+		}
+
 		// We don't know what this error is. Just rethrow and let interaction handling deal with it.
 		throw error;
 	}
@@ -485,8 +511,8 @@ async function handleRestartStory(interaction, t, logger) {
 
 	try {
 		const stepData = await restartStory(interaction.user.id, interaction.client, logger);
-		await t.privateReply(interaction, 'reply.reset-story-success');
 		await sendStoryIntro(interaction, stepData.storyRecord, t);
+		await t.privateReply(interaction, 'reply.reset-story-success');
 		await sendStoryStepData(
 			interaction,
 			stepData,
@@ -522,6 +548,24 @@ async function handleRestartStory(interaction, t, logger) {
 			}
 		}
 
+		if (isCannotSendDMsError(error)) {
+			try {
+				// The ideal solution would be to reset it to the previous state,
+				// but it is so unlikely that we will not be able to send the user DMs
+				// at this stage and their intention was to start from the beginning anyway,
+				// so stopping it entirely should be fine.
+				clearCurrentStoryPlay(interaction.user.id);
+			} catch (error) {
+				logger.error(
+					error,
+					'Error while trying to clear current story play for user %s in database.',
+					interaction.user.id
+				);
+			}
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
+		}
+
 		// We don't know what this error is. Just rethrow and let interaction handling deal with it.
 		throw error;
 	}
@@ -548,11 +592,13 @@ async function handleShowState(interaction, t, logger) {
 		const stepData = await getCurrentStoryState(interaction.user.id, logger);
 
 		if (interaction.guildId) {
-			// The status was requested via an interaction in the guild, so we first need to reply to the interaction and then send the state embed to the DMs.
-			await t.privateReply(interaction, 'reply.story-state-success');
+			// The status was requested via an interaction in the guild,
+			// so we need to send the state embed to the DMs and reply to the interaction.
 			await sendStoryEmbed(interaction, stepData.storyRecord, t.user('reply.story-state-repeat'), t, false);
+			await t.privateReply(interaction, 'reply.story-state-success');
 		} else {
-			// The status was requested by a button click in the DMs so we can reply with the state embed straightaway.
+			// The status was requested by a button click in the DMs,
+			// so we can reply with the state embed straightaway.
 			await sendStoryEmbed(interaction, stepData.storyRecord, t.user('reply.story-state-repeat'), t, true);
 		}
 		await sendStoryStepData(
@@ -575,6 +621,13 @@ async function handleShowState(interaction, t, logger) {
 					await errorReply(interaction, t.user('reply.temporary-problem'));
 					return;
 			}
+		}
+
+		if (isCannotSendDMsError(error)) {
+			// Since we didn't change any state, we just need to inform the user about the problem
+			// and not do anything else.
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
 		}
 
 		// We don't know what this error is. Just rethrow and let interaction handling deal with it.

@@ -33,22 +33,13 @@ const SpecialHandling = Object.freeze({
  */
 export async function sendStoryStepData(interaction, stepData, t, getStoryButtonId, startButtonId) {
 	const messages = getMessagesToSend(stepData, t, getStoryButtonId, startButtonId);
-	// TODO later: test if this can become an issue considering the warning on https://discord.com/developers/docs/resources/user#create-dm.
-	//  if malicious users manage to get the bot to contact too many users at once
-	//  (either by starting stories (incl. sendStoryIntro in story.js), or by getting informed about story errors, or by getting informed about story state being reset)
-	//  they could get the bot blocked from using DMs.
-	//  does discord.js have a protection mechanism in place for this or do I need to keep track of this manually and space out calls to createDM?
-	//  -> it might handle rate limiting on that route but I could not get a clear indication on that.
-	// TODO handle errors from this (and also other places where DMs are created).
-	//  if the user has blocked DMs, we might want to tell them in the interaction reply.
-	//  probably don't log those errors as it's a user setting and not a server error.
 	const dmChannel = await interaction.user.createDM();
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].specialHandling === SpecialHandling.Delay) {
 			await dmChannel.sendTyping();
 			await wait(MESSAGE_DELAY);
 		} else {
-			await interaction.user.send(messages[i]);
+			await dmChannel.send(messages[i]);
 		}
 	}
 }

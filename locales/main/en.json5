@@ -525,6 +525,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'could-not-start-story': 'There was an error trying to start this story.',
 				'could-not-save-state': "There was an error trying to save your story progress. You could check the story state again later and if it still doesn't work, you might have to restart or stop the story, losing all progress.",
 				'time-budget-exceeded': 'The next story steps could not be evaluated fast enough. This could be a problem with the story itself or the bot might just be too overloaded at the moment. Please try again later.',
+				'cannot-send-dms': 'Stories are played in your direct messages. Unfortunately I cannot send you direct messages at the moment. To allow me to do that, please open the server\'s menu (where the server name is above the channel list), select "Privacy Settings" and make sure "Direct Messages" is activated (and potentially "Message Requests" as well). On mobile, these switches are found directly in the server\'s menu. Then try playing the story again.',
 				'starting-story1': 'Your adventure begins in your direct messages…',
 				'starting-story2': "We're off to fight the dragon! See you in your direct messages.",
 				'starting-story3': 'Our story begins, like many other stories, in your direct messages.',

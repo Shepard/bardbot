@@ -46,3 +46,7 @@ export const ACTION_ROW_BUTTON_LIMIT = 5;
 
 export const COLOUR_DISCORD_RED = 0xed4245; //0xeb2b2e;
 export const COLOUR_DISCORD_YELLOW = 0xcb8515;
+
+// See https://discord.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes
+export const API_ERROR_CODE__OPENING_DMS_TOO_FAST = 40003;
+export const API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER = 50007;
