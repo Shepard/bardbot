@@ -191,8 +191,8 @@ function getCharacterMessage(messageText, character) {
 		characterEmbed.setColor(character.colour);
 	}
 
-	// TODO messages can contain multiple embeds -> combine embeds from different character speeches
-	//  or even wrapped embeds from one character into single messages as much as possible
+	// TODO later: messages can contain multiple embeds -> combine embeds from different character speeches into single messages as much as possible.
+	//  wrapped embeds from one character cannot be combined as the description goes up to 4096 characters, but across all embeds we can only have 6000 characters.
 	return {
 		embeds: [characterEmbed]
 	};

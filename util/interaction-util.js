@@ -84,6 +84,8 @@ export async function sendListReply(interaction, listItems, title, suppressMenti
 		embeds[0].setTitle(title);
 	}
 
+	// TODO This is flawed. according to https://discord.com/developers/docs/resources/channel#embed-object-embed-limits we can send 6000 characters across *all* embeds, not per embed.
+	//  So with a description character limit of 4096 characters we can't send more than one embed per message.
 	// We can send up to EMBEDS_PER_MESSAGE_LIMIT embeds per message.
 	const embedChunks = chunk(embeds, EMBEDS_PER_MESSAGE_LIMIT);
 

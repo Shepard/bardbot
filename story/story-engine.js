@@ -529,7 +529,6 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				const messages = splitTextAtWhitespace(message, EMBED_DESCRIPTION_CHARACTER_LIMIT);
 				const dmChannel = await guildMember.createDM();
 				for (const msg of messages) {
-					// Ideally we could combine the embeds into single messages but this should happen so rarely, it's not worth the effort.
 					await dmChannel.send({
 						embeds: [new MessageEmbed().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
 					});

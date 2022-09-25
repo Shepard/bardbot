@@ -2,11 +2,11 @@
 export const MESSAGE_CONTENT_CHARACTER_LIMIT = 2000;
 
 // Limit for characters in the description of an embed.
-// See https://discord.com/developers/docs/resources/channel#embed-limits
+// See https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 export const EMBED_DESCRIPTION_CHARACTER_LIMIT = 4096;
 
 // Limit for characters in a field value of an embed.
-// See https://discord.com/developers/docs/resources/channel#embed-limits
+// See https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 export const EMBED_FIELD_VALUE_CHARACTER_LIMIT = 1024;
 
 // See https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-messages
