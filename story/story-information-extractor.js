@@ -1,5 +1,3 @@
-// TODO write tests
-
 /**
  * For parsing character definitions from global tags.
  * If the name needs spaces it can be wrapped in double quotes.
