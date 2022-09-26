@@ -34,12 +34,12 @@ const SpecialHandling = Object.freeze({
 export async function sendStoryStepData(interaction, stepData, t, getStoryButtonId, startButtonId) {
 	const messages = getMessagesToSend(stepData, t, getStoryButtonId, startButtonId);
 	const dmChannel = await interaction.user.createDM();
-	for (let i = 0; i < messages.length; i++) {
-		if (messages[i].specialHandling === SpecialHandling.Delay) {
+	for (const message of messages) {
+		if (message.specialHandling === SpecialHandling.Delay) {
 			await dmChannel.sendTyping();
 			await wait(MESSAGE_DELAY);
 		} else {
-			await dmChannel.send(messages[i]);
+			await dmChannel.send(message);
 		}
 	}
 }
