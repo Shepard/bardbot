@@ -55,7 +55,7 @@ export function parseDefaultButtonStyle(inkStory) {
 		for (let tag of inkStory.globalTags) {
 			const match = tag.match(DEFAULT_BUTTON_STYLE_TAG_REGEXP);
 			if (match) {
-				return match[1].toUpperCase();
+				return match[1].toLowerCase();
 			}
 		}
 	}

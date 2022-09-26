@@ -111,7 +111,7 @@ function appendTextMessages(messages, lines, characters) {
 			flushMessageText();
 		}
 
-		if (line.tags.find(tag => tag.toUpperCase() === 'PAUSE')) {
+		if (line.tags.find(tag => tag.toLowerCase() === 'pause')) {
 			flushMessageText();
 			messages.push({ specialHandling: SpecialHandling.Delay });
 		}
@@ -130,7 +130,7 @@ function appendTextMessages(messages, lines, characters) {
 		if (
 			lineText.indexOf('http://') > 0 ||
 			lineText.indexOf('https://') > 0 ||
-			line.tags.find(tag => tag.toUpperCase() === 'STANDALONE')
+			line.tags.find(tag => tag.toLowerCase() === 'standalone')
 		) {
 			flushMessageText();
 			previousLineWasStandalone = true;
@@ -275,8 +275,8 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButt
 /**
  * Checks for some special syntax in the text of choices to determine if this choice should be represented by a specific button style.
  * Will strip that syntax from the choice text and enhance the choices with style information.
- * E.g. a choice text of "STYLE_SECONDARY:regular choice text" will result in the button style "SECONDARY" and the choice text "regular choice text".
- * Available styles are: SECONDARY, SUCCESS, DANGER. The default style if none is provided using this syntax is PRIMARY.
+ * E.g. a choice text of "style-secondary:regular choice text" will result in the button style "secondary" and the choice text "regular choice text".
+ * Available styles are: primary, secondary, success, danger.
  * @param choices An array of Ink choice objects.
  * @param defaultButtonStyle The button style to fall back on if none is found in a choice label.
  * @returns An array of new choice objects with potentially modified text properties and new style properties.
@@ -286,8 +286,8 @@ function parseChoiceButtonStyles(choices, defaultButtonStyle) {
 		let text = choice.text;
 		let style = defaultButtonStyle;
 		const separatorIndex = text.indexOf(':');
-		if (text.toUpperCase().startsWith('STYLE_') && separatorIndex > 0) {
-			const styleRaw = text.substring('STYLE_'.length, separatorIndex).toUpperCase();
+		if (text.toLowerCase().startsWith('style-') && separatorIndex > 0) {
+			const styleRaw = text.substring('style-'.length, separatorIndex).toLowerCase();
 			style = mapButtonStyle(styleRaw, style);
 			text = text.substring(separatorIndex + 1);
 		}
@@ -297,13 +297,13 @@ function parseChoiceButtonStyles(choices, defaultButtonStyle) {
 
 function mapButtonStyle(styleRaw, defaultStyle) {
 	switch (styleRaw) {
-		case 'PRIMARY':
+		case 'primary':
 			return Constants.MessageButtonStyles.PRIMARY;
-		case 'SECONDARY':
+		case 'secondary':
 			return Constants.MessageButtonStyles.SECONDARY;
-		case 'SUCCESS':
+		case 'success':
 			return Constants.MessageButtonStyles.SUCCESS;
-		case 'DANGER':
+		case 'danger':
 			return Constants.MessageButtonStyles.DANGER;
 	}
 	return defaultStyle;
