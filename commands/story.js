@@ -239,38 +239,42 @@ async function handleShowStories(interaction, t, logger) {
 			await t.privateReplyShared(interaction, 'show-stories-failure');
 			return;
 		}
-		const collator = new Intl.Collator(interaction.locale);
-		const storyTitles = guildStories
-			.map(story => {
-				if (story.author) {
-					return t.user('story-line', { title: story.title, author: story.author });
-				}
-				return story.title;
-			})
-			.sort(collator.compare);
-		const embedTitle = t.user('show-stories-title');
-		const titlesText = storyTitles.join('\n');
-		const options = guildStories.map(story => ({
-			label: story.title,
-			value: story.id
-		}));
-		await interaction.reply({
-			embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
-			components: [
-				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
-					components: [
-						{
-							type: Constants.MessageComponentTypes.SELECT_MENU,
-							custom_id: getStoryComponentId('show'),
-							placeholder: t.userShared('show-story-details-select-label'),
-							options
-						}
-					]
-				}
-			],
-			ephemeral: true
-		});
+		if (guildStories.length) {
+			const collator = new Intl.Collator(interaction.locale);
+			const storyTitles = guildStories
+				.map(story => {
+					if (story.author) {
+						return t.user('story-line', { title: story.title, author: story.author });
+					}
+					return story.title;
+				})
+				.sort(collator.compare);
+			const embedTitle = t.user('show-stories-title');
+			const titlesText = storyTitles.join('\n');
+			const options = guildStories.map(story => ({
+				label: story.title,
+				value: story.id
+			}));
+			await interaction.reply({
+				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+				components: [
+					{
+						type: Constants.MessageComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: Constants.MessageComponentTypes.SELECT_MENU,
+								custom_id: getStoryComponentId('show'),
+								placeholder: t.userShared('show-story-details-select-label'),
+								options
+							}
+						]
+					}
+				],
+				ephemeral: true
+			});
+		} else {
+			await t.privateReplyShared(interaction, 'no-stories-in-server');
+		}
 	}
 }
 

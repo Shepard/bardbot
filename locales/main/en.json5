@@ -9,6 +9,7 @@
 		'story-db-fetch-error': 'An error occurred while trying to find the story in the database. Please try again later.',
 		'story-not-found': 'I could not find this story.',
 		'show-stories-failure': 'An error occurred while trying to find the stories of this server in the database. Please try again later.',
+		'no-stories-in-server': 'There are no stories on this server yet.',
 		'show-story-details-select-label': 'Show details about a story',
 		'webhook-validation-error': {
 			'name-length': 'Name must be between 1 and 80 characters long.',
