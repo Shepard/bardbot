@@ -616,7 +616,7 @@ async function handleShowStories(interaction, t, logger) {
 				ephemeral: true
 			});
 		} else {
-			await t.privateReplyShared(interaction, 'no-stories-in-server');
+			await t.privateReply(interaction, 'reply.no-stories-in-server');
 		}
 	}
 }

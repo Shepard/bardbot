@@ -9,7 +9,6 @@
 		'story-db-fetch-error': 'An error occurred while trying to find the story in the database. Please try again later.',
 		'story-not-found': 'I could not find this story.',
 		'show-stories-failure': 'An error occurred while trying to find the stories of this server in the database. Please try again later.',
-		'no-stories-in-server': 'There are no stories on this server yet.',
 		'show-story-details-select-label': 'Show details about a story',
 		'webhook-validation-error': {
 			'name-length': 'Name must be between 1 and 80 characters long.',
@@ -254,7 +253,8 @@
 				'delete-success': 'The story has successfully been deleted.',
 				'undo-delete-failure': 'Restoring the story failed.',
 				'undo-delete-success': 'The story has been restored and will not be deleted. Members that were playing it will have to start it again themselves.',
-				'publish-failure': 'Publishing the story failed.'
+				'publish-failure': 'Publishing the story failed.',
+				'no-stories-in-server': 'There are no stories on this server yet.'
 			}
 		},
 		config: {

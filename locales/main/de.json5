@@ -9,7 +9,6 @@
 		'story-db-fetch-error': 'Ein Fehler ist beim Versuch, die Geschichte in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
 		'story-not-found': 'Ich konnte diese Geschichte nicht finden.',
 		'show-stories-failure': 'Ein Fehler ist aufgetreten beim Versuch, die Geschichten dieses Servers in der Datenbank zu finden. Bitte versuch es später nochmal.',
-		'no-stories-in-server': 'Es gibt auf diesem Server noch keine Geschichten.',
 		'show-story-details-select-label': 'Zeige Details zu einer Geschichte',
 		'webhook-validation-error': {
 			'name-length': 'Name muss zwischen 1 und 80 Zeichen lang sein.',
@@ -249,7 +248,8 @@
 				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
 				'undo-delete-failure': 'Wiederherstellen der Geschichte fehlgeschlagen.',
 				'undo-delete-success': 'Die Geschichte wurde wiederhergestellt und wird nicht gelöscht. Alle, die sie zuvor gespielt haben, müssen sie allerdings selbst wieder starten.',
-				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.'
+				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
+				'no-stories-in-server': 'Es gibt auf diesem Server noch keine Geschichten.'
 			}
 		},
 		config: {
