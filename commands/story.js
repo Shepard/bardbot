@@ -294,7 +294,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 		return;
 	}
 	if (!story) {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
 	if (publicly && story.status !== StoryStatus.Published) {
@@ -383,7 +383,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 					return;
 				}
 				case StoryErrorType.StoryNotFound:
-					await t.privateReplyShared(interaction, 'story-not-found');
+					await warningReply(interaction, t.userShared('story-not-found'));
 					return;
 				case StoryErrorType.StoryNotStartable:
 				case StoryErrorType.StoryNotContinueable:

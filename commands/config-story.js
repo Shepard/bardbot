@@ -302,14 +302,14 @@ async function loadStoryFromParameter(interaction, required, t, logger) {
 	if (!isJsonFile(storyFileAttachment.contentType)) {
 		// TODO later we will support compiling ink files as well.
 		//  when compiling files we need to avoid INCLUDE statements. maybe strip them out first?
-		await errorReply(
+		await warningReply(
 			interaction,
 			t.user('reply.wrong-content-type', { providedType: storyFileAttachment.contentType })
 		);
 		return null;
 	}
 	if (storyFileAttachment.size > MAX_STORY_FILE_SIZE) {
-		await errorReply(interaction, t.user('reply.file-too-large', { maxFileSize: MAX_STORY_FILE_SIZE }));
+		await warningReply(interaction, t.user('reply.file-too-large', { maxFileSize: MAX_STORY_FILE_SIZE }));
 		return null;
 	}
 
@@ -343,7 +343,7 @@ async function loadStoryFromParameter(interaction, required, t, logger) {
 	}
 	if (stepData.warnings?.length) {
 		const warnings = stepData.warnings.map(warning => quote(warning)).join('\n');
-		await t.privateReply(interaction, 'reply.story-warnings', { warnings });
+		await warningReply(interaction, t.user('reply.story-warnings', { warnings }));
 	}
 
 	return {
@@ -372,7 +372,7 @@ async function handleEditStory(interaction, t, logger) {
 		return;
 	}
 	if (!story) {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
 
@@ -485,7 +485,7 @@ async function handleDeleteStory(interaction, storyId, t, logger) {
 
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 	}
 }
 
@@ -510,7 +510,7 @@ async function handleUndoDeleteStory(interaction, storyId, previousStatus, t, lo
 		await t.privateReply(interaction, 'reply.undo-delete-success');
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 	}
 }
 
@@ -541,7 +541,7 @@ async function handleShowStories(interaction, t, logger) {
 			return;
 		}
 		if (!story) {
-			await errorReply(interaction, t.userShared('story-not-found'));
+			await warningReply(interaction, t.userShared('story-not-found'));
 			return;
 		}
 
@@ -686,7 +686,7 @@ async function handleTriggerEditMetadataDialog(interaction, storyId, t, logger) 
 		return;
 	}
 	if (!storyRecord) {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
 
@@ -794,7 +794,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 	}
 }
 
@@ -814,7 +814,7 @@ async function handlePublishStory(interaction, storyId, t, guildConfig, logger) 
 
 		await updateCommandsAfterConfigChange(interaction, t, logger);
 	} else {
-		await errorReply(interaction, t.userShared('story-not-found'));
+		await warningReply(interaction, t.userShared('story-not-found'));
 	}
 
 	// TODO later: via config commands you can publish a story for everyone or selectively or you can set unlock triggers
