@@ -349,17 +349,26 @@ async function handleStartStory(interaction, t, logger) {
 }
 
 async function startStoryWithId(interaction, storyId, guildId, t, logger) {
-	await interaction.deferReply({ ephemeral: true });
+	await interaction.deferReply({ ephemeral: !!interaction.guildId });
 
 	try {
 		const stepData = await startStory(interaction.user.id, storyId, guildId, interaction.client, logger);
 
-		await sendStoryIntro(interaction, stepData.storyRecord, t);
-		// Now we're sure we can send DMs, we can reply to the interaction, telling them to go to their DMs.
-		await interaction.editReply({
-			content: startingStoryMessages.any(t.user),
-			ephemeral: true
-		});
+		if (interaction.guildId) {
+			// This story was started from a server, so we need to send the intro to the DMs
+			// and then reply to the interaction in the server.
+			await sendStoryIntro(interaction, stepData.storyRecord, t);
+			// Now we're sure we can send DMs, we can reply to the interaction, telling them to go to their DMs.
+			await interaction.editReply({
+				content: startingStoryMessages.any(t.user),
+				ephemeral: true
+			});
+		} else {
+			// This came from a button press in the user's DMs, so we send the story intro as a reply to the interaction,
+			// instead of sending a reply separately.
+			await sendStoryIntro(interaction, stepData.storyRecord, t, true);
+		}
+
 		await sendStoryStepData(interaction, stepData, t, getStoryComponentId, getStartStoryButtonId(storyId, guildId));
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -420,12 +429,13 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 	}
 }
 
-async function sendStoryIntro(interaction, metadata, t) {
+async function sendStoryIntro(interaction, metadata, t, reply) {
 	await sendStoryEmbed(
 		interaction,
 		metadata,
 		t.user('reply.story-intro1') + '\n' + t.user('reply.story-intro2') + '\n' + t.user('reply.story-intro3'),
-		t
+		t,
+		reply
 	);
 }
 
@@ -440,7 +450,11 @@ async function sendStoryEmbed(interaction, metadata, description, t, reply) {
 		]
 	};
 	if (reply) {
-		await interaction.reply(message);
+		if (interaction.deferred) {
+			await interaction.editReply(message);
+		} else {
+			await interaction.reply(message);
+		}
 	} else {
 		await interaction.user.send(message);
 	}
