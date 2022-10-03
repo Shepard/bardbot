@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node .",
     "lint": "eslint ./",
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "author": "Simon Reinhardt",
   "license": "MIT",
