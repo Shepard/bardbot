@@ -4,12 +4,12 @@
  * URL and colour value are optional. The "#" of the colour value is optional because it needs to be escaped in Ink which is awkward.
  * Examples:
  * CHARACTER:Doctor
- * charactEr: "Darth Vader" 000
+ * charactEr: "Darth Vader" 000000
  * Character:  Robespierre https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Robespierre_Ducreux.jpeg/181px-Robespierre_Ducreux.jpeg
  * character: "Elizabeth II" https://upload.wikimedia.org/wikipedia/commons/6/66/Queen_Elizabeth_II_on_3_June_2019.jpg #9cc6c5
  */
 const CHARACTER_TAG_REGEXP =
-	/^character:\s*(?:([^\s]+)|(?:"([^"]+)"))(?:\s+(?<url>http[^\s]+))?(?:\s+(?<colour>#?(?:[0-9a-fA-F]{3}){1,2}))?$/i;
+	/^character:\s*(?:([^\s]+)|(?:"([^"]+)"))(?:\s+(?<url>http[^\s]+))?(?:\s+(?<colour>#?[0-9a-fA-F]{6}))?$/i;
 
 const TITLE_TAG_REGEXP = /^title:(.+)$/i;
 

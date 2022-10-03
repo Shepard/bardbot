@@ -25,7 +25,7 @@ describe('story-information-extractor', () => {
 		});
 		it('finds valid characters', () => {
 			const inkStory = {
-				globalTags: ['character: Peter', 'CHARACTER:"Peter Parker"', 'author', 'character:   Spider-Man f00']
+				globalTags: ['character: Peter', 'CHARACTER:"Peter Parker"', 'author', 'character:   Spider-Man ff0000']
 			};
 			const characters = parseCharacters(inkStory);
 			expect(characters).to.be.a('Map').and.to.have.lengthOf(3);
@@ -39,10 +39,10 @@ describe('story-information-extractor', () => {
 			expect(characters).to.deep.include({ name: 'Peter' });
 
 			inkStory = {
-				globalTags: ['character: Peter f00']
+				globalTags: ['character: Peter ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#f00' });
+			expect(characters).to.deep.include({ name: 'Peter', colour: '#ff0000' });
 
 			inkStory = {
 				globalTags: ['character: Peter http://test.com/peter.png']
@@ -51,10 +51,10 @@ describe('story-information-extractor', () => {
 			expect(characters).to.deep.include({ name: 'Peter', iconUrl: 'http://test.com/peter.png' });
 
 			inkStory = {
-				globalTags: ['character: Peter http://test.com/peter.png f00']
+				globalTags: ['character: Peter http://test.com/peter.png ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', iconUrl: 'http://test.com/peter.png', colour: '#f00' });
+			expect(characters).to.deep.include({ name: 'Peter', iconUrl: 'http://test.com/peter.png', colour: '#ff0000' });
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker"']
@@ -63,10 +63,10 @@ describe('story-information-extractor', () => {
 			expect(characters).to.deep.include({ name: 'Peter Parker' });
 
 			inkStory = {
-				globalTags: ['character: "Peter Parker" f00']
+				globalTags: ['character: "Peter Parker" ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter Parker', colour: '#f00' });
+			expect(characters).to.deep.include({ name: 'Peter Parker', colour: '#ff0000' });
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker" http://test.com/peter.png']
@@ -75,21 +75,21 @@ describe('story-information-extractor', () => {
 			expect(characters).to.deep.include({ name: 'Peter Parker', iconUrl: 'http://test.com/peter.png' });
 
 			inkStory = {
-				globalTags: ['character: "Peter Parker" http://test.com/peter.png f00']
+				globalTags: ['character: "Peter Parker" http://test.com/peter.png ff0000']
 			};
 			characters = parseCharacters(inkStory);
 			expect(characters).to.deep.include({
 				name: 'Peter Parker',
 				iconUrl: 'http://test.com/peter.png',
-				colour: '#f00'
+				colour: '#ff0000'
 			});
 		});
 		it('detects colour values correctly', () => {
 			let inkStory = {
-				globalTags: ['character: Peter #F00']
+				globalTags: ['character: Peter #FF0000']
 			};
 			let characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#F00' });
+			expect(characters).to.deep.include({ name: 'Peter', colour: '#FF0000' });
 
 			inkStory = {
 				globalTags: ['character: Peter 00Ff00']
@@ -99,11 +99,11 @@ describe('story-information-extractor', () => {
 		});
 		it('only keeps the last character of the same name', () => {
 			const inkStory = {
-				globalTags: ['character: Peter #F00', 'character: Peter #00F']
+				globalTags: ['character: Peter #FF0000', 'character: Peter #0000FF']
 			};
 			const characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#00F' });
-			expect(characters).to.not.deep.include({ name: 'Peter', colour: '#F00' });
+			expect(characters).to.deep.include({ name: 'Peter', colour: '#0000FF' });
+			expect(characters).to.not.deep.include({ name: 'Peter', colour: '#FF0000' });
 		});
 	});
 
