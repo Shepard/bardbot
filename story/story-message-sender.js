@@ -8,8 +8,6 @@ import {
 	ACTION_ROW_BUTTON_LIMIT
 } from '../util/discord-constants.js';
 
-// TODO write tests
-
 /**
  * Delay in milli seconds before posting the next message when encountering a PAUSE tag.
  */
@@ -47,8 +45,10 @@ export async function sendStoryStepData(interaction, stepData, t, getStoryButton
 /**
  * Takes the provided stepData and turns it into messages with choice buttons appended, ready to be sent out to Discord.
  * Some of the messages do not represent messages to be sent directly to Discord but rather instructions for special handling in sendStoryStepData.
+ *
+ * This is only exported to make it easier to unit test. It is not meant to be used outside of this module otherwise.
  */
-function getMessagesToSend(stepData, t, getStoryButtonId, startButtonId) {
+export function getMessagesToSend(stepData, t, getStoryButtonId, startButtonId) {
 	const messages = [];
 
 	if (stepData.lines.length > 0) {
@@ -128,8 +128,8 @@ function appendTextMessages(messages, lines, characters) {
 		// For all others, the author can help out by using a STANDALONE tag or by living with the fact, that a line wasn't bundled up with others.
 		// (Which is not something authors should care about anyway, it's just an optimisation to send messages out faster.)
 		if (
-			lineText.indexOf('http://') > 0 ||
-			lineText.indexOf('https://') > 0 ||
+			lineText.includes('http://') ||
+			lineText.includes('https://') ||
 			line.tags.find(tag => tag.toLowerCase() === 'standalone')
 		) {
 			flushMessageText();
@@ -193,6 +193,7 @@ function getCharacterMessage(messageText, character) {
 
 	// TODO later: messages can contain multiple embeds -> combine embeds from different character speeches into single messages as much as possible.
 	//  wrapped embeds from one character cannot be combined as the description goes up to 4096 characters, but across all embeds we can only have 6000 characters.
+	//  we could even combine character embeds with messages for regular lines coming right before the character lines.
 	return {
 		embeds: [characterEmbed]
 	};
@@ -233,7 +234,7 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButt
 		messages.push(buttonMessage);
 	} else {
 		// For the choice message we either use the last regular line that happened before the choices,
-		// or a fixed message if there was no line before it.
+		// or a fixed message if there was no regular line before it.
 		if (messages.length) {
 			buttonMessage = findLastRegularMessage(messages);
 		}
@@ -310,10 +311,8 @@ function mapButtonStyle(styleRaw, defaultStyle) {
 }
 
 function findLastRegularMessage(messages) {
-	for (let i = messages.length - 1; i >= 0; i--) {
-		if (!messages[i].specialHandling) {
-			return messages[i];
-		}
+	if (!messages[messages.length - 1].specialHandling) {
+		return messages[messages.length - 1];
 	}
 	return null;
 }

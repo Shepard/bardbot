@@ -7,8 +7,6 @@ import {
 } from './discord-constants.js';
 import { chunk, codePointLength } from './helpers.js';
 
-// TODO tests
-
 export async function privateReply(t, interaction, messageKey, options) {
 	await sendPrivateReply(interaction, { content: t(messageKey, options) });
 }

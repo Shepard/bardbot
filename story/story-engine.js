@@ -35,8 +35,6 @@ import {
 import { translate } from '../util/i18n.js';
 import { splitTextAtWhitespace } from '../util/helpers.js';
 
-// TODO write tests
-
 export const StoryErrorType = Object.freeze({
 	StoryNotFound: 'StoryNotFound',
 	AlreadyPlayingDifferentStory: 'AlreadyPlayingDifferentStory',
