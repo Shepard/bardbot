@@ -368,7 +368,6 @@ describe('story-message-sender', () => {
 				characters
 			};
 			const messages = getMessages(stepData);
-			console.log(messages[0]);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
 		});
 
