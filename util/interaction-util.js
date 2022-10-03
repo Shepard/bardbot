@@ -138,9 +138,9 @@ export async function disableButtons(interaction) {
 	});
 }
 
-async function changeButtons(interaction, buttonModifier, message) {
+async function changeButtons(interaction, buttonModifier) {
 	const components = interaction.message.components.map(component => changeButtonsInner(component, buttonModifier));
-	message = { ...message, components };
+	const message = { components };
 	if (interaction.deferred || interaction.replied) {
 		await interaction.editReply(message);
 	} else {
