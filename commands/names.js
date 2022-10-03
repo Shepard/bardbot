@@ -26,9 +26,7 @@ const namesCommand = {
 			// Suppress mentions because we don't want to ping people.
 			true,
 			// Should be publicly visible and for the permanent record, not ephemeral.
-			false,
-			// Edit the original deferred reply.
-			true
+			false
 		);
 	}
 };

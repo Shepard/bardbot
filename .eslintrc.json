@@ -5,7 +5,8 @@
 	],
 	"env": {
 		"node": true,
-		"es2021": true
+		"es2021": true,
+		"mocha": true
 	},
 	"parserOptions": {
 		"ecmaVersion": 13,

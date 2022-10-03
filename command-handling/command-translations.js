@@ -45,15 +45,10 @@ function traverseCommandStructure(object, keyPrefix, isOption) {
 function addNameAndDescriptionTranslations(object, keyPrefix, isOption) {
 	const isOptionOrChatInputCommand = isOption || object.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
 
-	// TODO Name localisations of slash command names are disabled until a show-stopper bug in the feature is fixed:
-	//  https://github.com/discord/discord-api-docs/issues/5001
-	//  When activating this for slash commands, make sure to adjust the mentions of slash commands in translations.
-	if (isOption || object.type !== Constants.ApplicationCommandTypes.CHAT_INPUT) {
-		const nameValidator = commandNameValidator.bind(null, isOptionOrChatInputCommand);
-		const nameTranslations = getAllTranslations(keyPrefix + '.name', nameValidator);
-		if (Object.keys(nameTranslations).length) {
-			object.nameLocalizations = nameTranslations;
-		}
+	const nameValidator = commandNameValidator.bind(null, isOptionOrChatInputCommand);
+	const nameTranslations = getAllTranslations(keyPrefix + '.name', nameValidator);
+	if (Object.keys(nameTranslations).length) {
+		object.nameLocalizations = nameTranslations;
 	}
 
 	// Only add descriptions if this is an option or a chat input command.

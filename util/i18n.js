@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
+import prettyBytes from 'pretty-bytes';
 import { privateReply } from './interaction-util.js';
 
 const INTERNAL_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
@@ -48,6 +49,9 @@ export async function initI18n() {
 	i18n.services.formatter.add('time', (value, lng, options) => {
 		return time(value, options?.style);
 	});
+	i18n.services.formatter.add('bytes', (value, lng) => {
+		return prettyBytes(value, { locale: lng });
+	});
 }
 
 export function translate(keys, options) {
@@ -61,7 +65,7 @@ export function translationExists(key, options) {
 export function getTranslatorForInteraction(interaction, command, guildConfig) {
 	const userLocale = interaction.locale ?? 'en';
 	const guildLocale = guildConfig.language ?? interaction.guildLocale ?? 'en';
-	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? interaction.commandName);
+	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? command.configuration.name);
 	const sharedPrefix = 'shared';
 	const t = {
 		user: i18n.getFixedT(userLocale, null, commandPrefix),

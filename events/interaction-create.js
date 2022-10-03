@@ -3,6 +3,7 @@ import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from '../command-handling/command-registry.js';
 import { getTranslatorForInteraction, translate } from '../util/i18n.js';
 import logger from '../util/logger.js';
+import { errorReply } from '../util/interaction-util.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',
@@ -34,7 +35,9 @@ async function handleInteraction(interaction) {
 			}
 		}
 	} else if (interaction.isModalSubmit()) {
-		await handleModal(interaction);
+		await handleComponent(interaction, true);
+	} else if (interaction.isButton() || interaction.isSelectMenu()) {
+		await handleComponent(interaction, false);
 	}
 }
 
@@ -92,7 +95,7 @@ async function autocompleteCommandOption(command, interaction, context) {
 	}
 }
 
-async function handleModal(interaction) {
+async function handleComponent(interaction, isModal) {
 	const customId = interaction.customId;
 	if (customId.startsWith('/')) {
 		// While the # character can technically appear in the names of context menu commands,
@@ -104,14 +107,18 @@ async function handleModal(interaction) {
 		const commandName = customId.substring(1, commandNameEnd);
 		const innerCustomId = customId.substring(commandNameEnd + 1);
 		const command = commands.get(commandName);
-		if (command && command.modalInteraction) {
+		if (command && ((isModal && command.modalInteraction) || (!isModal && command.componentInteraction))) {
 			const context = getExecutionContext(interaction, command);
 			try {
-				await command.modalInteraction(interaction, innerCustomId, context);
+				if (isModal) {
+					await command.modalInteraction(interaction, innerCustomId, context);
+				} else {
+					await command.componentInteraction(interaction, innerCustomId, context);
+				}
 			} catch (error) {
 				context.logger.error(
 					error,
-					'Error while handling modal interaction "%s" for command %s',
+					'Error while handling component interaction "%s" for command %s',
 					customId,
 					commandName
 				);
@@ -121,9 +128,10 @@ async function handleModal(interaction) {
 		}
 	}
 
-	// Could not route custom id to any command. For now we don't have any other way of reacting to it, so just send a generic error to the user.
+	// Could not route custom id to any command. For now we don't have any other way of reacting to it,
+	// so just send a generic error to the user.
 	try {
-		logger.warn('Could not find command to route custom id "%s" of modal interaction to.', customId);
+		logger.warn('Could not find command to route custom id "%s" of component interaction to.', customId);
 
 		const userLocale = interaction.locale ?? 'en';
 		await interaction.reply({
@@ -139,29 +147,8 @@ async function commandExecutionErrorReply(interaction, context) {
 	// Tell the user who used the command (and only them) that the command failed.
 	try {
 		const userLocale = interaction.locale ?? 'en';
-		const content = translate('interaction.error', { lng: userLocale });
-		if (interaction.replied) {
-			await interaction.followUp({
-				content,
-				ephemeral: true
-			});
-		} else {
-			if (interaction.deferred) {
-				// In this case we can't guarantee that the original .deferReply() call was ephemeral
-				// and we can't edit it to be ephemeral after the fact either.
-				// So we delete the initial deferred reply and have to use a follow-up in order to send an ephemeral message.
-				await interaction.deleteReply();
-				await interaction.followUp({
-					content,
-					ephemeral: true
-				});
-			} else {
-				await interaction.reply({
-					content,
-					ephemeral: true
-				});
-			}
-		}
+		const text = translate('interaction.error', { lng: userLocale });
+		await errorReply(interaction, text, null, true);
 	} catch (innerError) {
 		context.logger.error(innerError, 'Error while trying to tell user about the previous error');
 	}

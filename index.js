@@ -15,7 +15,7 @@ async function initApp() {
 
 	const client = new Client({
 		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES],
-		presence: { activities: [{ name: 'Toss a coin to your witcher', type: 2 }] }
+		presence: { activities: [{ name: 'your stories', type: 0 }] }
 	});
 
 	// Find all js files in /events, import them and register their exported event handlers on the client.

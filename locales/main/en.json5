@@ -6,6 +6,10 @@
 	shared: {
 		'alt-db-fetch-error': 'An error occurred while trying to find the alternate character in the database. Please try again later.',
 		'no-alt-with-name': 'There is no alternate character by the name "{{altName}}".',
+		'story-db-fetch-error': 'An error occurred while trying to find the story in the database. Please try again later.',
+		'story-not-found': 'I could not find this story.',
+		'show-stories-failure': 'An error occurred while trying to find the stories of this server in the database. Please try again later.',
+		'show-story-details-select-label': 'Show details about a story',
 		'webhook-validation-error': {
 			'name-length': 'Name must be between 1 and 80 characters long.',
 			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalisation."
@@ -161,6 +165,96 @@
 				'delete-success': 'The alternate character with the name "{{name}}" was successfully deleted.',
 				'show-alts-failure': 'An error occurred while trying to find the alternate characters of this server in the database. Please try again later.',
 				'show-alts': 'The following alternate characters currently exist. Use `/config-alt show <name>` to find out details about a particular alternate character.'
+			}
+		},
+		'config-story': {
+			name: 'config-story',
+			description: 'Manage interactive stories on this server.',
+			options: {
+				create: {
+					name: 'create',
+					description: 'Create an interactive story on this server.',
+					options: {
+						'ink-file': {
+							name: 'ink-file',
+							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
+						},
+						editor: {
+							name: 'editor',
+							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
+						}
+					}
+				},
+				edit: {
+					name: 'edit',
+					description: 'Make changes to an existing story.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the existing story to edit.'
+						},
+						'ink-file': {
+							name: 'ink-file',
+							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
+						},
+						editor: {
+							name: 'editor',
+							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
+						}
+					}
+				},
+				show: {
+					name: 'show',
+					description: 'List currently existing stories on this server.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the existing story to show. If left out, lists all stories.'
+						}
+					}
+				}
+			},
+			'story-line': '{{title}} (by {{author}}) [{{status}}]',
+			'story-status-Testing': 'Testing',
+			'story-status-Published': 'Published',
+			'show-field-editor': 'Editor',
+			'show-field-status': 'Status',
+			'delete-button-label': 'Delete story',
+			'undo-delete-button-label': 'Undo deletion',
+			'edit-metadata-button-label': 'Edit metadata',
+			'playtest-button-label': 'Playtest story',
+			'publish-button-label': 'Publish story',
+			'metadata-dialog-title': 'Edit story metadata',
+			'metadata-dialog-title-field-label': 'Title',
+			'metadata-dialog-author-field-label': 'Author',
+			'metadata-dialog-teaser-field-label': 'Teaser',
+			'story-updated-and-stopped-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress and stop the story for you. You can start from the beginning by pressing the button below.',
+			'restart-button-label': 'Start playing again',
+			'show-stories-title': 'The following stories currently exist on this server.',
+			reply: {
+				'max-stories-reached': "You have reached the maximum number of stories for this server, I cannot accept any more. Please delete any stories you don't need first.",
+				'wrong-content-type': 'The file you uploaded has the wrong file type. Please upload a .json file compiled from an Ink file. The type of your file is "{{providedType}}".',
+				'file-too-large': 'The file you uploaded is too large. I can only accept stories of up to {{maxFileSize, bytes}}.',
+				'could-not-load-file': 'The file you uploaded could not be received from Discord.',
+				'time-budget-exceeded': 'The first steps in the story could not be evaluated fast enough. You might have an infinite loop in your story, or the bot might just be too overloaded at the moment. Please check your story file or try again later.',
+				'story-errors': 'When trying to run the story, the Ink engine reported errors. Details follow below.\n{{errors}}',
+				'story-warnings': 'When trying to run the story, the Ink engine reported warnings. I will still accept this story, but you might want to take a look at these warnings anyway.\n{{warnings}}',
+				'story-draft-created': 'I have memorised your story. Before it can be published, please fill out some more information by pressing the button below. This will help users find the story and learn more about it.',
+				'story-test-created': 'I have memorised your story. This is what it currently looks like.',
+				'create-story-failure': 'Creating the story failed.',
+				'edit-failure': 'Saving the changes to the story failed.',
+				'edit-failure-title-not-unique': "There's already a story with the same title. Please change it to a different one.",
+				'story-updated': "Your changes to the story have been saved. If you want to, you can also edit the story's metadata.",
+				'edit-metadata-prompt': "You can edit the story's metadata by pressing the button below.",
+				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
+				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use `/config-story show` there, select the story and click the publish button in the reply to that.',
+				'delete-failure': 'Deleting the story failed.',
+				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
+				'delete-success': 'The story has successfully been deleted.',
+				'undo-delete-failure': 'Restoring the story failed.',
+				'undo-delete-success': 'The story has been restored and will not be deleted. Members that were playing it will have to start it again themselves.',
+				'publish-failure': 'Publishing the story failed.',
+				'no-stories-in-server': 'There are no stories on this server yet.'
 			}
 		},
 		config: {
@@ -371,6 +465,99 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'result-single': 'The result is: {{result}}',
 				'result-sum': 'The result is: {{results}} = {{sum}}',
 				addition: ' + '
+			}
+		},
+		story: {
+			name: 'story',
+			description: 'Dive into interactive stories and begin your adventure!',
+			options: {
+				show: {
+					name: 'show',
+					description: 'Show available stories.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the story you want to peek into. If left out, lists all stories.'
+						}
+					}
+				},
+				start: {
+					name: 'start',
+					description: 'Begin a new adventure!',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the story you want to begin.'
+						}
+					}
+				},
+				restart: {
+					name: 'restart',
+					description: 'Restart the story you are currently playing from the beginning.'
+				},
+				stop: {
+					name: 'stop',
+					description: 'Stop playing your current story. Progress will be lost.'
+				},
+				state: {
+					name: 'state',
+					description: 'See which story you are currently playing and the last interaction in it.'
+				}
+			},
+			'start-button-label': 'Start playing',
+			'state-button-label': 'Check current story state',
+			'stop-button-label': 'Stop playing current story',
+			'stop-button-label-short': 'Stop playing story',
+			'restart-button-label': 'Restart current story',
+			'restart-button-label-short': 'Restart story',
+			'story-line': '{{title}} (by {{author}})',
+			'choice-buttons-header': 'Please choose:',
+			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			'replay-button-label': 'Replay story',
+			'show-stories-title': 'The following stories are available to play.',
+			reply: {
+				'story-not-published': 'This story could not be posted publicly because it has not been published yet.',
+				'post-intro1': 'I have recently been told this story. Do you want to hear it?',
+				'post-intro2': 'There is a new adventure to be had. Shall we take a look?',
+				'post-intro3': 'I certainly know a few tales, but this one is special, no doubt.',
+				'post-intro4': 'The best adventure is the one I could have with you right now.',
+				'post-intro5': "I'm off to experience new adventures. Care to join me?",
+				'already-playing': "You're already playing a story. I can remind you of its current state. Or you can stop playing it, losing all progress.",
+				'could-not-start-story': 'There was an error trying to start this story.',
+				'could-not-save-state': "There was an error trying to save your story progress. You could check the story state again later and if it still doesn't work, you might have to restart or stop the story, losing all progress.",
+				'time-budget-exceeded': 'The next story steps could not be evaluated fast enough. This could be a problem with the story itself or the bot might just be too overloaded at the moment. Please try again later.',
+				'cannot-send-dms': 'Stories are played in your direct messages. Unfortunately I cannot send you direct messages at the moment. To allow me to do that, please open the server\'s menu (where the server name is above the channel list), select "Privacy Settings" and make sure "Direct Messages" is activated (and potentially "Message Requests" as well). On mobile, these switches are found directly in the server\'s menu. Then try playing the story again.',
+				'starting-story1': 'Your adventure begins in your direct messages…',
+				'starting-story2': "We're off to fight the dragon! See you in your direct messages.",
+				'starting-story3': 'Our story begins, like many other stories, in your direct messages.',
+				'starting-story4': 'Let me just slide into your direct messages to tell you this crazy story.',
+				'starting-story5': 'Head on over to your direct messages to see what this story is all about.',
+				'starting-story6': 'May I direct you to your direct messages, where we shall hastily begin your journey.',
+				'story-intro1': 'You are now playing this story. You can restart it or stop playing it at any time, however you will lose your progress.',
+				'story-intro2': 'The story will be told to you as lines of text and every so often you will see multiple buttons, giving you a choice of how to continue in the story. You can only press one of the buttons each time, so choose wisely!',
+				'story-intro3': 'The content of this story is the sole responsibility of its publishers and not associated with this bot or its developers. For any problems with the content, please contact the administrators of the server.',
+				'no-story-running': "You don't seem to have a story running at the moment.",
+				'could-not-continue-story': 'The story run into an error and cannot be continued.',
+				'temporary-problem': 'I ran into a problem trying to continue the story. This might be a temporary issue. Please try again later.',
+				'invalid-choice': 'Unfortunately this choice was invalid. Either there is a problem with the story or you clicked on an outdated button.',
+				'too-many-choices': '(Unfortunately the story wants to give you more choices than I can handle, so you only see the first {{choiceLimit}}.)',
+				'stop-story-failure': 'There was an error trying to stop the story.',
+				'stop-story-success': 'Story successfully stopped.',
+				'reset-story-failure': 'There was an error trying to reset the story.',
+				'reset-story-success': 'Story successfully reset.',
+				'story-state-fetch-failure': 'There was an error trying to load the current story state.',
+				'story-state-success': 'Check your direct messages to see details about your currently played story.',
+				'story-state-repeat': 'You are playing this story. This is where we left off…',
+				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!"
+			},
+			'editor-report': {
+				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',
+				'type-InkWarning': 'The Ink engine reported warnings. The story can continue as normal for the user but you might want to look at the warning. Details follow below.',
+				'type-InkError': 'The Ink engine reported errors. The story cannot continue for the user. Details follow below.',
+				'type-PotentialLoopDetected': 'The story engine has repeatedly taken too long to calculate the next steps in your story. This might be an indication that your story code creates an infinite loop without presenting any choices.',
+				'type-MaximumChoiceNumberExceeded': 'The story wants to give the user more choices at once than I can represent in a Discord message (up to {{choiceLimit}}). The user can continue playing the story but they will not see all choices and will be informed of this. The current choices at this point in the story follow below to help you identify the problematic part.',
+				'last-lines': 'The last lines in the story were:',
+				'no-repeat': 'You will not receive any more reports about issues in the same category until you upload a new file for this story.'
 			}
 		},
 		where: {
