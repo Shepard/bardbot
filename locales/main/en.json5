@@ -16,7 +16,7 @@
 		},
 		'unknown-command': 'Unknown command',
 		'commands-update-failure1': 'Configuration was changed but commands could not be updated on the server.',
-		'commands-update-failure2': 'This could be a temporary problem. You can try updating them yourself later by using `/refresh-commands`.'
+		'commands-update-failure2': 'This could be a temporary problem. You can try updating them yourself later by using {{command, commandmention}}.'
 	},
 	commands: {
 		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_"
@@ -156,7 +156,7 @@
 			},
 			'field-usable-by': 'Can be used by',
 			reply: {
-				'alt-exists': 'An alternate character with the name "{{name}}" already exists. If you want to adjust it, use the `/config-alt edit` command.',
+				'alt-exists': 'An alternate character with the name "{{name}}" already exists. If you want to adjust it, use the {{command, commandmention}} command.',
 				'add-failure': 'Adding the alternate character failed.',
 				'add-success': 'New alternate character was successfully created.',
 				'edit-failure': 'Updating the alternate character failed.',
@@ -164,7 +164,7 @@
 				'delete-failure': 'Could not delete alternate character by the name "{{name}}".',
 				'delete-success': 'The alternate character with the name "{{name}}" was successfully deleted.',
 				'show-alts-failure': 'An error occurred while trying to find the alternate characters of this server in the database. Please try again later.',
-				'show-alts': 'The following alternate characters currently exist. Use `/config-alt show <name>` to find out details about a particular alternate character.'
+				'show-alts': 'The following alternate characters currently exist. Use this command with the parameter `name` to find out details about a particular alternate character.'
 			}
 		},
 		'config-story': {
@@ -247,7 +247,7 @@
 				'story-updated': "Your changes to the story have been saved. If you want to, you can also edit the story's metadata.",
 				'edit-metadata-prompt': "You can edit the story's metadata by pressing the button below.",
 				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
-				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use `/config-story show` there, select the story and click the publish button in the reply to that.',
+				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use {{command, commandmention}} there, select the story and click the publish button in the reply to that.',
 				'delete-failure': 'Deleting the story failed.',
 				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
 				'delete-success': 'The story has successfully been deleted.',
@@ -334,7 +334,7 @@
 				}
 			},
 			'show-title': 'Configuration',
-			'show-description': 'This is the current configuration of the bot in this server. To change any options, use the `/config set` command. For adding role-play channels use `/config add role-play-channel`.',
+			'show-description': 'This is the current configuration of the bot in this server. To change any options, use the {{command1, commandmention}} command. For adding role-play channels use {{command2, commandmention}}.',
 			'show-field-bookmarks-channel': 'Bookmarks channel',
 			'show-field-quotes-channel': 'Quotes channel',
 			'show-field-role-play-channels': 'Role-play channels',
@@ -358,11 +358,11 @@
 			name: 'Delete',
 			reply: {
 				'not-deletable1': 'This is not a message you can delete. This command will only work on:',
-				'not-deletable2': '- quotes or bookmarks you created through me (including my reply to the `/bookmark` command),',
+				'not-deletable2': '- quotes or bookmarks you created through me (including my reply to the {{command, commandmention}} command),',
 				'not-deletable3': '- quotes someone else created through me where you were quoted,',
-				'not-deletable4': '- my reply to `/goto` and the corresponding message in the destination channel,',
-				'not-deletable5': '- my reply to `/narrate`,',
-				'not-deletable6': '- my reply to `/names`,',
+				'not-deletable4': '- my reply to {{command, commandmention}} and the corresponding message in the destination channel,',
+				'not-deletable5': '- my reply to {{command, commandmention}},',
+				'not-deletable6': '- my reply to {{command, commandmention}},',
 				'not-deletable7': '- messages of alternate characters sent through me.',
 				'delete-failure': 'There was an error trying to delete the message.',
 				'delete-success': 'Message was successfully deleted.'
@@ -375,7 +375,7 @@
 				'edit-dialog-title': 'Edit message',
 				'edit-dialog-text-field-label': 'Message text',
 				'not-editable1': 'This is not a message you can edit. This command will only work on:',
-				'not-editable2': '- My reply to `/narrate`,',
+				'not-editable2': '- My reply to {{command, commandmention}},',
 				'not-editable3': '- Messages of alternate characters sent through me.',
 				'edit-failure': 'There was an error trying to edit the message.',
 				'edit-success': 'Message was successfully edited.'

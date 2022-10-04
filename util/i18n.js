@@ -3,6 +3,7 @@ import Backend from 'i18next-fs-backend';
 import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
 import prettyBytes from 'pretty-bytes';
 import { privateReply } from './interaction-util.js';
+import { commandMention } from '../command-handling/command-registry.js';
 
 const INTERNAL_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
 
@@ -45,6 +46,9 @@ export async function initI18n() {
 	});
 	i18n.services.formatter.add('rolemention', value => {
 		return roleMention(value);
+	});
+	i18n.services.formatter.add('commandmention', (value, lng, options) => {
+		return commandMention(value, options?.guildId);
 	});
 	i18n.services.formatter.add('time', (value, lng, options) => {
 		return time(value, options?.style);

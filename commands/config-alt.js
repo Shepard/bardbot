@@ -149,7 +149,7 @@ async function handleAddAlt(interaction, t, logger) {
 		logger.info('An alt with the id %d and the name "%s" was created in guild %s.', id, name, guildId);
 	} catch (e) {
 		if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-			await t.privateReply(interaction, 'reply.alt-exists', { name });
+			await t.privateReply(interaction, 'reply.alt-exists', { name, command: '/config-alt edit', guildId });
 		} else {
 			logger.error(e, 'Error while trying to create alt in db');
 			await t.privateReply(interaction, 'reply.add-failure');

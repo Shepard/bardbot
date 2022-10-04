@@ -161,7 +161,13 @@ async function showConfiguration(interaction, guildConfig, t) {
 
 	const configurationValuesEmbed = new MessageEmbed()
 		.setTitle(t.user('show-title'))
-		.setDescription(t.user('show-description'))
+		.setDescription(
+			t.user('show-description', {
+				command1: '/config set',
+				command2: '/config add role-play-channel',
+				guildId: interaction.guildId
+			})
+		)
 		.addFields(
 			{ name: t.user('show-field-bookmarks-channel'), value: bookmarksChannelValue },
 			{ name: t.user('show-field-quotes-channel'), value: quotesChannelValue }
@@ -382,7 +388,10 @@ export async function updateCommandsAfterConfigChange(interaction, t, logger) {
 			interaction.guildId
 		);
 		await interaction.followUp({
-			content: t.userShared('commands-update-failure1') + '\n' + t.userShared('commands-update-failure2'),
+			content:
+				t.userShared('commands-update-failure1') +
+				'\n' +
+				t.userShared('commands-update-failure2', { command: '/refresh-commands', guildId: interaction.guildId }),
 			ephemeral: true
 		});
 	}

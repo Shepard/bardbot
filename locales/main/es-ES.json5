@@ -12,7 +12,7 @@
 		},
 		'unknown-command': 'Comando desconocido',
 		'commands-update-failure1': 'Se cambió la configuración, pero los comandos no se pudieron actualizar en el servidor.',
-		'commands-update-failure2': 'Esto podría ser un problema temporal. Puede intentar actualizarlos usted mismo más tarde usando `/refresh-commands`.'
+		'commands-update-failure2': 'Esto podría ser un problema temporal. Puede intentar actualizarlos usted mismo más tarde usando {{command, commandmention}}.'
 	},
 	commands: {
 		alt: {
@@ -57,7 +57,7 @@
 		'config-alt': {
 			'field-usable-by': 'Puede ser utilizado por',
 			reply: {
-				'alt-exists': 'Un personaje alternativo con el nombre "{{name}}" ya existe. Si desea ajustarlo, utilice el comando `/config-alt edit`.',
+				'alt-exists': 'Un personaje alternativo con el nombre "{{name}}" ya existe. Si desea ajustarlo, utilice el comando {{command, commandmention}}.',
 				'add-failure': 'No se pudo agregar el personaje alternativo.',
 				'add-success': 'El nuevo personaje alternativo se creó con éxito.',
 				'edit-failure': 'Error al actualizar el personaje alternativo.',
@@ -65,12 +65,12 @@
 				'delete-failure': 'No se pudo eliminar el personaje alternativo por el nombre "{{name}}".',
 				'delete-success': 'El personaje alternativo con el nombre "{{name}}" fue eliminado con éxito.',
 				'show-alts-failure': 'Ocurrió un error al intentar encontrar los personajes alternativos de este servidor en la base de datos. Por favor, inténtelo de nuevo más tarde.',
-				'show-alts': 'Actualmente existen los siguientes personajes alternativos. Usa `/config-alt show <name>` para averiguar detalles sobre un personaje alternativo en particular.'
+				'show-alts': 'Actualmente existen los siguientes personajes alternativos. Utilice este comando con el parámetro `nombre` para averiguar detalles sobre un personaje alternativo en particular.'
 			}
 		},
 		config: {
 			'show-title': 'Configuración',
-			'show-description': 'Esta es la configuración actual del bot en este servidor. Para cambiar cualquier opción, use el comando `/config set`. Para agregar canales de juego de roles, use `/config add role-play-channel`.',
+			'show-description': 'Esta es la configuración actual del bot en este servidor. Para cambiar cualquier opción, use el comando {{command1, commandmention}}. Para agregar canales de juego de roles, use {{command2, commandmention}}.',
 			'show-field-bookmarks-channel': 'Canal de marcadores',
 			'show-field-quotes-channel': 'Canal de citas',
 			'show-field-role-play-channels': 'Canales de juego de roles',
@@ -92,11 +92,11 @@
 		'delete-context': {
 			reply: {
 				'not-deletable1': 'Este no es un mensaje que puedas borrar. Este comando solo funcionará en:',
-				'not-deletable2': '- citas o marcadores que creó a través de mí (incluida mi respuesta al comando `/ bookmark`),',
+				'not-deletable2': '- citas o marcadores que creó a través de mí (incluida mi respuesta al comando {{command, commandmention}}),',
 				'not-deletable3': '- citas que alguien más creó a través de mí donde usted fue citado,',
-				'not-deletable4': '- mi respuesta a `/goto` y el mensaje correspondiente en el canal de destino,',
-				'not-deletable5': '- mi respuesta a `/narrate`,',
-				'not-deletable6': '- mi respuesta a `/names`,',
+				'not-deletable4': '- mi respuesta a {{command, commandmention}} y el mensaje correspondiente en el canal de destino,',
+				'not-deletable5': '- mi respuesta a {{command, commandmention}},',
+				'not-deletable6': '- mi respuesta a {{command, commandmention}},',
 				'not-deletable7': '- mensajes de personajes alternativos enviados a través de mí.',
 				'delete-failure': 'Hubo un error al intentar eliminar el mensaje.',
 				'delete-success': 'El mensaje fue eliminado con éxito.'

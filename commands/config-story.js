@@ -220,7 +220,13 @@ async function handleCreateStory(interaction, t, logger) {
 			}
 
 			const storyEmbed = getDefaultStoryEmbed(storyData.metadata);
-			let content = t.user('reply.story-test-created') + '\n' + t.user('reply.story-possible-actions-in-testing');
+			let content =
+				t.user('reply.story-test-created') +
+				'\n' +
+				t.user('reply.story-possible-actions-in-testing', {
+					command: '/config-story show',
+					guildId: interaction.guildId
+				});
 			const buttons = [
 				getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY),
 				getPlaytestButton(t, storyId, interaction.guildId),
@@ -776,7 +782,12 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 		let content = t.user('reply.story-metadata-updated');
 		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
 		if (storyRecord.status === StoryStatus.Testing) {
-			content += '\n' + t.user('reply.story-possible-actions-in-testing');
+			content +=
+				'\n' +
+				t.user('reply.story-possible-actions-in-testing', {
+					command: '/config-story show',
+					guildId: interaction.guildId
+				});
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
 		}

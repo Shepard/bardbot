@@ -74,15 +74,15 @@ const deleteContextCommand = {
 			content:
 				t.user('reply.not-deletable1') +
 				'\n' +
-				t.user('reply.not-deletable2') +
+				t.user('reply.not-deletable2', { command: '/bookmark', guildId: interaction.guildId }) +
 				'\n' +
 				t.user('reply.not-deletable3') +
 				'\n' +
-				t.user('reply.not-deletable4') +
+				t.user('reply.not-deletable4', { command: '/goto', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-deletable5') +
+				t.user('reply.not-deletable5', { command: '/narrate', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-deletable6') +
+				t.user('reply.not-deletable6', { command: '/names', guildId: interaction.guildId }) +
 				'\n' +
 				t.user('reply.not-deletable7'),
 			ephemeral: true

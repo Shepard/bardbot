@@ -16,7 +16,7 @@
 		},
 		'unknown-command': 'Unbekannter Befehl',
 		'commands-update-failure1': 'Die Konfiguration wurde geändert, aber die Befehle konnten nicht auf dem Server aktualisiert werden.',
-		'commands-update-failure2': 'Es könnte sich um ein temporäres Problem handeln. Du kannst versuchen, sie später mittels des Befehls `/befehle-neuladen` selbst nochmal zu aktualisieren.'
+		'commands-update-failure2': 'Es könnte sich um ein temporäres Problem handeln. Du kannst versuchen, sie später mittels des Befehls {{command, commandmention}} selbst nochmal zu aktualisieren.'
 	},
 	commands: {
 		alt: {
@@ -151,7 +151,7 @@
 			},
 			'field-usable-by': 'Kann verwendet werden von',
 			reply: {
-				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl `/konfig-alt bearbeiten`.',
+				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl {{command, commandmention}}.',
 				'add-failure': 'Hinzufügen des alternativen Charakters ist fehlgeschlagen.',
 				'add-success': 'Neuer alternativer Charakter wurde erfolgreich erstellt.',
 				'edit-failure': 'Aktualisieren des alternativen Charakters ist fehlgeschlagen.',
@@ -159,7 +159,7 @@
 				'delete-failure': 'Konnte alternativen Charakter mit dem Namen "{{name}}" nicht löschen.',
 				'delete-success': 'Der alternative Charakter mit dem Namen "{{name}}" wurde erfolgreich gelöscht.',
 				'show-alts-failure': 'Ein Fehler ist beim Versuch, die alternativen Charaktere dieses Servers in der Datenbank zu finden, aufgetreten. Bitte versuch es später nochmal.',
-				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Benutze `/konfig-alt zeigen <name>`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
+				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Verwende diesen Befehl mit dem Parameter `name`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
 			}
 		},
 		'config-story': {
@@ -242,7 +242,7 @@
 				'story-updated': 'Deine Änderungen an der Geschichte wurden gespeichert. Wenn Du willst, kannst Du auch die Metadaten der Geschichte bearbeiten.',
 				'edit-metadata-prompt': 'Du kannst die Metadaten der Geschichte bearbeiten, indem Du den Button unten anklickst.',
 				'story-metadata-updated': 'Die Metadaten wurden geändert. Und so sieht Deine Geschichte jetzt aus.',
-				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, Du kannst einen Testdurchlauf starten, oder Du kannst sie jetzt veröffentlichen. Die Veröffentlichung wird eine öffentlich sichtbare Nachricht in diesem Kanal posten. Wenn Du sie lieber in einem anderen Kanal posten würdest, kannst Du dort `/config-story show` verwenden, die Geschichte auswählen und den Veröffentlichen-Button in der Antwort darauf anklicken.',
+				'story-possible-actions-in-testing': 'Du kannst sie weiter bearbeiten, Du kannst einen Testdurchlauf starten, oder Du kannst sie jetzt veröffentlichen. Die Veröffentlichung wird eine öffentlich sichtbare Nachricht in diesem Kanal posten. Wenn Du sie lieber in einem anderen Kanal posten würdest, kannst Du dort {{command, commandmention}} verwenden, die Geschichte auswählen und den Veröffentlichen-Button in der Antwort darauf anklicken.',
 				'delete-failure': 'Löschen der Geschichte fehlgeschlagen.',
 				'marked-for-deletion-success': 'Die Geschichte wurde entfernt und wird zu einem späteren Zeitpunkt vollständig gelöscht. Du kannst das rückgängig machen, indem Du den Button unten anklickst. Alle aktuellen Durchläufe wurden für die Spielenden allerdings gestoppt und dies kann nicht rückgängig gemacht werden.',
 				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
@@ -329,7 +329,7 @@
 				}
 			},
 			'show-title': 'Konfiguration',
-			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl `/konfig setzen`. Um Rollenspiel-Kanäle hinzuzufügen, benutze `/konfig hinzufügen rollenspiel-kanal`.',
+			'show-description': 'Dies ist die aktuelle Konfiguration des Bots in diesem Server. Um irgendeine der Einstellungen zu ändern, benutze den Befehl {{command1, commandmention}}. Um Rollenspiel-Kanäle hinzuzufügen, benutze {{command2, commandmention}}.',
 			'show-field-bookmarks-channel': 'Lesezeichen-Kanal',
 			'show-field-quotes-channel': 'Zitate-Kanal',
 			'show-field-role-play-channels': 'Rollenspiel-Kanäle',
@@ -352,11 +352,11 @@
 			name: 'Löschen',
 			reply: {
 				'not-deletable1': 'Das ist keine Nachricht, die Du löschen kannst. Dieser Befehl funktioniert nur bei:',
-				'not-deletable2': '- Zitaten und Lesezeichen, die Du durch mich erstellt hast (inklusive meiner Antwort auf den Befehl `/lesezeichen`),',
+				'not-deletable2': '- Zitaten und Lesezeichen, die Du durch mich erstellt hast (inklusive meiner Antwort auf den Befehl {{command, commandmention}}),',
 				'not-deletable3': '- Zitaten, die jemand anders durch mich erstellt hat, bei denen Du zitiert wurdest,',
-				'not-deletable4': '- meiner Antwort auf `/gehe-nach` und die zugehörige Nachricht im Zielkanal,',
-				'not-deletable5': '- meiner Antwort auf `/erzählen`,',
-				'not-deletable6': '- meiner Antwort auf `/namen`,',
+				'not-deletable4': '- meiner Antwort auf {{command, commandmention}} und die zugehörige Nachricht im Zielkanal,',
+				'not-deletable5': '- meiner Antwort auf {{command, commandmention}},',
+				'not-deletable6': '- meiner Antwort auf {{command, commandmention}},',
 				'not-deletable7': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
 				'delete-failure': 'Beim Versuch, die Nachricht zu löschen, ist ein Fehler aufgetreten.',
 				'delete-success': 'Nachricht wurde erfolgreich gelöscht.'
@@ -368,7 +368,7 @@
 				'edit-dialog-title': 'Nachricht bearbeiten',
 				'edit-dialog-text-field-label': 'Nachrichtentext',
 				'not-editable1': 'Das ist keine Nachricht, die Du bearbeiten kannst. Dieser Befehl funktioniert nur bei:',
-				'not-editable2': '- meiner Antwort auf `/erzählen`,',
+				'not-editable2': '- meiner Antwort auf {{command, commandmention}},',
 				'not-editable3': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
 				'edit-failure': 'Beim Versuch, die Nachricht zu bearbeiten, ist ein Fehler aufgetreten.',
 				'edit-success': 'Nachricht wurde erfolgreich bearbeitet.'

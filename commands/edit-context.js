@@ -35,7 +35,11 @@ const editContextCommand = {
 
 		await interaction.reply({
 			content:
-				t.user('reply.not-editable1') + '\n' + t.user('reply.not-editable2') + '\n' + t.user('reply.not-editable3'),
+				t.user('reply.not-editable1') +
+				'\n' +
+				t.user('reply.not-editable2', { command: '/narrate', guildId: interaction.guildId }) +
+				'\n' +
+				t.user('reply.not-editable3'),
 			ephemeral: true
 		});
 	},

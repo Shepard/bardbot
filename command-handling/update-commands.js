@@ -1,5 +1,5 @@
 import { getGuildConfig } from '../storage/guild-config-dao.js';
-import { commands } from './command-registry.js';
+import { commands, cacheCommandIds } from './command-registry.js';
 import logger from '../util/logger.js';
 
 const updatedGuildsCache = new Set();
@@ -31,7 +31,8 @@ export async function updateCommandsForSingleGuild(client, guild) {
 		}
 	});
 
-	await guild.commands.set(guildCommands);
+	const remoteCommands = await guild.commands.set(guildCommands);
+	cacheCommandIds(guild.id, remoteCommands);
 
 	updatedGuildsCache.add(guild.id);
 }
