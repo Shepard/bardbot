@@ -14,7 +14,9 @@ const rollCommand = {
 			{
 				name: 'notation',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
-				required: true
+				required: true,
+				// Given MAX_NUMBER_OF_DICE, the maximum input is "20d20" which has 5 characters.
+				max_length: 5
 			}
 		]
 	},

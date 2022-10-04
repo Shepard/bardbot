@@ -1,5 +1,6 @@
 import { Constants, MessageEmbed } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const gotoCommand = {
 	// Configuration for registering the command
@@ -15,7 +16,9 @@ const gotoCommand = {
 			},
 			{
 				name: 'action',
-				type: Constants.ApplicationCommandOptionTypes.STRING
+				type: Constants.ApplicationCommandOptionTypes.STRING,
+				// This needs to be limited so that the text the user entered + the link sentence we add below fit into the message limit.
+				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT - 200
 			}
 		]
 	},

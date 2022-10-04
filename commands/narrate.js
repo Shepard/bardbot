@@ -1,4 +1,5 @@
 import { Constants } from 'discord.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const narrateCommand = {
 	// Configuration for registering the command
@@ -9,7 +10,8 @@ const narrateCommand = {
 			{
 				name: 'story',
 				type: Constants.ApplicationCommandOptionTypes.STRING,
-				required: true
+				required: true,
+				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT
 			}
 		]
 	},
