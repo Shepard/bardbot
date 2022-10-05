@@ -3,6 +3,7 @@ import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao
 import { getWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
 import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../storage/alt-dao.js';
 import { AUTOCOMPLETE_CHOICE_LIMIT, MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { errorReply, warningReply } from '../util/interaction-util.js';
 
 const altCommand = {
 	// Configuration for registering the command
@@ -45,22 +46,22 @@ const altCommand = {
 				alt = getAlt(interaction.guildId, altName);
 			} catch (e) {
 				logger.error(e, 'Error while trying to fetch alt from db');
-				await t.privateReplyShared(interaction, 'alt-db-fetch-error');
+				await errorReply(interaction, t.userShared('alt-db-fetch-error'));
 				return;
 			}
 			if (!alt) {
-				await t.privateReplyShared(interaction, 'no-alt-with-name', { altName });
+				await warningReply(interaction, t.userShared('no-alt-with-name', { altName }));
 				return;
 			}
 			if (!isUsableByUser(alt, interaction, logger)) {
-				await t.privateReply(interaction, 'reply.alt-not-usable', { altName });
+				await warningReply(interaction, t.user('reply.alt-not-usable', { altName }));
 				return;
 			}
 
 			// Channels not viewable by the bot can cause problems so we don't allow alts to be used there.
 			// The webhook can send the message but we don't get messageDelete events for it and /where currently excludes such channels as well.
 			if (!interaction.channel.viewable) {
-				await t.privateReply(interaction, 'reply.channel-not-viewable');
+				await warningReply(interaction, t.user('reply.channel-not-viewable'));
 				return;
 			}
 
@@ -91,7 +92,7 @@ const altCommand = {
 			addMessageMetadata(altMessage, interaction.user.id, MessageType.AltMessage, logger);
 		} catch (e) {
 			logger.error(e, 'Error while trying to send alt message');
-			await t.privateReply(interaction, 'reply.alt-message-failure');
+			await errorReply(interaction, t.user('reply.alt-message-failure'));
 		}
 	},
 	async autocomplete(interaction, { logger }) {
@@ -124,7 +125,7 @@ async function getWebhook(interaction, t, logger) {
 			interaction.channelId,
 			interaction.guildId
 		);
-		await t.privateReply(interaction, 'reply.alt-message-failure');
+		await errorReply(interaction, t.user('reply.alt-message-failure'));
 		return null;
 	}
 	if (webhookId) {
@@ -132,10 +133,10 @@ async function getWebhook(interaction, t, logger) {
 			return interaction.client.fetchWebhook(webhookId);
 		} catch (e) {
 			logger.error(e, 'Fetching webhook failed.');
-			await t.privateReply(interaction, 'reply.alt-message-failure');
+			await errorReply(interaction, t.user('reply.alt-message-failure'));
 		}
 	} else {
-		await t.privateReply(interaction, 'reply.not-role-play-channel');
+		await warningReply(interaction, t.user('reply.not-role-play-channel'));
 	}
 	return null;
 }

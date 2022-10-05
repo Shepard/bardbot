@@ -1,6 +1,7 @@
 import { Constants, MessageEmbed } from 'discord.js';
 import { bookmarkMessages } from './bookmark.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
+import { warningReply } from '../util/interaction-util.js';
 
 const bookmarkContextCommand = {
 	// Configuration for registering the command
@@ -50,7 +51,7 @@ const bookmarkContextCommand = {
 
 			addMessageMetadata(bookmarkMessage, interaction.user.id, MessageType.Bookmark, logger);
 		} else {
-			await t.privateReply(interaction, 'reply.no-bookmarkable-content');
+			await warningReply(interaction, t.user('reply.no-bookmarkable-content'));
 		}
 	}
 };

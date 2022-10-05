@@ -1,7 +1,7 @@
 import { Constants, Modal, MessageActionRow, TextInputComponent } from 'discord.js';
 import { getMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
-import { getCustomIdForCommandRouting } from '../util/interaction-util.js';
+import { errorReply, getCustomIdForCommandRouting, warningReply } from '../util/interaction-util.js';
 import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const editContextCommand = {
@@ -33,15 +33,14 @@ const editContextCommand = {
 			}
 		}
 
-		await interaction.reply({
-			content:
-				t.user('reply.not-editable1') +
+		await warningReply(
+			interaction,
+			t.user('reply.not-editable1') +
 				'\n' +
 				t.user('reply.not-editable2', { command: '/narrate', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-editable3'),
-			ephemeral: true
-		});
+				t.user('reply.not-editable3')
+		);
 	},
 	async modalInteraction(interaction, innerCustomId, { t, logger }) {
 		if (innerCustomId.startsWith('edit-dialog message ')) {
@@ -51,7 +50,7 @@ const editContextCommand = {
 		} else {
 			// This is not an interaction we can handle.
 			// We need to reply to the interaction, otherwise it will be shown as pending and eventually failed.
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	}
 };
@@ -115,7 +114,7 @@ async function editMessage(interaction, messageId, messageText, t, logger) {
 	} catch (error) {
 		logger.error(error, 'Error while trying to edit message');
 	}
-	await t.privateReply(interaction, 'reply.edit-failure');
+	await errorReply(interaction, t.user('reply.edit-failure'));
 }
 
 export default editContextCommand;

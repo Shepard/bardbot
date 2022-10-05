@@ -1,5 +1,6 @@
 import { Constants } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
+import { warningReply } from '../util/interaction-util.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 
 export const blameMessages = new RandomMessageProvider()
@@ -31,11 +32,11 @@ const blameContextCommand = {
 				if (metadata) {
 					await replyWithUser(interaction, metadata.interactingUserId, t.user);
 				} else {
-					await t.privateReply(interaction, 'reply.user-unknown');
+					await warningReply(interaction, t.user('reply.user-unknown'));
 				}
 			}
 		} else {
-			await t.privateReply(interaction, 'reply.message-not-found');
+			await warningReply(interaction, t.user('reply.message-not-found'));
 		}
 	}
 };

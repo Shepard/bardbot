@@ -17,6 +17,7 @@ import { createWebhook } from '../util/webhook-util.js';
 import { SUPPORTED_LANGUAGES, translate } from '../util/i18n.js';
 import { codePointLength } from '../util/helpers.js';
 import { EMBED_FIELD_VALUE_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { errorReply, warningReply } from '../util/interaction-util.js';
 
 const configCommand = {
 	// Configuration for registering the command
@@ -137,10 +138,10 @@ const configCommand = {
 			} else if (subcommandGroup === 'remove') {
 				await handleRemoveRolePlayChannelInteraction(interaction, t, logger);
 			} else {
-				await t.privateReplyShared(interaction, 'unknown-command');
+				await warningReply(interaction, t.userShared('unknown-command'));
 			}
 		} else {
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	}
 };
@@ -202,7 +203,7 @@ async function setConfiguration(interaction, guildConfig, t, logger) {
 	}
 
 	if (!bookmarksChannel && !quotesChannel && !language) {
-		await t.privateReply(interaction, 'reply.missing-option');
+		await warningReply(interaction, t.user('reply.missing-option'));
 		return;
 	}
 
@@ -217,7 +218,7 @@ async function setConfiguration(interaction, guildConfig, t, logger) {
 		});
 	} catch (e) {
 		logger.error(e, 'Database error while trying to set configuration values for guild %s', interaction.guildId);
-		await t.privateReply(interaction, 'reply.set-failure');
+		await errorReply(interaction, t.user('reply.set-failure'));
 		return;
 	}
 
@@ -245,7 +246,7 @@ async function resetConfiguration(interaction, t, logger) {
 		}
 	} catch (e) {
 		logger.error(e, 'Database error while trying to clear options for guild %s', interaction.guildId);
-		await t.privateReply(interaction, 'reply.reset-failure');
+		await errorReply(interaction, t.user('reply.reset-failure'));
 		return;
 	}
 
@@ -273,7 +274,7 @@ async function resetConfiguration(interaction, t, logger) {
 async function handleAddRolePlayChannelInteraction(interaction, t, logger) {
 	const channel = getChannel(interaction);
 	if (!channel) {
-		await t.privateReply(interaction, 'reply.wrong-channel-type');
+		await warningReply(interaction, t.user('reply.wrong-channel-type'));
 		return;
 	}
 
@@ -282,12 +283,12 @@ async function handleAddRolePlayChannelInteraction(interaction, t, logger) {
 		if (webhook) {
 			addRolePlayChannel(interaction.guildId, channel.id, webhook.id);
 		} else {
-			await t.privateReply(interaction, 'reply.add-failure');
+			await errorReply(interaction, t.user('reply.add-failure'));
 			return;
 		}
 	} catch (e) {
 		logger.error(e, 'Database error while trying to add role-play channel for guild %s', interaction.guildId);
-		await t.privateReply(interaction, 'reply.add-failure');
+		await errorReply(interaction, t.user('reply.add-failure'));
 		return;
 	}
 
@@ -299,7 +300,7 @@ async function handleAddRolePlayChannelInteraction(interaction, t, logger) {
 async function handleRemoveRolePlayChannelInteraction(interaction, t, logger) {
 	const channel = getChannel(interaction);
 	if (!channel) {
-		await t.privateReply(interaction, 'reply.wrong-channel-type');
+		await warningReply(interaction, t.user('reply.wrong-channel-type'));
 		return;
 	}
 
@@ -309,7 +310,7 @@ async function handleRemoveRolePlayChannelInteraction(interaction, t, logger) {
 		removeRolePlayChannel(interaction.guildId, channel.id);
 	} catch (e) {
 		logger.error(e, 'Database error while trying to remove role-play channel for guild %s', interaction.guildId);
-		await t.privateReply(interaction, 'reply.remove-failure');
+		await errorReply(interaction, t.user('reply.remove-failure'));
 		return;
 	}
 
@@ -387,13 +388,12 @@ export async function updateCommandsAfterConfigChange(interaction, t, logger) {
 			'Error while trying to update commands for guild %s after changing configuration',
 			interaction.guildId
 		);
-		await interaction.followUp({
-			content:
-				t.userShared('commands-update-failure1') +
+		await errorReply(
+			interaction,
+			t.userShared('commands-update-failure1') +
 				'\n' +
-				t.userShared('commands-update-failure2', { command: '/refresh-commands', guildId: interaction.guildId }),
-			ephemeral: true
-		});
+				t.userShared('commands-update-failure2', { command: '/refresh-commands', guildId: interaction.guildId })
+		);
 	}
 }
 

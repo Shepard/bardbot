@@ -5,7 +5,7 @@ import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
 import { updateCommandsAfterConfigChange } from './config.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT, AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
-import { sendListReply } from '../util/interaction-util.js';
+import { errorReply, sendListReply, warningReply } from '../util/interaction-util.js';
 
 const configAltCommand = {
 	// Configuration for registering the command
@@ -104,7 +104,7 @@ const configAltCommand = {
 		} else if (subcommand === 'show') {
 			await handleShowAlts(interaction, t, logger);
 		} else {
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	},
 	async autocomplete(interaction, { logger }) {
@@ -130,7 +130,7 @@ async function handleAddAlt(interaction, t, logger) {
 	const name = interaction.options.getString('name', true).trim();
 	const errorMessageKey = validateWebhookName(name);
 	if (errorMessageKey) {
-		await t.privateReplyShared(interaction, errorMessageKey);
+		await errorReply(interaction, t.userShared(errorMessageKey));
 		return;
 	}
 
@@ -149,10 +149,10 @@ async function handleAddAlt(interaction, t, logger) {
 		logger.info('An alt with the id %d and the name "%s" was created in guild %s.', id, name, guildId);
 	} catch (e) {
 		if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-			await t.privateReply(interaction, 'reply.alt-exists', { name, command: '/config-alt edit', guildId });
+			await warningReply(interaction, t.user('reply.alt-exists', { name, command: '/config-alt edit', guildId }));
 		} else {
 			logger.error(e, 'Error while trying to create alt in db');
-			await t.privateReply(interaction, 'reply.add-failure');
+			await errorReply(interaction, t.user('reply.add-failure'));
 		}
 		return;
 	}
@@ -181,11 +181,11 @@ async function handleEditAlt(interaction, t, logger) {
 		alt = getAlt(guildId, name);
 	} catch (e) {
 		logger.error(e, 'Error while trying to fetch alt from db');
-		await t.privateReplyShared(interaction, 'alt-db-fetch-error');
+		await errorReply(interaction, t.userShared('alt-db-fetch-error'));
 		return;
 	}
 	if (!alt) {
-		await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
+		await warningReply(interaction, t.userShared('no-alt-with-name', { altName: name }));
 		return;
 	}
 
@@ -209,7 +209,7 @@ async function handleEditAlt(interaction, t, logger) {
 		}
 	} catch (e) {
 		logger.error(e, 'Error while trying to edit alt in db');
-		await t.privateReply(interaction, 'reply.edit-failure');
+		await errorReply(interaction, t.user('reply.edit-failure'));
 		return;
 	}
 
@@ -241,11 +241,11 @@ async function handleDeleteAlt(interaction, t, logger) {
 
 			await updateCommandsAfterConfigChange(interaction, t, logger);
 		} else {
-			await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
+			await warningReply(interaction, t.userShared('no-alt-with-name', { altName: name }));
 		}
 	} catch (e) {
 		logger.error(e);
-		await t.privateReply(interaction, 'reply.delete-failure', { name });
+		await errorReply(interaction, t.user('reply.delete-failure', { name }));
 	}
 }
 
@@ -259,11 +259,11 @@ async function handleShowAlts(interaction, t, logger) {
 			alt = getAlt(guildId, name);
 		} catch (e) {
 			logger.error(e, 'Error while trying to fetch alt from db');
-			await t.privateReplyShared(interaction, 'alt-db-fetch-error');
+			await errorReply(interaction, t.userShared('alt-db-fetch-error'));
 			return;
 		}
 		if (!alt) {
-			await t.privateReplyShared(interaction, 'no-alt-with-name', { altName: name });
+			await warningReply(interaction, t.userShared('no-alt-with-name', { altName: name }));
 			return;
 		}
 
@@ -282,7 +282,7 @@ async function handleShowAlts(interaction, t, logger) {
 			alts = getAlts(guildId);
 		} catch (e) {
 			logger.error(e, 'Error while trying to fetch alts from db');
-			await t.privateReply(interaction, 'reply.show-alts-failure');
+			await errorReply(interaction, t.user('reply.show-alts-failure'));
 			return;
 		}
 		const collator = new Intl.Collator(interaction.locale);

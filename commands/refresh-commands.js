@@ -1,5 +1,6 @@
 import { Constants, Permissions } from 'discord.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
+import { errorReply } from '../util/interaction-util.js';
 
 const refreshCommandsCommand = {
 	// Configuration for registering the command
@@ -17,17 +18,11 @@ const refreshCommandsCommand = {
 			await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 		} catch (e) {
 			logger.error(e, 'Error while trying to update commands for guild %s', interaction.guildId);
-			await interaction.editReply({
-				content: t.user('reply.failure'),
-				ephemeral: true
-			});
+			await errorReply(interaction, t.user('reply.failure'));
 			return;
 		}
 
-		await interaction.editReply({
-			content: t.user('reply.success'),
-			ephemeral: true
-		});
+		await t.privateReply(interaction, 'reply.success');
 	}
 };
 

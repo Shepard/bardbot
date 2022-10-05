@@ -1,5 +1,6 @@
 import { Constants } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
+import { errorReply, warningReply } from '../util/interaction-util.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
 
 const userMentionPattern = /<@(\d+)>/;
@@ -70,9 +71,9 @@ const deleteContextCommand = {
 			}
 		}
 
-		await interaction.reply({
-			content:
-				t.user('reply.not-deletable1') +
+		await warningReply(
+			interaction,
+			t.user('reply.not-deletable1') +
 				'\n' +
 				t.user('reply.not-deletable2', { command: '/bookmark', guildId: interaction.guildId }) +
 				'\n' +
@@ -84,9 +85,8 @@ const deleteContextCommand = {
 				'\n' +
 				t.user('reply.not-deletable6', { command: '/names', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-deletable7'),
-			ephemeral: true
-		});
+				t.user('reply.not-deletable7')
+		);
 	}
 };
 
@@ -115,7 +115,7 @@ async function deleteMessage(message, interaction, t, logger, webhook) {
 		// We will receive a messageDelete event in which we do that.
 	} catch (e) {
 		logger.error(e, 'Error while trying to delete message');
-		await t.privateReply(interaction, 'reply.delete-failure');
+		await errorReply(interaction, t.user('reply.delete-failure'));
 		return;
 	}
 	await t.privateReply(interaction, 'reply.delete-success');

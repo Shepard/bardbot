@@ -112,7 +112,7 @@ const configStoryCommand = {
 		} else if (subcommand === 'show') {
 			await handleShowStories(interaction, t, logger);
 		} else {
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	},
 	async autocomplete(interaction, { logger }) {
@@ -140,7 +140,7 @@ const configStoryCommand = {
 			const storyId = innerCustomId.substring('metadata '.length);
 			await handleMetadataDialogSubmit(storyId, interaction, t, logger);
 		} else {
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	},
 	async componentInteraction(interaction, innerCustomId, { t, logger, guildConfig }) {
@@ -161,7 +161,7 @@ const configStoryCommand = {
 		} else if (innerCustomId.startsWith('show')) {
 			await handleShowStories(interaction, t, logger);
 		} else {
-			await t.privateReplyShared(interaction, 'unknown-command');
+			await warningReply(interaction, t.userShared('unknown-command'));
 		}
 	}
 };

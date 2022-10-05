@@ -2,6 +2,7 @@ import { quote } from '@discordjs/builders';
 import { Constants, MessageEmbed } from 'discord.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
+import { warningReply } from '../util/interaction-util.js';
 
 const quoteMessages = new RandomMessageProvider()
 	.add((author, url, t) => t('reply.gossip1', { author, url }))
@@ -66,7 +67,7 @@ const quoteContextCommand = {
 
 			addMessageMetadata(quoteMessage, interaction.user.id, MessageType.Quote, logger);
 		} else {
-			await t.privateReply(interaction, 'reply.not-quotable');
+			await warningReply(interaction, t.user('reply.not-quotable'));
 		}
 	}
 };

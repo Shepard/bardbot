@@ -1,4 +1,5 @@
 import { Constants } from 'discord.js';
+import { warningReply } from '../util/interaction-util.js';
 
 // For now this notation is localised for English and German by allowing "d" and "w" as the dice type prefix.
 // More letters can be added for other languages in the future (e.g. "t" for Swedish?).
@@ -26,11 +27,10 @@ const rollCommand = {
 		const matches = notation.match(NOTATION_EXPRESSION);
 
 		if (matches === null) {
-			await interaction.reply({
-				content:
-					t.user('reply.invalid-notation') + '\n' + t.user('reply.notation-explanation', { count: MAX_NUMBER_OF_DICE }),
-				ephemeral: true
-			});
+			await warningReply(
+				interaction,
+				t.user('reply.invalid-notation') + '\n' + t.user('reply.notation-explanation', { count: MAX_NUMBER_OF_DICE })
+			);
 		} else {
 			let numberOfDiceString = matches[1];
 			if (typeof numberOfDiceString === 'undefined') {
@@ -40,9 +40,9 @@ const rollCommand = {
 			const numberOfFaces = parseInt(matches[3]);
 			if (isNaN(numberOfDice) || isNaN(numberOfFaces)) {
 				// This should be prevented by the regular expression really...
-				await t.privateReply(interaction, 'reply.invalid-number');
+				await warningReply(interaction, t.user('reply.invalid-number'));
 			} else if (numberOfDice > MAX_NUMBER_OF_DICE) {
-				await t.privateReply(interaction, 'reply.too-many-dice', { count: MAX_NUMBER_OF_DICE });
+				await warningReply(interaction, t.user('reply.too-many-dice', { count: MAX_NUMBER_OF_DICE }));
 			} else {
 				const result = diceRoll(numberOfDice, numberOfFaces);
 
