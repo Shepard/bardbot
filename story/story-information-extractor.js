@@ -39,10 +39,6 @@ export function parseCharacters(inkStory) {
 				}
 				if (match.groups.colour) {
 					character.colour = (match.groups.colour.startsWith('#') ? '' : '#') + match.groups.colour;
-					// Workaround for https://github.com/discord/discord-api-docs/issues/5507
-					if (character.colour === '#000000') {
-						character.colour = '#000001';
-					}
 				}
 				characters.set(name, character);
 			}
