@@ -4,10 +4,12 @@ import { getActiveGuildIds, deleteObsoleteGuildData } from './guild-config-dao.j
 import { ensureWebhookCorrectness } from '../util/webhook-util.js';
 import { cleanupStories } from './story-dao.js';
 import logger from '../util/logger.js';
+import { areGuildCommandsUpdated, updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 
 export function initMaintenanceJobs(client) {
 	addDeleteObsoleteGuildDataJob();
 	addDeleteOutdatedMessageMetadataJob();
+	addEnsureGuildCommandsUpdatedJob(client);
 	addEnsureWebhookCorrectnessJob(client);
 	addCleanupStoriesJob();
 }
@@ -62,6 +64,28 @@ function addDeleteOutdatedMessageMetadataJob() {
 		} catch (e) {
 			logger.error(e, 'Error while trying to run daily cleanup of outdated message metadata');
 		}
+	});
+}
+
+function addEnsureGuildCommandsUpdatedJob(client) {
+	const rule = new schedule.RecurrenceRule();
+	rule.hour = 6;
+	rule.minute = 15;
+	rule.tz = 'Etc/UTC';
+
+	schedule.scheduleJob(rule, () => {
+		logger.info('Ensuring commands updated for all guilds.');
+		Promise.allSettled(
+			getActiveGuildIds()
+				.filter(guildId => !areGuildCommandsUpdated(guildId))
+				.map(guildId => client.guilds.cache.get(guildId))
+				.filter(guild => !!guild)
+				.map(guild => {
+					return updateCommandsForSingleGuild(client, guild).catch(e => {
+						logger.error(e, 'Error while trying to update commands for guild %s', guild.id);
+					});
+				})
+		).catch(e => logger.error(e));
 	});
 }
 

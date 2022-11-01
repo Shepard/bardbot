@@ -14,9 +14,7 @@
 			'name-length': 'Name must be between 1 and 80 characters long.',
 			clyde: "The word 'clyde' is reserved by Discord and may not appear anywhere in the name, in any capitalisation."
 		},
-		'unknown-command': 'Unknown command',
-		'commands-update-failure1': 'Configuration was changed but commands could not be updated on the server.',
-		'commands-update-failure2': 'This could be a temporary problem. You can try updating them yourself later by using {{command, commandmention}}.'
+		'unknown-command': 'Unknown command'
 	},
 	commands: {
 		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_"
@@ -433,14 +431,6 @@
 				gossip10: "So, we're [saying that]({{url}}) now, are we, {{author, usermention}}?",
 				success: '[A quote]({{url}}) was successfully created in {{channel, channelmention}}!',
 				'not-quotable': 'This message does not have any quotable content.'
-			}
-		},
-		'refresh-commands': {
-			name: 'refresh-commands',
-			description: 'Refresh all commands in this server. Normally done automatically. Use in case of errors.',
-			reply: {
-				failure: 'Commands could not be refreshed. This might be a temporary problem. Please try again later.',
-				success: 'Commands successfully refreshed.'
 			}
 		},
 		roll: {

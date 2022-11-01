@@ -10,9 +10,7 @@
 			'name-length': 'El nombre debe tener entre 1 y 80 caracteres.',
 			clyde: "La palabra 'clyde' está reservada por Discord y no puede aparecer en ninguna parte del nombre, en cualquier capitalización."
 		},
-		'unknown-command': 'Comando desconocido',
-		'commands-update-failure1': 'Se cambió la configuración, pero los comandos no se pudieron actualizar en el servidor.',
-		'commands-update-failure2': 'Esto podría ser un problema temporal. Puede intentar actualizarlos usted mismo más tarde usando {{command, commandmention}}.'
+		'unknown-command': 'Comando desconocido'
 	},
 	commands: {
 		alt: {
@@ -128,12 +126,6 @@
 				gossip10: 'Entonces, estamos [diciendo eso]({{url}}) ahora, ¿verdad, {{author, usermention}}?',
 				success: '¡[Una cita]({{url}}) se creó con éxito en {{channel, channelmention}}!',
 				'not-quotable': 'Este mensaje no tiene ningún contenido citable.'
-			}
-		},
-		'refresh-commands': {
-			reply: {
-				failure: 'No se pudieron actualizar los comandos. Esto podría ser un problema temporal. Por favor, inténtelo de nuevo más tarde.',
-				success: 'Comandos actualizados con éxito.'
 			}
 		},
 		roll: {

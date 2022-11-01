@@ -21,20 +21,25 @@ export async function updateCommandsForAllGuilds(client) {
 }
 
 export async function updateCommandsForSingleGuild(client, guild) {
-	const guildConfig = getGuildConfig(guild.id, logger);
+	try {
+		const guildConfig = getGuildConfig(guild.id, logger);
 
-	const guildCommands = [];
-	commands.each(command => {
-		// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
-		if (!command.guard || command.guard(client, guild, guildConfig, logger)) {
-			guildCommands.push(command.configuration);
-		}
-	});
+		const guildCommands = [];
+		commands.each(command => {
+			// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
+			if (!command.guard || command.guard(client, guild, guildConfig, logger)) {
+				guildCommands.push(command.configuration);
+			}
+		});
 
-	const remoteCommands = await guild.commands.set(guildCommands);
-	cacheCommandIds(guild.id, remoteCommands);
+		const remoteCommands = await guild.commands.set(guildCommands);
+		cacheCommandIds(guild.id, remoteCommands);
 
-	updatedGuildsCache.add(guild.id);
+		updatedGuildsCache.add(guild.id);
+	} catch (error) {
+		setGuildCommandsNotUpdated(guild.id);
+		throw error;
+	}
 }
 
 export function areGuildCommandsUpdated(guildId) {

@@ -388,12 +388,6 @@ export async function updateCommandsAfterConfigChange(interaction, t, logger) {
 			'Error while trying to update commands for guild %s after changing configuration',
 			interaction.guildId
 		);
-		await errorReply(
-			interaction,
-			t.userShared('commands-update-failure1') +
-				'\n' +
-				t.userShared('commands-update-failure2', { command: '/refresh-commands', guildId: interaction.guildId })
-		);
 	}
 }
 

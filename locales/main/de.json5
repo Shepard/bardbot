@@ -14,9 +14,7 @@
 			'name-length': 'Name muss zwischen 1 und 80 Zeichen lang sein.',
 			clyde: "Das Wort 'clyde' ist von Discord reserviert und darf nirgendwo im Namen vorkommen, egal in welcher Groß- oder Kleinschreibung."
 		},
-		'unknown-command': 'Unbekannter Befehl',
-		'commands-update-failure1': 'Die Konfiguration wurde geändert, aber die Befehle konnten nicht auf dem Server aktualisiert werden.',
-		'commands-update-failure2': 'Es könnte sich um ein temporäres Problem handeln. Du kannst versuchen, sie später mittels des Befehls {{command, commandmention}} selbst nochmal zu aktualisieren.'
+		'unknown-command': 'Unbekannter Befehl'
 	},
 	commands: {
 		alt: {
@@ -425,14 +423,6 @@
 				gossip10: 'Also [sagen wir jetzt]({{url}}) so Sachen einfach, oder was, {{author, usermention}}?',
 				success: '[Ein Zitat]({{url}}) wurde erfolgreich in {{channel, channelmention}} erstellt!',
 				'not-quotable': 'Diese Nachricht hat keinen zitierbaren Inhalt.'
-			}
-		},
-		'refresh-commands': {
-			name: 'befehle-neuladen',
-			description: 'Lädt alle Befehle im Server neu. Passiert normalerweise automatisch. Im Fall von Fehlern verwenden.',
-			reply: {
-				failure: 'Befehle konnten nicht neu geladen werden. Es könnte sich um ein temporäres Problem handeln. Bitte versuch es später nochmal.',
-				success: 'Befehle erfolgreich neu geladen.'
 			}
 		},
 		roll: {
