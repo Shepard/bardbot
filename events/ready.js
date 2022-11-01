@@ -3,6 +3,7 @@ import { updateCommandsForAllGuilds } from '../command-handling/update-commands.
 import { initMaintenanceJobs } from '../storage/maintenance-jobs.js';
 import { syncGuilds } from '../storage/guild-config-dao.js';
 import logger from '../util/logger.js';
+import { ensureWebhookCorrectness } from '../util/webhook-util.js';
 
 const readyEvent = {
 	name: 'ready',
@@ -20,8 +21,19 @@ async function handleReady(client) {
 	// and to mark guild configs as left for those we left while offline.
 	logger.info('Synchronising joined guilds with guild configurations.');
 	try {
-		syncGuilds(Array.from(client.guilds.cache.keys()), logger);
-		// TODO later: and update commands for activatedGuilds returned by this call when we don't do that for all anymore.
+		const activatedGuildIds = syncGuilds(Array.from(client.guilds.cache.keys()), logger);
+
+		// This is only really necessary for guilds that were rejoined, not those that were first joined, since the latter won't have any need for webhooks yet.
+		// But hopefully this number shouldn't be too high anyway and this should go fast enough.
+		await Promise.allSettled(
+			activatedGuildIds.map(activatedGuildId => {
+				return ensureWebhookCorrectness(client, activatedGuildId).catch(e => {
+					logger.error(e, 'Error while trying to ensure webhook correctness for guild %s', activatedGuildId);
+				});
+			})
+		);
+
+		// TODO later: and update commands for activatedGuildIds returned by this call when we don't do that for all anymore.
 	} catch (error) {
 		logger.error(error, 'Could not synchronise guilds on startup.');
 	}

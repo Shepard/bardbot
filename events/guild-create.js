@@ -23,6 +23,10 @@ async function handleGuildCreate(guild) {
 					guild.id,
 					guild.client.guilds.cache.size
 				);
+
+				// When the bot gets removed from a guild and rejoins it, all webhooks in Discord should be deleted.
+				// So for this case we need to make sure they get recreated.
+				await ensureWebhookCorrectness(guild.client, guild.id);
 			}
 		}
 	} catch (error) {
@@ -37,10 +41,6 @@ async function handleGuildCreate(guild) {
 		logger.info('Updating commands for guild %s after receiving guild create event.', guild.id);
 		await updateCommandsForSingleGuild(guild.client, guild);
 	}
-
-	// When the bot gets removed from a guild and rejoins it, all webhooks in Discord should be deleted.
-	// So for this case we need to make sure they get recreated.
-	await ensureWebhookCorrectness(guild.client, guild.id);
 }
 
 export default guildCreateEvent;
