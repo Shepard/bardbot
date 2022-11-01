@@ -66,8 +66,8 @@ const whereCommand = {
 
 		if (newestUserMessage) {
 			const messageText = findingCurrentUser
-				? t.user('you-last-seen', { url: newestUserMessage.url, channel: newestUserMessage.channelId })
-				: t.user('user-last-seen', {
+				? t.user('reply.you-last-seen', { url: newestUserMessage.url, channel: newestUserMessage.channelId })
+				: t.user('reply.user-last-seen', {
 						user: userToFind.id,
 						url: newestUserMessage.url,
 						channel: newestUserMessage.channelId
@@ -77,8 +77,8 @@ const whereCommand = {
 			});
 		} else {
 			const messageText = findingCurrentUser
-				? t.user('you-not-found')
-				: t.user('user-not-found', { user: userToFind.id });
+				? t.user('reply.you-not-found')
+				: t.user('reply.user-not-found', { user: userToFind.id });
 			await interaction.editReply({ content: messageText });
 		}
 	}
