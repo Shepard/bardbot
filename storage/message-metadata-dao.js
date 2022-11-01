@@ -1,4 +1,5 @@
 import db, { registerDbInitialisedListener } from './database.js';
+import { ensureGuildConfigurationExists } from './guild-config-dao.js';
 import { addMonths } from '../util/helpers.js';
 
 export const MessageType = Object.freeze({
@@ -101,6 +102,9 @@ export function findNewestRPMessageMetadata(interactingUserId, guildId, channelI
  */
 export function addMessageMetadata(message, interactingUserId, messageType, logger) {
 	try {
+		// Most callers are guarded by the existance of a guild_config except for /goto.
+		ensureGuildConfigurationExists(message.guildId);
+
 		// The timestamp is saved as an integer of the number of milliseconds since 1970.
 		addMessageMetadataStatement.run({
 			messageId: message.id,
@@ -111,7 +115,7 @@ export function addMessageMetadata(message, interactingUserId, messageType, logg
 			messageType
 		});
 	} catch (e) {
-		logger.error(e, 'Error while trying to store metadata for message %s', message.id);
+		logger.error(e, 'Error while trying to store metadata for message %s in guild %s', message.id, message.guildId);
 	}
 }
 

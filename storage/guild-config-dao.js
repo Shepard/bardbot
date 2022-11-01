@@ -1,13 +1,18 @@
 import db, { registerDbInitialisedListener } from './database.js';
 import logger from '../util/logger.js';
+import { differenceSet } from '../util/helpers.js';
 
 let getGuildConfigStatement = null;
-let getGuildIdsForGuildsWithConfigurationStatement = null;
+let getActiveGuildIdsStatement = null;
+let ensureGuildConfigExistsStatement = null;
+let addOrReactivateGuildConfigStatement = null;
 let setBookmarksChannelStatement = null;
 let setQuotesChannelStatement = null;
 let setLanguageStatement = null;
 let setConfigurationValuesStatement = null;
-let removeGuildConfigStatement = null;
+let setLeftTimestampStatement = null;
+let removeLeftTimestampStatement = null;
+let deleteObsoleteGuildDataStatement = null;
 
 let getRolePlayChannelsDataStatement = null;
 let addRolePlayChannelStatement = null;
@@ -16,12 +21,19 @@ let removeAllRolePlayChannelsStatement = null;
 let getWebhookIdForRolePlayChannelStatement = null;
 let setWebhookIdForRolePlayChannelStatement = null;
 
+// Find guilds that have been left more than a day ago.
+const obsoleteGuildsFromClause =
+	'FROM guild_config AS g WHERE g.left_timestamp IS NOT NULL AND :secondsSinceEpoch - g.left_timestamp > 60 * 60 * 24';
+export const obsoleteGuildsSelect = 'SELECT g.id ' + obsoleteGuildsFromClause;
+
 registerDbInitialisedListener(() => {
 	getGuildConfigStatement = db.prepare(
 		'SELECT bookmarks_channel_id, quotes_channel_id, language FROM guild_config WHERE id = :id'
 	);
-	getGuildIdsForGuildsWithConfigurationStatement = db.prepare(
-		'SELECT id FROM guild_config UNION SELECT guild_id as id FROM guild_role_play_channel'
+	getActiveGuildIdsStatement = db.prepare('SELECT id FROM guild_config WHERE left_timestamp IS NULL').pluck();
+	ensureGuildConfigExistsStatement = db.prepare('INSERT INTO guild_config(id) VALUES(:id) ON CONFLICT(id) DO NOTHING');
+	addOrReactivateGuildConfigStatement = db.prepare(
+		'INSERT INTO guild_config(id) VALUES(:id) ON CONFLICT(id) DO UPDATE SET left_timestamp = NULL'
 	);
 	setBookmarksChannelStatement = db.prepare(
 		'INSERT INTO guild_config(id, bookmarks_channel_id)' +
@@ -43,7 +55,11 @@ registerDbInitialisedListener(() => {
 			' VALUES(:id, :bookmarksChannelId, :quotesChannelId, :language)' +
 			' ON CONFLICT(id) DO UPDATE SET bookmarks_channel_id = :bookmarksChannelId, quotes_channel_id = :quotesChannelId, language = :language'
 	);
-	removeGuildConfigStatement = db.prepare('DELETE FROM guild_config WHERE id = :id');
+	setLeftTimestampStatement = db.prepare('UPDATE guild_config SET left_timestamp = unixepoch() WHERE id = :id');
+	removeLeftTimestampStatement = db.prepare(
+		'UPDATE guild_config SET left_timestamp = NULL WHERE id = :id AND left_timestamp IS NOT NULL'
+	);
+	deleteObsoleteGuildDataStatement = db.prepare('DELETE ' + obsoleteGuildsFromClause);
 
 	getRolePlayChannelsDataStatement = db.prepare(
 		'SELECT role_play_channel_id, webhook_id FROM guild_role_play_channel WHERE guild_id = :guildId'
@@ -93,17 +109,66 @@ export function getGuildConfig(guildId, logger) {
 }
 
 /**
- * Fetches the ids of all guilds for which we have configuration data stored in the database.
+ * Fetches the ids of all guilds for which we have configuration data stored in the database and that the bot has not left.
  * @returns An array of all the ids. If there are no ids or if an error occurred while querying the database,
  * this is handled and an empty array is returned.
  */
-export function getGuildIdsForGuildsWithConfiguration() {
+export function getActiveGuildIds() {
 	try {
-		return getGuildIdsForGuildsWithConfigurationStatement.all().map(row => row.id);
+		return getActiveGuildIdsStatement.all();
 	} catch (e) {
 		logger.error(e);
 		return [];
 	}
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function ensureGuildConfigurationExists(guildId) {
+	const info = ensureGuildConfigExistsStatement.run({ id: guildId });
+	return info.changes > 0;
+}
+
+/**
+ * Synchronises the guilds the bot is currently in with the guild configurations stored in the database.
+ * Will add / reactivate new ones and deactivate superfluous ones (by setting left_timestamp in their records).
+ * @param {*} activeGuildIds An array of ids of guilds which the bot is currently in.
+ * @returns An array of those ids from the input which were not previously stored as active guild configurations in the database but are now.
+ * @throws Caller has to handle potential database errors.
+ */
+export function syncGuilds(activeGuildIds, logger) {
+	const existingActiveGuildIds = getActiveGuildIds();
+
+	// Guilds which the bot is currently in but where we either don't have a guild_config stored or it has a left_timestamp set
+	// will be added / reactivated.
+	const unactivatedGuildIds = differenceSet(activeGuildIds, existingActiveGuildIds);
+
+	// Guilds for which we have a guild_config stored but which we are not in anymore will get a left_timestamp set
+	// so that their data will be cleaned up by a maintenance job at a later time.
+	const superfluousGuildIds = differenceSet(existingActiveGuildIds, activeGuildIds);
+
+	// Mainly using a transaction here in the hope that this might make these statements run faster
+	// (because no individual transactions will be used per call).
+	db.transaction(() => {
+		for (const guildId of unactivatedGuildIds) {
+			addOrReactivateGuildConfigStatement.run({ id: guildId });
+		}
+		for (const guildId of superfluousGuildIds) {
+			setLeftTimestamp(guildId);
+		}
+	})();
+
+	if (unactivatedGuildIds.size > 0 || superfluousGuildIds.size > 0) {
+		logger.info(
+			'Sync added/reactivated %d guild configurations and marked %d guild configurations for later removal.',
+			unactivatedGuildIds.size,
+			superfluousGuildIds.size
+		);
+	}
+
+	// These have now been added / reactivated. Return them so the caller can perform additional actions on them.
+	return Array.from(unactivatedGuildIds);
 }
 
 /**
@@ -126,7 +191,12 @@ export function setConfigurationValues(patchedGuildConfig) {
  * @throws Caller has to handle potential database errors.
  */
 export const clearConfigurationValues = db.transaction(guildId => {
-	removeGuildConfigStatement.run({ id: guildId });
+	setConfigurationValuesStatement.run({
+		id: guildId,
+		bookmarksChannelId: null,
+		quotesChannelId: null,
+		language: null
+	});
 	removeAllRolePlayChannels(guildId);
 });
 
@@ -154,6 +224,33 @@ export function setLanguage(guildId, language) {
 /**
  * @throws Caller has to handle potential database errors.
  */
+export function setLeftTimestamp(guildId) {
+	setLeftTimestampStatement.run({ id: guildId });
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
+export function removeLeftTimestamp(guildId) {
+	const info = removeLeftTimestampStatement.run({ id: guildId });
+	return info.changes > 0;
+}
+
+/**
+ * Deletes all data (configuration, message metadata, alts, stories, ...) stored for guilds
+ * that have been left over a day ago and returns the number of deleted entries.
+ *
+ * @throws Caller has to handle potential database errors.
+ */
+export function deleteObsoleteGuildData() {
+	const secondsSinceEpoch = Math.floor(Date.now() / 1000);
+	const info = deleteObsoleteGuildDataStatement.run({ secondsSinceEpoch });
+	return info.changes;
+}
+
+/**
+ * @throws Caller has to handle potential database errors.
+ */
 function getRolePlayChannelIds(guildId) {
 	return getRolePlayChannelsDataStatement.all({ guildId }).map(row => row.role_play_channel_id);
 }
@@ -162,6 +259,8 @@ function getRolePlayChannelIds(guildId) {
  * @throws Caller has to handle potential database errors.
  */
 export function addRolePlayChannel(guildId, rolePlayChannelId, webhookId) {
+	ensureGuildConfigurationExists(guildId);
+
 	addRolePlayChannelStatement.run({ guildId, rolePlayChannelId, webhookId });
 }
 

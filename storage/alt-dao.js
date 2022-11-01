@@ -1,4 +1,5 @@
 import db, { registerDbInitialisedListener } from './database.js';
+import { ensureGuildConfigurationExists } from './guild-config-dao.js';
 import { escapeSearchInputToLikePattern } from '../util/helpers.js';
 
 /**
@@ -58,6 +59,8 @@ registerDbInitialisedListener(() => {
  * @throws Caller has to handle potential database errors.
  */
 export function addAlt(guildId, name, usableById, usableByType, avatarUrl) {
+	ensureGuildConfigurationExists(guildId);
+
 	const info = addAltStatement.run({ guildId, name, usableById, usableByType, avatarUrl });
 	return info.lastInsertRowid;
 }

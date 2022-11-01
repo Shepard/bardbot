@@ -1,5 +1,12 @@
 import { expect } from 'chai';
-import { chunk, addMonths, codePointLength, trimText, splitTextAtWhitespace } from '../../util/helpers.js';
+import {
+	chunk,
+	addMonths,
+	codePointLength,
+	trimText,
+	splitTextAtWhitespace,
+	differenceSet
+} from '../../util/helpers.js';
 
 describe('helpers', () => {
 	describe('chunk()', () => {
@@ -147,6 +154,19 @@ describe('helpers', () => {
 			// Don't like this.
 			//expect(splitTextAtWhitespace(' abc ', 3)).to.have.members(['abc', ' ']);
 			expect(splitTextAtWhitespace('abc ', 3)).to.have.members(['abc']);
+		});
+	});
+
+	describe('differenceSet()', () => {
+		it('can handle empty inputs', () => {
+			expect(differenceSet([], [])).to.be.empty;
+			expect(differenceSet([1], [])).to.have.all.keys(1);
+			expect(differenceSet([], [1])).to.be.empty;
+		});
+		it('calculates the difference set correctly', () => {
+			expect(differenceSet([1, 2, 3], [2, 3, 4])).to.have.all.keys(1);
+			expect(differenceSet([1, 2, 3], [1, 2, 3, 4])).to.be.empty;
+			expect(differenceSet(['1'], ['1'])).to.be.empty;
 		});
 	});
 });

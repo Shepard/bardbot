@@ -149,3 +149,11 @@ export function escapeSearchInputToLikePattern(searchInput) {
 	const escapedSearchInput = searchInput.replaceAll('#', '##').replaceAll('%', '#%').replaceAll('_', '#_');
 	return '%' + escapedSearchInput + '%';
 }
+
+export function differenceSet(iterableA, iterableB) {
+	const difference = new Set(iterableA);
+	for (const elem of iterableB) {
+		difference.delete(elem);
+	}
+	return difference;
+}

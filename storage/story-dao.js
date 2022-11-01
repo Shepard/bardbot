@@ -3,6 +3,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import db, { FILES_DIR, registerDbInitialisedListener } from './database.js';
+import { ensureGuildConfigurationExists, obsoleteGuildsSelect } from './guild-config-dao.js';
 import { escapeSearchInputToLikePattern } from '../util/helpers.js';
 
 export const EditorReportType = Object.freeze({
@@ -77,7 +78,9 @@ let markPotentialLoopDetectedAsReported = null;
 let increaseTimeBudgetExceededCounterStatement = null;
 let clearWarningFlagsAndCountersStatement = null;
 let getStoriesToDeleteStatement = null;
+let getStoriesToDeleteForObsoleteGuildsStatement = null;
 let deleteObsoleteStoriesStatement = null;
+let deleteStoriesForObsoleteGuildsStatement = null;
 let getStoryPlayStatement = null;
 let hasStoryPlayStatement = null;
 let addStoryPlayStatement = null;
@@ -169,6 +172,12 @@ registerDbInitialisedListener(() => {
 	deleteObsoleteStoriesStatement = db.prepare(
 		"DELETE FROM story WHERE status == 'Draft' OR status == 'ToBeDeleted' AND :secondsSinceEpoch - last_changed_timestamp > 60 * 60 * 24"
 	);
+	getStoriesToDeleteForObsoleteGuildsStatement = db
+		.prepare('SELECT s.id FROM story s WHERE s.guild_id IN (' + obsoleteGuildsSelect + ')')
+		.pluck();
+	deleteStoriesForObsoleteGuildsStatement = db.prepare(
+		'DELETE FROM story AS s WHERE s.guild_id IN (' + obsoleteGuildsSelect + ')'
+	);
 	getStoryPlayStatement = db.prepare(
 		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count, ' +
@@ -184,6 +193,9 @@ registerDbInitialisedListener(() => {
 });
 
 export async function addStory(storyContent, { title = '', author = '', teaser = '' }, editorId, guildId) {
+	// If this fails, we don't need to execute the rest.
+	ensureGuildConfigurationExists(guildId);
+
 	let id;
 	let inserted = false;
 	let attempts = 0;
@@ -388,11 +400,14 @@ function clearWarningFlagsAndCounters(storyId) {
 	return info.changes > 0;
 }
 
-export async function cleanupStories(logger) {
+export async function cleanupStories(forObsoleteGuilds, logger) {
+	const getStatement = forObsoleteGuilds ? getStoriesToDeleteForObsoleteGuildsStatement : getStoriesToDeleteStatement;
+	const deleteStatement = forObsoleteGuilds ? deleteStoriesForObsoleteGuildsStatement : deleteObsoleteStoriesStatement;
+
 	const storyIds = db.transaction(() => {
 		const secondsSinceEpoch = Math.floor(Date.now() / 1000);
-		const storiesToDelete = getStoriesToDeleteStatement.all({ secondsSinceEpoch });
-		const info = deleteObsoleteStoriesStatement.run({ secondsSinceEpoch });
+		const storiesToDelete = getStatement.all({ secondsSinceEpoch });
+		const info = deleteStatement.run({ secondsSinceEpoch });
 		if (info.changes !== storiesToDelete.length) {
 			// This should not happen since we only use one db connection so far and everything runs on it in serial.
 			logger.error(
