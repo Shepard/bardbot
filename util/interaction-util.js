@@ -1,8 +1,7 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { EmbedBuilder, Colors, ActionRow, ButtonComponent } from 'discord.js';
 import {
 	EMBED_DESCRIPTION_CHARACTER_LIMIT,
 	EMBEDS_PER_MESSAGE_LIMIT,
-	COLOUR_DISCORD_RED,
 	COLOUR_DISCORD_YELLOW
 } from './discord-constants.js';
 import { chunk, codePointLength } from './helpers.js';
@@ -12,7 +11,7 @@ export async function privateReply(t, interaction, messageKey, options) {
 }
 
 export async function errorReply(interaction, text, components, forceEphemeral) {
-	await borderedReply(interaction, text, components, forceEphemeral, COLOUR_DISCORD_RED);
+	await borderedReply(interaction, text, components, forceEphemeral, Colors.Red);
 }
 
 export async function warningReply(interaction, text, components, forceEphemeral) {
@@ -21,7 +20,7 @@ export async function warningReply(interaction, text, components, forceEphemeral
 
 async function borderedReply(interaction, text, components, forceEphemeral, colour) {
 	const message = {
-		embeds: [new MessageEmbed().setDescription(text).setColor(colour)]
+		embeds: [new EmbedBuilder().setDescription(text).setColor(colour)]
 	};
 	if (components) {
 		message.components = components;
@@ -77,7 +76,7 @@ export async function sendListReply(interaction, listItems, title, suppressMenti
 
 	// Send list as messages with embeds. The initial message contains a title and the first batch of items.
 
-	const embeds = messageTexts.map(text => new MessageEmbed().setDescription(text));
+	const embeds = messageTexts.map(text => new EmbedBuilder().setDescription(text));
 	if (title) {
 		embeds[0].setTitle(title);
 	}
@@ -116,7 +115,7 @@ export async function markSelectedButton(interaction) {
 	const selected = interaction.customId;
 	await changeButtons(interaction, button => {
 		button.disabled = true;
-		if (button.customId === selected) {
+		if (button.custom_id === selected) {
 			button.emoji = {
 				id: null,
 				name: '✅'
@@ -149,10 +148,10 @@ async function changeButtons(interaction, buttonModifier) {
 }
 
 function changeButtonsInner(component, buttonModifier) {
-	const result = { ...component };
-	if (result.type === Constants.MessageComponentTypes[Constants.MessageComponentTypes.ACTION_ROW]) {
-		result.components = result.components.map(component => changeButtonsInner(component, buttonModifier));
-	} else if (result.type === Constants.MessageComponentTypes[Constants.MessageComponentTypes.BUTTON]) {
+	const result = { ...component.data };
+	if (component instanceof ActionRow) {
+		result.components = component.components.map(component => changeButtonsInner(component, buttonModifier));
+	} else if (component instanceof ButtonComponent) {
 		buttonModifier(result);
 	}
 	return result;

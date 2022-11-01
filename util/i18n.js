@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
-import { userMention, channelMention, roleMention, time } from '@discordjs/builders';
+import { userMention, channelMention, roleMention, time } from 'discord.js';
 import prettyBytes from 'pretty-bytes';
 import { privateReply } from './interaction-util.js';
 import { commandMention } from '../command-handling/command-registry.js';

@@ -1,3 +1,4 @@
+import { DiscordAPIError } from 'discord.js';
 import { codePointLength } from '../util/helpers.js';
 import {
 	getRolePlayChannelsData,
@@ -6,11 +7,10 @@ import {
 } from '../storage/guild-config-dao.js';
 import logger from './logger.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
-import { DiscordAPIError } from 'discord.js';
 
 export async function createWebhook(channel, client, logger) {
 	try {
-		return await channel.createWebhook(client.user.username);
+		return await channel.createWebhook({ name: client.user.username });
 	} catch (e) {
 		logger.error(e, 'Error while trying to create webhook for channel %s', channel.id);
 		return null;

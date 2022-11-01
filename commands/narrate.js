@@ -1,15 +1,15 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
 import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
 const narrateCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'narrate',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'story',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT
 			}

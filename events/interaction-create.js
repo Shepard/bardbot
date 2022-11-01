@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from '../command-handling/command-registry.js';
 import { getTranslatorForInteraction, translate } from '../util/i18n.js';
@@ -13,7 +13,7 @@ const interactionCreateEvent = {
 };
 
 async function handleInteraction(interaction) {
-	if (interaction.isCommand() || interaction.isContextMenu() || interaction.isAutocomplete()) {
+	if (interaction.isChatInputCommand() || interaction.isContextMenuCommand() || interaction.isAutocomplete()) {
 		const command = commands.get(interaction.commandName);
 		if (command) {
 			if (isMatchingCommand(interaction, command)) {
@@ -25,10 +25,7 @@ async function handleInteraction(interaction) {
 				} else {
 					context.logger.error('Command was called in guild that it should not apply to.');
 				}
-			} else if (
-				interaction.isAutocomplete() &&
-				command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT
-			) {
+			} else if (interaction.isAutocomplete() && command.configuration.type === ApplicationCommandType.ChatInput) {
 				// We probably don't need to guard the autocomplete.
 				const context = getExecutionContext(interaction, command);
 				await autocompleteCommandOption(command, interaction, context);
@@ -42,13 +39,15 @@ async function handleInteraction(interaction) {
 }
 
 function isMatchingCommand(interaction, command) {
-	if (interaction.isCommand()) {
-		return command.configuration.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
+	if (interaction.isChatInputCommand()) {
+		return command.configuration.type === ApplicationCommandType.ChatInput;
 	}
-	if (interaction.isContextMenu()) {
+	if (interaction.isContextMenuCommand()) {
 		return (
-			(interaction.targetType === 'USER' && command.configuration.type === Constants.ApplicationCommandTypes.USER) ||
-			(interaction.targetType === 'MESSAGE' && command.configuration.type === Constants.ApplicationCommandTypes.MESSAGE)
+			(interaction.commandType === ApplicationCommandType.User &&
+				command.configuration.type === ApplicationCommandType.User) ||
+			(interaction.commandType === ApplicationCommandType.Message &&
+				command.configuration.type === ApplicationCommandType.Message)
 		);
 	}
 	return false;

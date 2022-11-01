@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
 import { warningReply } from '../util/interaction-util.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
@@ -15,7 +15,7 @@ const blameContextCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'Who dunnit?',
-		type: Constants.ApplicationCommandTypes.MESSAGE
+		type: ApplicationCommandType.Message
 	},
 	i18nKeyPrefix: 'blame-context',
 	// Handler for when the command is used

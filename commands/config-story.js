@@ -1,5 +1,17 @@
-import { Constants, Permissions, Modal, MessageActionRow, TextInputComponent, MessageEmbed } from 'discord.js';
-import { quote, userMention } from '@discordjs/builders';
+import {
+	ApplicationCommandType,
+	ApplicationCommandOptionType,
+	PermissionFlagsBits,
+	ButtonStyle,
+	ComponentType,
+	EmbedBuilder,
+	ModalBuilder,
+	ActionRowBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	quote,
+	userMention
+} from 'discord.js';
 import axios from 'axios';
 import {
 	addStory,
@@ -45,55 +57,55 @@ const configStoryCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'config-story',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
-		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
+		type: ApplicationCommandType.ChatInput,
+		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
 		options: [
 			{
 				name: 'create',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'ink-file',
-						type: Constants.ApplicationCommandOptionTypes.ATTACHMENT,
+						type: ApplicationCommandOptionType.Attachment,
 						required: true
 					},
 					{
 						name: 'editor',
-						type: Constants.ApplicationCommandOptionTypes.USER,
+						type: ApplicationCommandOptionType.User,
 						required: false
 					}
 				]
 			},
 			{
 				name: 'edit',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true,
 						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
 					},
 					{
 						name: 'ink-file',
-						type: Constants.ApplicationCommandOptionTypes.ATTACHMENT,
+						type: ApplicationCommandOptionType.Attachment,
 						required: false
 					},
 					{
 						name: 'editor',
-						type: Constants.ApplicationCommandOptionTypes.USER,
+						type: ApplicationCommandOptionType.User,
 						required: false
 					}
 				]
 			},
 			{
 				name: 'show',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false,
 						autocomplete: true,
 						max_length: COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT
@@ -228,7 +240,7 @@ async function handleCreateStory(interaction, t, logger) {
 					guildId: interaction.guildId
 				});
 			const buttons = [
-				getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY),
+				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
 				getPlaytestButton(t, storyId, interaction.guildId),
 				getPublishButton(t, storyId)
 			];
@@ -237,7 +249,7 @@ async function handleCreateStory(interaction, t, logger) {
 				embeds: [storyEmbed],
 				components: [
 					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
+						type: ComponentType.ActionRow,
 						components: buttons
 					}
 				],
@@ -253,7 +265,7 @@ async function handleCreateStory(interaction, t, logger) {
 				content: t.user('reply.story-draft-created'),
 				components: [
 					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
+						type: ComponentType.ActionRow,
 						components: [getEditMetadataButton(t, storyId)]
 					}
 				],
@@ -423,14 +435,8 @@ async function handleEditStory(interaction, t, logger) {
 		content: replyText,
 		components: [
 			{
-				type: Constants.MessageComponentTypes.ACTION_ROW,
-				components: [
-					getEditMetadataButton(
-						t,
-						storyId,
-						dataChanged ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.PRIMARY
-					)
-				]
+				type: ComponentType.ActionRow,
+				components: [getEditMetadataButton(t, storyId, dataChanged ? ButtonStyle.Secondary : ButtonStyle.Primary)]
 			}
 		],
 		ephemeral: true
@@ -471,7 +477,7 @@ async function handleDeleteStory(interaction, storyId, t, logger) {
 				content: t.user('reply.marked-for-deletion-success'),
 				components: [
 					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
+						type: ComponentType.ActionRow,
 						components: [getUndoDeleteButton(t, storyId, story.status)]
 					}
 				],
@@ -528,10 +534,7 @@ async function handleUndoDeleteStory(interaction, storyId, previousStatus, t, lo
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	let storyId;
-	if (
-		interaction.componentType === Constants.MessageComponentTypes[Constants.MessageComponentTypes.SELECT_MENU] &&
-		interaction.values?.length
-	) {
+	if (interaction.componentType === ComponentType.StringSelect && interaction.values?.length) {
 		storyId = interaction.values[0];
 	} else {
 		storyId = interaction.options?.getString('title');
@@ -556,7 +559,7 @@ async function handleShowStories(interaction, t, logger) {
 			{ name: t.user('show-field-editor'), value: userMention(story.editorId), inline: false },
 			{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
 		]);
-		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
+		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
 		if (story.status === StoryStatus.Testing) {
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
@@ -566,7 +569,7 @@ async function handleShowStories(interaction, t, logger) {
 		buttons.push(getDeleteButton(t, storyId));
 		const components = [
 			{
-				type: Constants.MessageComponentTypes.ACTION_ROW,
+				type: ComponentType.ActionRow,
 				components: buttons
 			}
 		];
@@ -605,13 +608,13 @@ async function handleShowStories(interaction, t, logger) {
 				value: story.id
 			}));
 			await interaction.reply({
-				embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+				embeds: [new EmbedBuilder().setTitle(embedTitle).setDescription(titlesText)],
 				components: [
 					{
-						type: Constants.MessageComponentTypes.ACTION_ROW,
+						type: ComponentType.ActionRow,
 						components: [
 							{
-								type: Constants.MessageComponentTypes.SELECT_MENU,
+								type: ComponentType.StringSelect,
 								custom_id: getConfigStoryComponentId('show'),
 								placeholder: t.userShared('show-story-details-select-label'),
 								options
@@ -636,27 +639,17 @@ function getUndoDeleteButton(t, storyId, previousStatus) {
 }
 
 function getDeleteButton(t, storyId) {
-	return getTranslatedConfigStoryButton(
-		t,
-		'delete-button-label',
-		'delete ' + storyId,
-		Constants.MessageButtonStyles.DANGER
-	);
+	return getTranslatedConfigStoryButton(t, 'delete-button-label', 'delete ' + storyId, ButtonStyle.Danger);
 }
 
 function getPublishButton(t, storyId) {
-	return getTranslatedConfigStoryButton(
-		t,
-		'publish-button-label',
-		'publish ' + storyId,
-		Constants.MessageButtonStyles.SUCCESS
-	);
+	return getTranslatedConfigStoryButton(t, 'publish-button-label', 'publish ' + storyId, ButtonStyle.Success);
 }
 
 function getPlaytestButton(t, storyId, guildId) {
 	return {
-		type: Constants.MessageComponentTypes.BUTTON,
-		style: Constants.MessageButtonStyles.SECONDARY,
+		type: ComponentType.Button,
+		style: ButtonStyle.Secondary,
 		label: t.user('playtest-button-label'),
 		custom_id: getStartStoryButtonId(storyId, guildId)
 	};
@@ -671,8 +664,8 @@ function getTranslatedConfigStoryButton(t, translationKey, innerCustomId, style)
  */
 function getConfigStoryButton(label, innerCustomId, style) {
 	return {
-		type: Constants.MessageComponentTypes.BUTTON,
-		style: style ?? Constants.MessageButtonStyles.PRIMARY,
+		type: ComponentType.Button,
+		style: style ?? ButtonStyle.Primary,
 		label,
 		custom_id: getConfigStoryComponentId(innerCustomId)
 	};
@@ -701,37 +694,37 @@ async function handleTriggerEditMetadataDialog(interaction, storyId, t, logger) 
 
 async function showMetadataDialog(storyRecord, interaction, t) {
 	const dialogId = getCustomIdForCommandRouting(configStoryCommand, 'metadata ' + storyRecord.id);
-	const metadataDialog = new Modal().setCustomId(dialogId).setTitle(t.user('metadata-dialog-title'));
+	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('metadata-dialog-title'));
 
-	const titleField = new TextInputComponent()
+	const titleField = new TextInputBuilder()
 		.setCustomId('metadata-dialog-title-field')
 		.setLabel(t.user('metadata-dialog-title-field-label'))
 		.setValue(storyRecord.title)
-		.setStyle(Constants.TextInputStyles[Constants.TextInputStyles.SHORT])
+		.setStyle(TextInputStyle.Short)
 		.setRequired(true)
 		.setMinLength(1)
 		.setMaxLength(MAX_TITLE_LENGTH);
 
-	const authorField = new TextInputComponent()
+	const authorField = new TextInputBuilder()
 		.setCustomId('metadata-dialog-author-field')
 		.setLabel(t.user('metadata-dialog-author-field-label'))
 		.setValue(storyRecord.author)
-		.setStyle(Constants.TextInputStyles[Constants.TextInputStyles.SHORT])
+		.setStyle(TextInputStyle.Short)
 		.setRequired(false)
 		.setMaxLength(MAX_AUTHOR_LENGTH);
 
-	const teaserField = new TextInputComponent()
+	const teaserField = new TextInputBuilder()
 		.setCustomId('metadata-dialog-teaser-field')
 		.setLabel(t.user('metadata-dialog-teaser-field-label'))
 		.setValue(storyRecord.teaser)
-		.setStyle(Constants.TextInputStyles[Constants.TextInputStyles.PARAGRAPH])
+		.setStyle(TextInputStyle.Paragraph)
 		.setRequired(false)
 		.setMaxLength(MAX_TEASER_LENGTH);
 
 	metadataDialog.addComponents(
-		new MessageActionRow().addComponents(titleField),
-		new MessageActionRow().addComponents(authorField),
-		new MessageActionRow().addComponents(teaserField)
+		new ActionRowBuilder().addComponents(titleField),
+		new ActionRowBuilder().addComponents(authorField),
+		new ActionRowBuilder().addComponents(teaserField)
 	);
 
 	await interaction.showModal(metadataDialog);
@@ -780,7 +773,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 		}
 		const storyEmbed = getDefaultStoryEmbed({ title, author, teaser });
 		let content = t.user('reply.story-metadata-updated');
-		const buttons = [getEditMetadataButton(t, storyId, Constants.MessageButtonStyles.SECONDARY)];
+		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
 		if (storyRecord.status === StoryStatus.Testing) {
 			content +=
 				'\n' +
@@ -796,7 +789,7 @@ async function handleMetadataDialogSubmit(storyId, interaction, t, logger) {
 			embeds: [storyEmbed],
 			components: [
 				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
+					type: ComponentType.ActionRow,
 					components: buttons
 				}
 			],

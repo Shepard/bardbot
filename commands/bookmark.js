@@ -1,4 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
@@ -16,11 +16,11 @@ const bookmarkCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'bookmark',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'event',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT
 			}
@@ -52,7 +52,7 @@ const bookmarkCommand = {
 
 		// Then send a message to the bookmarks channel, pointing back to the message sent above.
 		// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-		const bookmarkMessageEmbed = new MessageEmbed().setDescription(
+		const bookmarkMessageEmbed = new EmbedBuilder().setDescription(
 			`${bookmarkMessages.any(eventMessage.url, interaction.channelId, t.guild)}\n\n${eventMessageText}`
 		);
 		const bookmarksChannel = interaction.client.channels.cache.get(guildConfig.bookmarksChannel);

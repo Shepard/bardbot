@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import { getMessageMetadata } from '../storage/message-metadata-dao.js';
 import { errorReply, warningReply } from '../util/interaction-util.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
@@ -9,7 +9,7 @@ const deleteContextCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'Delete',
-		type: Constants.ApplicationCommandTypes.MESSAGE
+		type: ApplicationCommandType.Message
 	},
 	i18nKeyPrefix: 'delete-context',
 	// Handler for when the command is used

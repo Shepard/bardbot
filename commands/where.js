@@ -1,4 +1,4 @@
-import { Constants, Permissions, MessageEmbed } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { findNewestRPMessageMetadata } from '../storage/message-metadata-dao.js';
 
 // Determines how many messages back the command searches in each channel.
@@ -10,11 +10,11 @@ const whereCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'where',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'user',
-				type: Constants.ApplicationCommandOptionTypes.USER,
+				type: ApplicationCommandOptionType.User,
 				required: false
 			}
 		]
@@ -39,8 +39,8 @@ const whereCommand = {
 					// We only want to search messages in the channels that the current user is allowed to see messages from.
 					const currentMemberPermissions = channel.permissionsFor(interaction.member);
 					return (
-						currentMemberPermissions.has(Permissions.FLAGS.VIEW_CHANNEL) &&
-						currentMemberPermissions.has(Permissions.FLAGS.READ_MESSAGE_HISTORY)
+						currentMemberPermissions.has(PermissionFlagsBits.ViewChannel) &&
+						currentMemberPermissions.has(PermissionFlagsBits.ReadMessageHistory)
 					);
 				}
 				return false;
@@ -73,7 +73,7 @@ const whereCommand = {
 						channel: newestUserMessage.channelId
 				  });
 			await interaction.editReply({
-				embeds: [new MessageEmbed().setDescription(messageText)]
+				embeds: [new EmbedBuilder().setDescription(messageText)]
 			});
 		} else {
 			const messageText = findingCurrentUser

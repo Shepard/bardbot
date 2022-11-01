@@ -1,10 +1,10 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 
 const cointossCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'coin',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT
+		type: ApplicationCommandType.ChatInput
 	},
 	// Handler for when the command is used
 	async execute(interaction, { t }) {

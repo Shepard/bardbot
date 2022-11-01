@@ -1,4 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { ButtonStyle, ComponentType, EmbedBuilder } from 'discord.js';
 import { codePointLength, trimText, chunk, splitTextAtWhitespace, wait } from '../util/helpers.js';
 import {
 	MESSAGE_CONTENT_CHARACTER_LIMIT,
@@ -181,7 +181,7 @@ function appendTextMessages(messages, lines, characters) {
 }
 
 function getCharacterMessage(messageText, character) {
-	const characterEmbed = new MessageEmbed().setDescription(messageText);
+	const characterEmbed = new EmbedBuilder().setDescription(messageText);
 	const author = { name: character.name };
 	if (character.iconUrl) {
 		author.iconURL = character.iconUrl;
@@ -210,7 +210,7 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButt
 	// > Components will be able to be sent without message content/embed. even tho mason strongly objects, it looks like they're going to do it.
 	let buttonMessage;
 
-	let defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, Constants.MessageButtonStyles.SECONDARY);
+	let defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, ButtonStyle.Secondary);
 	choices = parseChoiceButtonStyles(choices, defaultButtonStyle);
 
 	// If any of the choices are too long to fit into a button label,
@@ -248,7 +248,7 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButt
 	let buttons = choices.map(choice => getChoiceButton(t, choice, choiceTooLong, getStoryButtonId));
 	buttonMessage.components = [
 		{
-			type: Constants.MessageComponentTypes.ACTION_ROW,
+			type: ComponentType.ActionRow,
 			components: buttons
 		}
 	];
@@ -257,7 +257,7 @@ function appendChoiceButtons(messages, choices, t, getStoryButtonId, defaultButt
 		// so we have to split them up into several action rows.
 		buttons = chunk(buttons, ACTION_ROW_BUTTON_LIMIT);
 		buttonMessage.components = buttons.map(chunk => ({
-			type: Constants.MessageComponentTypes.ACTION_ROW,
+			type: ComponentType.ActionRow,
 			components: chunk
 		}));
 		if (buttonMessage.components.length > MESSAGE_ACTION_ROW_LIMIT) {
@@ -299,13 +299,13 @@ function parseChoiceButtonStyles(choices, defaultButtonStyle) {
 function mapButtonStyle(styleRaw, defaultStyle) {
 	switch (styleRaw) {
 		case 'primary':
-			return Constants.MessageButtonStyles.PRIMARY;
+			return ButtonStyle.Primary;
 		case 'secondary':
-			return Constants.MessageButtonStyles.SECONDARY;
+			return ButtonStyle.Secondary;
 		case 'success':
-			return Constants.MessageButtonStyles.SUCCESS;
+			return ButtonStyle.Success;
 		case 'danger':
-			return Constants.MessageButtonStyles.DANGER;
+			return ButtonStyle.Danger;
 	}
 	return defaultStyle;
 }
@@ -329,7 +329,7 @@ function getChoiceButton(t, choice, choicesTooLong, getStoryButtonId) {
 		);
 	}
 	return {
-		type: Constants.MessageComponentTypes.BUTTON,
+		type: ComponentType.Button,
 		style: choice.style,
 		label,
 		custom_id: getStoryButtonId('choice ' + choice.index)
@@ -337,10 +337,10 @@ function getChoiceButton(t, choice, choicesTooLong, getStoryButtonId) {
 }
 
 function appendEndMessage(messages, t, startButtonId) {
-	const endEmbed = new MessageEmbed().setDescription(t.user('reply.story-outro'));
+	const endEmbed = new EmbedBuilder().setDescription(t.user('reply.story-outro'));
 	const replayButton = {
-		type: Constants.MessageComponentTypes.BUTTON,
-		style: Constants.MessageButtonStyles.SECONDARY,
+		type: ComponentType.Button,
+		style: ButtonStyle.Secondary,
 		label: t.user('replay-button-label'),
 		custom_id: startButtonId
 	};
@@ -348,7 +348,7 @@ function appendEndMessage(messages, t, startButtonId) {
 		embeds: [endEmbed],
 		components: [
 			{
-				type: Constants.MessageComponentTypes.ACTION_ROW,
+				type: ComponentType.ActionRow,
 				components: [replayButton]
 			}
 		]

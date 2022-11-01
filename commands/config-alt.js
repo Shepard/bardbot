@@ -1,5 +1,11 @@
-import { Constants, Permissions, MessageEmbed } from 'discord.js';
-import { userMention, roleMention } from '@discordjs/builders';
+import {
+	ApplicationCommandType,
+	ApplicationCommandOptionType,
+	PermissionFlagsBits,
+	EmbedBuilder,
+	userMention,
+	roleMention
+} from 'discord.js';
 import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../storage/alt-dao.js';
 import getRandomAvatarUrl from '../util/random-avatar-provider.js';
 import { validateWebhookName } from '../util/webhook-util.js';
@@ -11,68 +17,68 @@ const configAltCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'config-alt',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
-		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
+		type: ApplicationCommandType.ChatInput,
+		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
 		options: [
 			{
 				name: 'add',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						min_length: 1,
 						max_length: WEBHOOK_NAME_CHARACTER_LIMIT
 					},
 					{
 						name: 'usable-by',
-						type: Constants.ApplicationCommandOptionTypes.MENTIONABLE,
+						type: ApplicationCommandOptionType.Mentionable,
 						required: true
 					},
 					{
 						name: 'avatar-url',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false
 					}
 				]
 			},
 			{
 				name: 'edit',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
 					},
 					{
 						name: 'new-name',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false,
 						min_length: 1,
 						max_length: WEBHOOK_NAME_CHARACTER_LIMIT
 					},
 					{
 						name: 'usable-by',
-						type: Constants.ApplicationCommandOptionTypes.MENTIONABLE,
+						type: ApplicationCommandOptionType.Mentionable,
 						required: false
 					},
 					{
 						name: 'avatar-url',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false
 					}
 				]
 			},
 			{
 				name: 'delete',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
 					}
@@ -80,11 +86,11 @@ const configAltCommand = {
 			},
 			{
 				name: 'show',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false,
 						autocomplete: true
 					}
@@ -159,7 +165,7 @@ async function handleAddAlt(interaction, t, logger) {
 
 	// Tell user about successful creation and show the alt data off a bit.
 	const usableByMention = usableByType === UsableByType.User ? userMention(usableById) : roleMention(usableById);
-	const altEmbed = new MessageEmbed()
+	const altEmbed = new EmbedBuilder()
 		.setAuthor({ name, iconURL: avatarUrl })
 		.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 	await interaction.reply({
@@ -217,7 +223,7 @@ async function handleEditAlt(interaction, t, logger) {
 		patchedAlt.usableByType === UsableByType.User
 			? userMention(patchedAlt.usableById)
 			: roleMention(patchedAlt.usableById);
-	const altEmbed = new MessageEmbed()
+	const altEmbed = new EmbedBuilder()
 		.setAuthor({ name: patchedAlt.name, iconURL: patchedAlt.avatarUrl })
 		.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 	await interaction.reply({
@@ -269,7 +275,7 @@ async function handleShowAlts(interaction, t, logger) {
 
 		const usableByMention =
 			alt.usableByType === UsableByType.User ? userMention(alt.usableById) : roleMention(alt.usableById);
-		const altEmbed = new MessageEmbed()
+		const altEmbed = new EmbedBuilder()
 			.setAuthor({ name: alt.name, iconURL: alt.avatarUrl })
 			.addFields({ name: t.user('field-usable-by'), value: usableByMention });
 		await interaction.reply({

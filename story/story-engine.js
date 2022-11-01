@@ -6,8 +6,7 @@
 
 import inkjs from 'inkjs';
 import { ErrorType } from 'inkjs/engine/Error.js';
-import { Constants, DiscordAPIError, MessageEmbed } from 'discord.js';
-import { quote } from '@discordjs/builders';
+import { ButtonStyle, ComponentType, DiscordAPIError, EmbedBuilder, quote } from 'discord.js';
 import { parseCharacters, parseDefaultButtonStyle, parseMetadata } from './story-information-extractor.js';
 import {
 	getStory,
@@ -528,7 +527,7 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				const dmChannel = await guildMember.createDM();
 				for (const msg of messages) {
 					await dmChannel.send({
-						embeds: [new MessageEmbed().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
+						embeds: [new EmbedBuilder().setDescription(msg).setColor(COLOUR_DISCORD_YELLOW)]
 					});
 				}
 
@@ -587,7 +586,7 @@ async function informPlayerAboutStoppedStoryPlay(userId, storyRecord, guild, loc
 		const dmChannel = await guildMember.createDM();
 		await dmChannel.send({
 			embeds: [
-				new MessageEmbed()
+				new EmbedBuilder()
 					.setDescription(
 						translate('commands.config-story.story-updated-and-stopped-notification', {
 							storyTitle: storyRecord.title,
@@ -599,11 +598,11 @@ async function informPlayerAboutStoppedStoryPlay(userId, storyRecord, guild, loc
 			],
 			components: [
 				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
+					type: ComponentType.ActionRow,
 					components: [
 						{
-							type: Constants.MessageComponentTypes.BUTTON,
-							style: Constants.MessageButtonStyles.SUCCESS,
+							type: ComponentType.Button,
+							style: ButtonStyle.Success,
 							label: translate('commands.config-story.restart-button-label', {
 								lng: locale
 							}),

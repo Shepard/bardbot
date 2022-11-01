@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
 import { warningReply } from '../util/interaction-util.js';
 
 // For now this notation is localised for English and German by allowing "d" and "w" as the dice type prefix.
@@ -10,11 +10,11 @@ const rollCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'roll',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'notation',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				// Given MAX_NUMBER_OF_DICE, the maximum input is "20d20" which has 5 characters.
 				max_length: 5

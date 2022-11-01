@@ -1,4 +1,11 @@
-import { Constants, DiscordAPIError, MessageEmbed } from 'discord.js';
+import {
+	ApplicationCommandType,
+	ApplicationCommandOptionType,
+	DiscordAPIError,
+	EmbedBuilder,
+	ButtonStyle,
+	ComponentType
+} from 'discord.js';
 import {
 	StoryErrorType,
 	startStory,
@@ -45,15 +52,15 @@ const storyCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'story',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'show',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: false,
 						autocomplete: true
 					}
@@ -61,11 +68,11 @@ const storyCommand = {
 			},
 			{
 				name: 'start',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'title',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
 					}
@@ -73,15 +80,15 @@ const storyCommand = {
 			},
 			{
 				name: 'restart',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'stop',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'state',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
@@ -157,12 +164,7 @@ const storyCommand = {
 };
 
 function getStartButton(t, storyId, guildId) {
-	return getTranslatedStoryButton(
-		t,
-		'start-button-label',
-		'start ' + storyId + ' ' + guildId,
-		Constants.MessageButtonStyles.SUCCESS
-	);
+	return getTranslatedStoryButton(t, 'start-button-label', 'start ' + storyId + ' ' + guildId, ButtonStyle.Success);
 }
 
 function getRestartButton(t, short) {
@@ -170,7 +172,7 @@ function getRestartButton(t, short) {
 		t.user,
 		short ? 'restart-button-label-short' : 'restart-button-label',
 		'restart',
-		short ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.DANGER
+		short ? ButtonStyle.Secondary : ButtonStyle.Danger
 	);
 }
 
@@ -179,12 +181,12 @@ function getStopButton(t, short) {
 		t.user,
 		short ? 'stop-button-label-short' : 'stop-button-label',
 		'stop',
-		short ? Constants.MessageButtonStyles.SECONDARY : Constants.MessageButtonStyles.DANGER
+		short ? ButtonStyle.Secondary : ButtonStyle.Danger
 	);
 }
 
 function getStateButton(t) {
-	return getTranslatedStoryButton(t.user, 'state-button-label', 'state', Constants.MessageButtonStyles.SECONDARY);
+	return getTranslatedStoryButton(t.user, 'state-button-label', 'state', ButtonStyle.Secondary);
 }
 
 function getTranslatedStoryButton(t, translationKey, innerCustomId, style) {
@@ -196,8 +198,8 @@ function getTranslatedStoryButton(t, translationKey, innerCustomId, style) {
  */
 function getStoryButton(label, innerCustomId, style) {
 	return {
-		type: Constants.MessageComponentTypes.BUTTON,
-		style: style ?? Constants.MessageButtonStyles.PRIMARY,
+		type: ComponentType.Button,
+		style: style ?? ButtonStyle.Primary,
 		label,
 		custom_id: getStoryComponentId(innerCustomId)
 	};
@@ -218,10 +220,7 @@ function isCannotSendDMsError(error) {
 async function handleShowStories(interaction, t, logger) {
 	const guildId = interaction.guildId;
 	let storyId;
-	if (
-		interaction.componentType === Constants.MessageComponentTypes[Constants.MessageComponentTypes.SELECT_MENU] &&
-		interaction.values?.length
-	) {
+	if (interaction.componentType === ComponentType.StringSelect && interaction.values?.length) {
 		storyId = interaction.values[0];
 	} else {
 		storyId = interaction.options?.getString('title');
@@ -255,13 +254,13 @@ async function handleShowStories(interaction, t, logger) {
 			value: story.id
 		}));
 		await interaction.reply({
-			embeds: [new MessageEmbed().setTitle(embedTitle).setDescription(titlesText)],
+			embeds: [new EmbedBuilder().setTitle(embedTitle).setDescription(titlesText)],
 			components: [
 				{
-					type: Constants.MessageComponentTypes.ACTION_ROW,
+					type: ComponentType.ActionRow,
 					components: [
 						{
-							type: Constants.MessageComponentTypes.SELECT_MENU,
+							type: ComponentType.StringSelect,
 							custom_id: getStoryComponentId('show'),
 							placeholder: t.userShared('show-story-details-select-label'),
 							options
@@ -309,7 +308,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 	const storyEmbed = getDefaultStoryEmbed(story);
 	const components = [
 		{
-			type: Constants.MessageComponentTypes.ACTION_ROW,
+			type: ComponentType.ActionRow,
 			components: [getStartButton(publicly ? t.guild : t.user, storyId, interaction.guildId)]
 		}
 	];
@@ -329,7 +328,7 @@ async function postStoryInner(storyId, publicly, interaction, t, logger) {
 function getStoryEmbed(metadata, description) {
 	// TODO later: have more ways to customise this embed message via more metadata saved in the story.
 	//  maybe an image, maybe a colour for the side of the embed, maybe an author avatar, maybe a URL.
-	const storyIntroEmbed = new MessageEmbed().setTitle(metadata.title);
+	const storyIntroEmbed = new EmbedBuilder().setTitle(metadata.title);
 	if (metadata.author) {
 		storyIntroEmbed.setAuthor({ name: metadata.author });
 	}
@@ -376,7 +375,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 				case StoryErrorType.AlreadyPlayingDifferentStory: {
 					const components = [
 						{
-							type: Constants.MessageComponentTypes.ACTION_ROW,
+							type: ComponentType.ActionRow,
 							components: [getStateButton(t), getStopButton(t)]
 						}
 					];
@@ -397,7 +396,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 				case StoryErrorType.CouldNotSaveState: {
 					const components = [
 						{
-							type: Constants.MessageComponentTypes.ACTION_ROW,
+							type: ComponentType.ActionRow,
 							components: [getStateButton(t), getRestartButton(t), getStopButton(t)]
 						}
 					];
@@ -444,7 +443,7 @@ async function sendStoryEmbed(interaction, metadata, description, t, reply) {
 		embeds: [getStoryEmbed(metadata, description)],
 		components: [
 			{
-				type: Constants.MessageComponentTypes.ACTION_ROW,
+				type: ComponentType.ActionRow,
 				components: [getRestartButton(t, true), getStopButton(t, true)]
 			}
 		]
@@ -490,7 +489,7 @@ async function handleChoiceSelection(interaction, choiceIndex, t, logger) {
 				case StoryErrorType.CouldNotSaveState: {
 					const components = [
 						{
-							type: Constants.MessageComponentTypes.ACTION_ROW,
+							type: ComponentType.ActionRow,
 							components: [getStateButton(t), getRestartButton(t), getStopButton(t)]
 						}
 					];
@@ -549,7 +548,7 @@ async function handleRestartStory(interaction, t, logger) {
 				case StoryErrorType.CouldNotSaveState: {
 					const components = [
 						{
-							type: Constants.MessageComponentTypes.ACTION_ROW,
+							type: ComponentType.ActionRow,
 							components: [getStateButton(t), getRestartButton(t), getStopButton(t)]
 						}
 					];

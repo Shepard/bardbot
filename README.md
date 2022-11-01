@@ -6,7 +6,7 @@ A Discord bot for supporting role-playing servers.
 
 - Create a Discord application and bot. You can [follow this tutorial](https://discordjs.guide/preparations/setting-up-a-bot-application.html).
 - Add your bot to at least one server. [There's a tutorial](https://discordjs.guide/preparations/adding-your-bot-to-servers.html) for that too. The permissions I used in the invite link are 535263968320. Those are not the minimal permissions needed but they work.
-- Make sure to have at least Node v16.6.0 or higher installed. Also your NPM version needs to be at least 7 (should come with Node).
+- Make sure to have at least Node v16.9.0 or higher installed. Also your NPM version needs to be at least 7 (should come with Node).
 - Clone this repository.
 - In a terminal in the main directory run `npm install --no-save` initially and every time you pull new changes from this repository.
   - For some of the dependencies of this project you might need additional tools for compiling native code. You might need to install [node-gyp](https://github.com/nodejs/node-gyp).

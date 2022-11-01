@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import logger from '../util/logger.js';
 import { translate, translationExists, SUPPORTED_LANGUAGES } from '../util/i18n.js';
 import {
@@ -43,7 +43,7 @@ function traverseCommandStructure(object, keyPrefix, isOption) {
 }
 
 function addNameAndDescriptionTranslations(object, keyPrefix, isOption) {
-	const isOptionOrChatInputCommand = isOption || object.type === Constants.ApplicationCommandTypes.CHAT_INPUT;
+	const isOptionOrChatInputCommand = isOption || object.type === ApplicationCommandType.ChatInput;
 
 	const nameValidator = commandNameValidator.bind(null, isOptionOrChatInputCommand);
 	const nameTranslations = getAllTranslations(keyPrefix + '.name', nameValidator);

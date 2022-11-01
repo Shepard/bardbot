@@ -1,5 +1,4 @@
-import { quote } from '@discordjs/builders';
-import { Constants, MessageEmbed } from 'discord.js';
+import { ApplicationCommandType, EmbedBuilder, quote } from 'discord.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { warningReply } from '../util/interaction-util.js';
@@ -20,7 +19,7 @@ const quoteContextCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'Quote',
-		type: Constants.ApplicationCommandTypes.MESSAGE
+		type: ApplicationCommandType.Message
 	},
 	i18nKeyPrefix: 'quote-context',
 	// Test function to check if the command should apply to a guild
@@ -50,7 +49,7 @@ const quoteContextCommand = {
 
 			// Create message in quotes channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-			const quoteMessageEmbed = new MessageEmbed().setDescription(
+			const quoteMessageEmbed = new EmbedBuilder().setDescription(
 				`${quoteMessages.any(message.author.id, message.url, t.guild)}\n\n${quoteText}`
 			);
 			const quoteMessage = await quotesChannel.send({

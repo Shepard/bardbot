@@ -12,10 +12,9 @@
   "author": "Simon Reinhardt",
   "license": "MIT",
   "dependencies": {
-    "@discordjs/builders": "^1.1.0",
     "axios": "^0.27.2",
     "better-sqlite3": "^7.6.2",
-    "discord.js": "^13.10.2",
+    "discord.js": "^14.6.0",
     "i18next": "^21.6.6",
     "i18next-fs-backend": "^1.1.4",
     "inkjs": "Shepard/inkjs#robust",

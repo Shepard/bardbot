@@ -1,4 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { ApplicationCommandType, EmbedBuilder } from 'discord.js';
 import { bookmarkMessages } from './bookmark.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { warningReply } from '../util/interaction-util.js';
@@ -7,7 +7,7 @@ const bookmarkContextCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'Bookmark',
-		type: Constants.ApplicationCommandTypes.MESSAGE
+		type: ApplicationCommandType.Message
 	},
 	// We want to reuse the translations of the bookmark slash command so we use the key prefix to get the same ones.
 	i18nKeyPrefix: 'bookmark',
@@ -34,7 +34,7 @@ const bookmarkContextCommand = {
 
 			// Create message in bookmarks channel linking back to the message the command was used on (and also pointing to the channel it came from).
 			// To make things a bit more varied and fun, a random message is picked from a set of prepared messages.
-			const bookmarkMessageEmbed = new MessageEmbed().setDescription(
+			const bookmarkMessageEmbed = new EmbedBuilder().setDescription(
 				`${bookmarkMessages.any(message.url, interaction.channelId, t.guild)}\n\n${message.content}`
 			);
 			const bookmarkMessage = await bookmarksChannel.send({

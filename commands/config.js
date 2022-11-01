@@ -1,5 +1,13 @@
-import { Constants, Permissions, MessageEmbed, Webhook } from 'discord.js';
-import { channelMention, italic } from '@discordjs/builders';
+import {
+	ApplicationCommandType,
+	ApplicationCommandOptionType,
+	ChannelType,
+	PermissionFlagsBits,
+	EmbedBuilder,
+	Webhook,
+	channelMention,
+	italic
+} from 'discord.js';
 import {
 	setConfigurationValues,
 	clearConfigurationValues,
@@ -23,41 +31,41 @@ const configCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'config',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
-		defaultMemberPermissions: new Permissions([Permissions.FLAGS.MANAGE_GUILD]),
+		type: ApplicationCommandType.ChatInput,
+		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
 		options: [
 			{
 				name: 'show',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'set',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'bookmarks-channel',
-						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
-						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
+						type: ApplicationCommandOptionType.Channel,
+						channel_types: [ChannelType.GuildText]
 					},
 					{
 						name: 'quotes-channel',
-						type: Constants.ApplicationCommandOptionTypes.CHANNEL,
-						channel_types: [Constants.ChannelTypes.GUILD_TEXT]
+						type: ApplicationCommandOptionType.Channel,
+						channel_types: [ChannelType.GuildText]
 					},
 					{
 						name: 'language',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						choices: getLanguageChoices()
 					}
 				]
 			},
 			{
 				name: 'reset',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'option',
-						type: Constants.ApplicationCommandOptionTypes.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true,
 						choices: [
 							{
@@ -86,16 +94,16 @@ const configCommand = {
 			},
 			{
 				name: 'add',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+				type: ApplicationCommandOptionType.SubcommandGroup,
 				options: [
 					{
 						name: 'role-play-channel',
-						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
 								name: 'channel',
-								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
-								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
+								type: ApplicationCommandOptionType.Channel,
+								channel_types: [ChannelType.GuildText],
 								required: false
 							}
 						]
@@ -104,16 +112,16 @@ const configCommand = {
 			},
 			{
 				name: 'remove',
-				type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND_GROUP,
+				type: ApplicationCommandOptionType.SubcommandGroup,
 				options: [
 					{
 						name: 'role-play-channel',
-						type: Constants.ApplicationCommandOptionTypes.SUB_COMMAND,
+						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
 								name: 'channel',
-								type: Constants.ApplicationCommandOptionTypes.CHANNEL,
-								channel_types: [Constants.ChannelTypes.GUILD_TEXT],
+								type: ApplicationCommandOptionType.Channel,
+								channel_types: [ChannelType.GuildText],
 								required: false
 							}
 						]
@@ -160,7 +168,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannels);
 	const rolePlayChannelsListFitsInField = codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT;
 
-	const configurationValuesEmbed = new MessageEmbed()
+	const configurationValuesEmbed = new EmbedBuilder()
 		.setTitle(t.user('show-title'))
 		.setDescription(
 			t.user('show-description', {
@@ -184,7 +192,7 @@ async function showConfiguration(interaction, guildConfig, t) {
 	// If the RP channel list doesn't fit in a single field value,
 	// send it in the description of a follow-up embed instead.
 	if (!rolePlayChannelsListFitsInField) {
-		const rolePlayChannelsListEmbed = new MessageEmbed()
+		const rolePlayChannelsListEmbed = new EmbedBuilder()
 			.setTitle(t.user('show-field-role-play-channels'))
 			.setDescription(rolePlayChannelsList);
 		await interaction.followUp({
@@ -338,14 +346,14 @@ function getChannel(interaction) {
 	const channel = interaction.options.getChannel('channel');
 	if (channel) {
 		// Other channel types should be prevented by the command configuration anyway but just to be safe...
-		if (channel.type === Constants.ChannelTypes[Constants.ChannelTypes.GUILD_TEXT]) {
+		if (channel.type === ChannelType.GuildText) {
 			return channel;
 		}
 	}
 	// Make sure the user is using this command in a guild text channel.
 	// The check is a bit awkward because channel.type gives us the string version of the enum value
 	// which we have to fetch from the constants using the number version.
-	if (interaction.channel.type === Constants.ChannelTypes[Constants.ChannelTypes.GUILD_TEXT]) {
+	if (interaction.channel.type === ChannelType.GuildText) {
 		return interaction.channel;
 	}
 	return null;

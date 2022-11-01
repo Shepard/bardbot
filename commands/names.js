@@ -1,12 +1,11 @@
-import { userMention } from '@discordjs/builders';
-import { Constants } from 'discord.js';
+import { ApplicationCommandType, userMention } from 'discord.js';
 import { sendListReply } from '../util/interaction-util.js';
 
 const namesCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'names',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT
+		type: ApplicationCommandType.ChatInput
 	},
 	// Handler for when the command is used
 	async execute(interaction, { t }) {

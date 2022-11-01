@@ -1,5 +1,5 @@
 import { expect, assert } from 'chai';
-import { Constants } from 'discord.js';
+import { ButtonStyle } from 'discord.js';
 import fs from 'fs';
 import { getMessagesToSend } from '../../story/story-message-sender.js';
 import {
@@ -125,9 +125,9 @@ describe('story-message-sender', () => {
 			const messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[0].components[0].components[0].label).to.equal('Pick me!');
-			expect(messages[0].components[0].components[0].style).to.equal(Constants.MessageButtonStyles.PRIMARY);
+			expect(messages[0].components[0].components[0].style).to.equal(ButtonStyle.Primary);
 			expect(messages[0].components[0].components[1].label).to.equal("Don't pick me!");
-			expect(messages[0].components[0].components[1].style).to.equal(Constants.MessageButtonStyles.DANGER);
+			expect(messages[0].components[0].components[1].style).to.equal(ButtonStyle.Danger);
 		});
 
 		it('combines and splits lines as necessary', () => {
@@ -188,19 +188,19 @@ describe('story-message-sender', () => {
 
 			expect(messages[0].content).to.be.undefined;
 			expect(messages[0].embeds).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[0].embeds[0].description).to.equal('What do we have here then?');
-			expect(messages[0].embeds[0].author.name).to.equal('Bard');
-			expect(messages[0].embeds[0].author.iconURL).to.equal(
+			expect(messages[0].embeds[0].toJSON().description).to.equal('What do we have here then?');
+			expect(messages[0].embeds[0].toJSON().author.name).to.equal('Bard');
+			expect(messages[0].embeds[0].toJSON().author.icon_url).to.equal(
 				'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
 			);
-			expect(messages[0].embeds[0].color).to.be.null;
+			expect(messages[0].embeds[0].toJSON().color).to.be.undefined;
 
 			expect(messages[1].content).to.be.undefined;
 			expect(messages[1].embeds).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[1].embeds[0].description).to.equal('I am your father!');
-			expect(messages[1].embeds[0].author.name).to.equal('Darth Vader');
-			expect(messages[1].embeds[0].author.iconURL).to.be.undefined;
-			expect(messages[1].embeds[0].color).to.equal(0);
+			expect(messages[1].embeds[0].toJSON().description).to.equal('I am your father!');
+			expect(messages[1].embeds[0].toJSON().author.name).to.equal('Darth Vader');
+			expect(messages[1].embeds[0].toJSON().author.icon_url).to.be.undefined;
+			expect(messages[1].embeds[0].toJSON().color).to.equal(0);
 
 			expect(messages[2].content).to.equal("Luke: No... no... that's not true!");
 			expect(messages[2].embeds).to.be.undefined;
@@ -246,7 +246,7 @@ describe('story-message-sender', () => {
 			const messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[0].embeds).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[0].embeds[0].description).to.equal('Speech line 1\nSpeech line 2');
+			expect(messages[0].embeds[0].toJSON().description).to.equal('Speech line 1\nSpeech line 2');
 		});
 
 		it('does not combine character speech with regular lines', () => {
@@ -288,10 +288,10 @@ describe('story-message-sender', () => {
 			};
 			const messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
-			expect(messages[2].embeds[0].description.startsWith('Lorem ipsum')).to.be.true;
-			expect(messages[2].embeds[0].description.endsWith('qui')).to.be.true;
+			expect(messages[2].embeds[0].toJSON().description.startsWith('Lorem ipsum')).to.be.true;
+			expect(messages[2].embeds[0].toJSON().description.endsWith('qui')).to.be.true;
 			for (const message of messages) {
-				expect(message.embeds[0].description).to.have.lengthOf.below(4096);
+				expect(message.embeds[0].toJSON().description).to.have.lengthOf.below(4096);
 			}
 		});
 
@@ -411,9 +411,9 @@ describe('story-message-sender', () => {
 			};
 			let messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
-			expect(messages[0].embeds[0].description).to.equal('Speech line 1');
+			expect(messages[0].embeds[0].toJSON().description).to.equal('Speech line 1');
 			expect(messages[1].specialHandling).to.equal('Delay');
-			expect(messages[2].embeds[0].description).to.equal('Speech line 2\nSpeech line 3');
+			expect(messages[2].embeds[0].toJSON().description).to.equal('Speech line 2\nSpeech line 3');
 		});
 
 		it('appends an end message in the right place', () => {

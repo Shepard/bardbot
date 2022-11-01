@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
 import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../storage/alt-dao.js';
@@ -9,17 +9,17 @@ const altCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'alt',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'name',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				autocomplete: true
 			},
 			{
 				name: 'message',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT
 			}

@@ -1,4 +1,4 @@
-import { Constants, Modal, MessageActionRow, TextInputComponent } from 'discord.js';
+import { ApplicationCommandType, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { getMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
 import { errorReply, getCustomIdForCommandRouting, warningReply } from '../util/interaction-util.js';
@@ -8,7 +8,7 @@ const editContextCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'Edit',
-		type: Constants.ApplicationCommandTypes.MESSAGE
+		type: ApplicationCommandType.Message
 	},
 	i18nKeyPrefix: 'edit-context',
 	// Handler for when the command is used
@@ -76,18 +76,18 @@ function isAltMessageReplyToCurrentUser(message, interaction, logger) {
 
 async function showEditMessageDialog(message, interaction, t) {
 	const dialogId = getCustomIdForCommandRouting(editContextCommand, 'edit-dialog message ' + message.id);
-	const editDialog = new Modal().setCustomId(dialogId).setTitle(t.user('reply.edit-dialog-title'));
+	const editDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('reply.edit-dialog-title'));
 
-	const messageEditField = new TextInputComponent()
+	const messageEditField = new TextInputBuilder()
 		.setCustomId('edit-dialog-message-text')
 		.setLabel(t.user('reply.edit-dialog-text-field-label'))
 		.setValue(message.content)
-		.setStyle(Constants.TextInputStyles[Constants.TextInputStyles.PARAGRAPH])
+		.setStyle(TextInputStyle.Paragraph)
 		.setRequired(true)
 		.setMinLength(1)
 		.setMaxLength(MESSAGE_CONTENT_CHARACTER_LIMIT);
 
-	editDialog.addComponents(new MessageActionRow().addComponents(messageEditField));
+	editDialog.addComponents(new ActionRowBuilder().addComponents(messageEditField));
 
 	await interaction.showModal(editDialog);
 }

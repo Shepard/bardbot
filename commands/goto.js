@@ -1,4 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder, ChannelType } from 'discord.js';
 import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
 import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
 
@@ -6,17 +6,17 @@ const gotoCommand = {
 	// Configuration for registering the command
 	configuration: {
 		name: 'goto',
-		type: Constants.ApplicationCommandTypes.CHAT_INPUT,
+		type: ApplicationCommandType.ChatInput,
 		options: [
 			{
 				name: 'destination',
-				type: Constants.ApplicationCommandOptionTypes.CHANNEL,
-				channel_types: [Constants.ChannelTypes.GUILD_TEXT],
+				type: ApplicationCommandOptionType.Channel,
+				channel_types: [ChannelType.GuildText],
 				required: true
 			},
 			{
 				name: 'action',
-				type: Constants.ApplicationCommandOptionTypes.STRING,
+				type: ApplicationCommandOptionType.String,
 				// This needs to be limited so that the text the user entered + the link sentence we add below fit into the message limit.
 				max_length: MESSAGE_CONTENT_CHARACTER_LIMIT - 200
 			}
@@ -53,7 +53,7 @@ const gotoCommand = {
 		// added below the message. But while testing in the Android app it turned out that link buttons never work to take the user
 		// to a specific message in a channel, the app will just jump to the end of the channel. Links embedded in messages on the
 		// other hand work some of the time.
-		const destinationMessageEmbed = new MessageEmbed().setDescription(
+		const destinationMessageEmbed = new EmbedBuilder().setDescription(
 			t.guild('reply.destination-message', { url: sourceMessage.url, channel: sourceChannel.id })
 		);
 		const destinationMessage = await destinationChannel.send({

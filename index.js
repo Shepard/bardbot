@@ -1,6 +1,6 @@
 import process from 'process';
 import fsPromises from 'fs/promises';
-import { Client, Intents } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 import schedule from 'node-schedule';
 import { initDatabase, closeDatabase } from './storage/database.js';
 import { getJSFilesInDir } from './util/helpers.js';
@@ -14,7 +14,7 @@ async function initApp() {
 	await loadCommands();
 
 	const client = new Client({
-		intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES],
+		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],
 		presence: { activities: [{ name: 'your stories', type: 0 }] }
 	});
 
