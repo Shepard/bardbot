@@ -94,8 +94,7 @@
 				'not-deletable3': '- citas que alguien más creó a través de mí donde usted fue citado,',
 				'not-deletable4': '- mi respuesta a {{command, commandmention}} y el mensaje correspondiente en el canal de destino,',
 				'not-deletable5': '- mi respuesta a {{command, commandmention}},',
-				'not-deletable6': '- mi respuesta a {{command, commandmention}},',
-				'not-deletable7': '- mensajes de personajes alternativos enviados a través de mí.',
+				'not-deletable6': '- mensajes de personajes alternativos enviados a través de mí.',
 				'delete-failure': 'Hubo un error al intentar eliminar el mensaje.',
 				'delete-success': 'El mensaje fue eliminado con éxito.'
 			}

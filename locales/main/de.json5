@@ -354,8 +354,7 @@
 				'not-deletable3': '- Zitaten, die jemand anders durch mich erstellt hat, bei denen Du zitiert wurdest,',
 				'not-deletable4': '- meiner Antwort auf {{command, commandmention}} und die zugehörige Nachricht im Zielkanal,',
 				'not-deletable5': '- meiner Antwort auf {{command, commandmention}},',
-				'not-deletable6': '- meiner Antwort auf {{command, commandmention}},',
-				'not-deletable7': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
+				'not-deletable6': '- Nachrichten von alternativen Charakteren, die durch mich geschickt wurden.',
 				'delete-failure': 'Beim Versuch, die Nachricht zu löschen, ist ein Fehler aufgetreten.',
 				'delete-success': 'Nachricht wurde erfolgreich gelöscht.'
 			}

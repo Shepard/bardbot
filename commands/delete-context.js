@@ -83,9 +83,9 @@ const deleteContextCommand = {
 				'\n' +
 				t.user('reply.not-deletable5', { command: '/narrate', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-deletable6', { command: '/names', guildId: interaction.guildId }) +
+				t.user('reply.not-deletable5', { command: '/names', guildId: interaction.guildId }) +
 				'\n' +
-				t.user('reply.not-deletable7')
+				t.user('reply.not-deletable6')
 		);
 	}
 };
