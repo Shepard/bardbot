@@ -35,6 +35,13 @@ export function registerDbInitialisedListener(listener) {
 export async function initDatabase() {
 	const userVersion = db.pragma('user_version', { simple: true });
 	const upgrades = await getUpgrades(userVersion);
+
+	if (upgrades.length) {
+		// Make backup of db file before applying upgrades.
+		const dateString = new Date().toISOString().substring(0, 10);
+		await fsPromises.copyFile('./db/bard.db', './db/bard_backup_v' + userVersion + '_' + dateString + '.db');
+	}
+
 	for (const upgrade of upgrades) {
 		db.transaction(() => {
 			db.exec(upgrade.upgradeSql);
