@@ -6,7 +6,7 @@ import db, { FILES_DIR, registerDbInitialisedListener } from './database.js';
 import { ensureGuildConfigurationExists, obsoleteGuildsSelect } from './guild-config-dao.js';
 import { escapeSearchInputToLikePattern } from '../util/helpers.js';
 
-export const EditorReportType = Object.freeze({
+export const OwnerReportType = Object.freeze({
 	InkWarning: 'InkWarning',
 	InkError: 'InkError',
 	PotentialLoopDetected: 'PotentialLoopDetected',
@@ -24,7 +24,7 @@ class StoryRecord {
 	constructor(resultRow) {
 		this.id = resultRow.id;
 		this.guildId = resultRow.guild_id;
-		this.editorId = resultRow.editor_id;
+		this.ownerId = resultRow.owner_id;
 		this.title = resultRow.title;
 		this.author = resultRow.author;
 		this.teaser = resultRow.teaser;
@@ -37,15 +37,15 @@ class StoryRecord {
 		this.timeBudgetExceededCount = resultRow.time_budget_exceeded_count;
 	}
 
-	hasIssueBeenReported(editorReportType) {
-		switch (editorReportType) {
-			case EditorReportType.InkError:
+	hasIssueBeenReported(ownerReportType) {
+		switch (ownerReportType) {
+			case OwnerReportType.InkError:
 				return this.reportedInkError;
-			case EditorReportType.InkWarning:
+			case OwnerReportType.InkWarning:
 				return this.reportedInkWarning;
-			case EditorReportType.MaximumChoiceNumberExceeded:
+			case OwnerReportType.MaximumChoiceNumberExceeded:
 				return this.reportedMaximumChoiceNumberExceeded;
-			case EditorReportType.PotentialLoopDetected:
+			case OwnerReportType.PotentialLoopDetected:
 				return this.reportedPotentialLoopDetected;
 			default:
 				return false;
@@ -67,7 +67,7 @@ let findMatchingPublishedStoriesStatement = null;
 let countStoriesStatement = null;
 let countAllStoriesStatement = null;
 let changeStoryMetadataStatement = null;
-let changeStoryEditorStatement = null;
+let changeStoryOwnerStatement = null;
 let changeStoryStatusStatement = null;
 let changeStoryStatusConditionallyStatement = null;
 let deleteStoryStatement = null;
@@ -92,35 +92,35 @@ let getCurrentPlayersStatement = null;
 
 registerDbInitialisedListener(() => {
 	addStoryStatement = db.prepare(
-		'INSERT INTO story(id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp) ' +
-			"VALUES(:id, :guildId, :editorId, :title, :author, :teaser, 'Draft', unixepoch())"
+		'INSERT INTO story(id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp) ' +
+			"VALUES(:id, :guildId, :ownerId, :title, :author, :teaser, 'Draft', unixepoch())"
 	);
 	// Even though the id is unique across all guilds, this still validates if the story is for the right guild.
 	// Otherwise, with a very small chance, a story in guild A might get deleted, freeing up its id, and a story in guild B gets created with the same UUID.
 	getStoryStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			'FROM story WHERE id = :storyId AND guild_id = :guildId'
 	);
 	getStoriesStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			"FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted' ORDER BY title"
 	);
 	getPublishedStoriesStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and editor_id = :userId)) ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and owner_id = :userId)) ORDER BY title"
 	);
 	findMatchingStoriesStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
 			"FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted' AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	findMatchingPublishedStoriesStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and editor_id = :userId)) AND title LIKE :pattern ESCAPE '#' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and owner_id = :userId)) AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	countStoriesStatement = db
 		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted'")
@@ -129,10 +129,10 @@ registerDbInitialisedListener(() => {
 	changeStoryMetadataStatement = db.prepare(
 		'UPDATE story SET title = :title, author = :author, teaser = :teaser, last_changed_timestamp = unixepoch() WHERE id = :storyId AND guild_id = :guildId'
 	);
-	// Changing the story editor clears all reporting flags (but not the counter, since that could be abused).
+	// Changing the story owner clears all reporting flags (but not the counter, since that could be abused).
 	// Since someone else is now responsible for warnings about this story, they might not have seen existing ones before.
-	changeStoryEditorStatement = db.prepare(
-		'UPDATE story SET editor_id = :editorId, last_changed_timestamp = unixepoch(), reported_ink_error = 0, reported_ink_warning = 0, ' +
+	changeStoryOwnerStatement = db.prepare(
+		'UPDATE story SET owner_id = :ownerId, last_changed_timestamp = unixepoch(), reported_ink_error = 0, reported_ink_warning = 0, ' +
 			'reported_maximum_choice_number_exceeded = 0, reported_potential_loop_detected = 0 WHERE id = :storyId AND guild_id = :guildId'
 	);
 	changeStoryStatusStatement = db.prepare(
@@ -179,7 +179,7 @@ registerDbInitialisedListener(() => {
 		'DELETE FROM story AS s WHERE s.guild_id IN (' + obsoleteGuildsSelect + ')'
 	);
 	getStoryPlayStatement = db.prepare(
-		'SELECT id, guild_id, editor_id, title, author, teaser, status, last_changed_timestamp, ' +
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count, ' +
 			'state_json FROM story s JOIN story_play p ON s.id = p.story_id WHERE p.user_id = :userId'
 	);
@@ -192,7 +192,7 @@ registerDbInitialisedListener(() => {
 	getCurrentPlayersStatement = db.prepare('SELECT user_id FROM story_play WHERE story_id = :storyId').pluck();
 });
 
-export async function addStory(storyContent, { title = '', author = '', teaser = '' }, editorId, guildId) {
+export async function addStory(storyContent, { title = '', author = '', teaser = '' }, ownerId, guildId) {
 	// If this fails, we don't need to execute the rest.
 	ensureGuildConfigurationExists(guildId);
 
@@ -202,7 +202,7 @@ export async function addStory(storyContent, { title = '', author = '', teaser =
 	while (!inserted && attempts < 10) {
 		id = uuidv4();
 		try {
-			addStoryStatement.run({ id, guildId, editorId, title, author, teaser });
+			addStoryStatement.run({ id, guildId, ownerId, title, author, teaser });
 			inserted = true;
 		} catch (error) {
 			if (error.code !== 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -324,8 +324,8 @@ export function completeStoryMetadata(storyId, guildId, { title, author = '', te
 	})();
 }
 
-export function changeStoryEditor(storyId, guildId, editorId) {
-	const info = changeStoryEditorStatement.run({ editorId, storyId, guildId });
+export function changeStoryOwner(storyId, guildId, ownerId) {
+	const info = changeStoryOwnerStatement.run({ ownerId, storyId, guildId });
 	return info.changes > 0;
 }
 
@@ -369,23 +369,23 @@ export function deleteStory(storyId, guildId) {
 	return info.changes > 0;
 }
 
-export function markIssueAsReported(storyId, editorReportType) {
+export function markIssueAsReported(storyId, ownerReportType) {
 	let info = null;
-	switch (editorReportType) {
-		case EditorReportType.InkError:
+	switch (ownerReportType) {
+		case OwnerReportType.InkError:
 			info = markInkErrorAsReported.run({ storyId });
 			break;
-		case EditorReportType.InkWarning:
+		case OwnerReportType.InkWarning:
 			info = markInkWarningAsReported.run({ storyId });
 			break;
-		case EditorReportType.MaximumChoiceNumberExceeded:
+		case OwnerReportType.MaximumChoiceNumberExceeded:
 			info = markMaximumChoiceNumberExceededAsReported.run({ storyId });
 			break;
-		case EditorReportType.PotentialLoopDetected:
+		case OwnerReportType.PotentialLoopDetected:
 			info = markPotentialLoopDetectedAsReported.run({ storyId });
 			break;
 		default:
-			throw new Error('Unknown editor report type: ' + editorReportType);
+			throw new Error('Unknown owner report type: ' + ownerReportType);
 	}
 	return info?.changes > 0;
 }

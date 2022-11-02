@@ -1,0 +1,1 @@
+ALTER TABLE story RENAME COLUMN editor_id TO owner_id;

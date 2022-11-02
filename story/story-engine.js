@@ -1,7 +1,7 @@
 /**
  * Contains methods dealing with running a story.
  *
- * Does not concern itself with how to send the story state to the user but it does deal with reporting problems in the story to the story editor via DMs.
+ * Does not concern itself with how to send the story state to the user but it does deal with reporting problems in the story to the story owner via DMs.
  */
 
 import inkjs from 'inkjs';
@@ -17,7 +17,7 @@ import {
 	clearCurrentStoryPlay,
 	saveStoryPlayState,
 	resetStoryPlayState,
-	EditorReportType,
+	OwnerReportType,
 	markIssueAsReported,
 	increaseTimeBudgetExceededCounter,
 	getCurrentPlayers
@@ -55,12 +55,12 @@ export const StoryErrorType = Object.freeze({
 const TIME_BUDGET_IN_MS = 300;
 
 /**
- * Number of times that the time budget can be exceeded for a story before a potential loop problem is reported to the editor.
+ * Number of times that the time budget can be exceeded for a story before a potential loop problem is reported to the owner.
  */
 const POTENTIAL_LOOP_THRESHOLD = 10;
 
 /**
- * Maximum number of lines to include in a report to the editor of a story.
+ * Maximum number of lines to include in a report to the owner of a story.
  * These are taken from the end of the last calculated lines.
  */
 const MAX_LAST_LINES_TO_REPORT = 5;
@@ -109,7 +109,7 @@ export async function startStory(userId, storyId, guildId, client, logger) {
 				// Usually this should've been captured when the user tried to upload the file and the file would've been rejected.
 				// But theoretically it could happen when a story was already created, we update the Ink engine and the story file becomes incompatible.
 				const issueDetails = error.message;
-				informStoryEditor(client, storyRecord, EditorReportType.InkError, issueDetails, [], logger);
+				informStoryOwner(client, storyRecord, OwnerReportType.InkError, issueDetails, [], logger);
 			} else {
 				logger.error(error, 'Error while trying to load story %s.', storyId);
 			}
@@ -260,7 +260,7 @@ function storyStep(userId, inkStory, storyRecord, client, logger) {
 	if (hadException || stepData.errors) {
 		if (stepData?.errors?.length) {
 			const issueDetails = stepData.errors.join('\n');
-			informStoryEditor(client, storyRecord, EditorReportType.InkError, issueDetails, stepData.lines, logger);
+			informStoryOwner(client, storyRecord, OwnerReportType.InkError, issueDetails, stepData.lines, logger);
 		}
 
 		try {
@@ -273,19 +273,19 @@ function storyStep(userId, inkStory, storyRecord, client, logger) {
 	}
 
 	if (stepData.warnings.length) {
-		// No need to log these or tell user. Story can continue as normal. Only tell the editor.
+		// No need to log these or tell user. Story can continue as normal. Only tell the owner.
 		const issueDetails = stepData.warnings.join('\n');
-		informStoryEditor(client, storyRecord, EditorReportType.InkWarning, issueDetails, stepData.lines, logger);
+		informStoryOwner(client, storyRecord, OwnerReportType.InkWarning, issueDetails, stepData.lines, logger);
 	}
 
 	if (stepData.choices.length > ACTION_ROW_BUTTON_LIMIT * MESSAGE_ACTION_ROW_LIMIT) {
-		// List the current choices that could be available to the user in the report to the editor
+		// List the current choices that could be available to the user in the report to the owner
 		// to help them identify the problematic part in the story.
 		const issueDetails = stepData.choices.map(choice => choice.text).join('\n');
-		informStoryEditor(
+		informStoryOwner(
 			client,
 			storyRecord,
-			EditorReportType.MaximumChoiceNumberExceeded,
+			OwnerReportType.MaximumChoiceNumberExceeded,
 			issueDetails,
 			stepData.lines,
 			logger
@@ -357,7 +357,7 @@ function detectPotentialLoop(storyRecord, client, lines, logger) {
 		increaseTimeBudgetExceededCounter(storyRecord.id);
 		// Add 1 here because we don't have the updated object from the db.
 		if (storyRecord.timeBudgetExceededCount + 1 > POTENTIAL_LOOP_THRESHOLD) {
-			informStoryEditor(client, storyRecord, EditorReportType.PotentialLoopDetected, '', lines, logger);
+			informStoryOwner(client, storyRecord, OwnerReportType.PotentialLoopDetected, '', lines, logger);
 			return true;
 		}
 	} catch (error) {
@@ -446,7 +446,7 @@ function endStory(userId, logger) {
 		logger.error(error, 'Story state could not be cleared in database for user %s.', userId);
 	}
 	// TODO later: save story as finished. also check which ending we got (how does the story signal that? can we query the current knot? maybe the state of a specific variable?) and store that.
-	//  if the user was the editor if the story or the story was in testing, don't record it as played? depends what I want to do with that information.
+	//  if the user was the owner of the story or the story was in testing, don't record it as played? depends what I want to do with that information.
 }
 
 export function probeStory(storyContent) {
@@ -459,8 +459,8 @@ export function probeStory(storyContent) {
 	return stepData;
 }
 
-function informStoryEditor(client, storyRecord, reportType, issueDetails, lastLines, logger) {
-	informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger).catch(error => {
+function informStoryOwner(client, storyRecord, reportType, issueDetails, lastLines, logger) {
+	informStoryOwnerAsync(client, storyRecord, reportType, issueDetails, lastLines, logger).catch(error => {
 		// If we can't send DMs to this user, we don't want to log that, as it's just a setting on their side, not an error on our side.
 		if (!(error instanceof DiscordAPIError) || error.code !== API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER) {
 			// This should be a fire-and-forget action for the caller
@@ -468,20 +468,20 @@ function informStoryEditor(client, storyRecord, reportType, issueDetails, lastLi
 			// so we just log it and don't throw it further up the chain.
 			logger.error(
 				error,
-				'Error while trying to inform story editor %s about story issues. Story id: %s',
-				storyRecord.editorId,
+				'Error while trying to inform story owner %s about story issues. Story id: %s',
+				storyRecord.ownerId,
 				storyRecord.id
 			);
 		}
 	});
 }
 
-async function informStoryEditorAsync(client, storyRecord, reportType, issueDetails, lastLines, logger) {
+async function informStoryOwnerAsync(client, storyRecord, reportType, issueDetails, lastLines, logger) {
 	if (!storyRecord.hasIssueBeenReported(reportType)) {
 		const guild = await client.guilds.fetch(storyRecord.guildId);
 		// Make sure the bot is still in this guild.
 		if (guild) {
-			const guildMember = await guild.members.fetch(storyRecord.editorId);
+			const guildMember = await guild.members.fetch(storyRecord.ownerId);
 			// Make sure the user is still in the guild.
 			if (guildMember) {
 				// Sadly we don't get access to the member's locale outside of interactions (probably for privacy reasons).
@@ -489,14 +489,14 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				const guildConfig = getGuildConfig(storyRecord.guildId, logger);
 				const locale = guildConfig.language ?? guild.preferredLocale ?? 'en';
 
-				let message = translate('commands.story.editor-report.intro', {
+				let message = translate('commands.story.owner-report.intro', {
 					storyTitle: storyRecord.title,
 					serverName: guild.name,
 					lng: locale
 				});
 				message +=
 					'\n' +
-					translate('commands.story.editor-report.type-' + reportType, {
+					translate('commands.story.owner-report.type-' + reportType, {
 						// This replacement is only relevant for one of the messages.
 						choiceLimit: ACTION_ROW_BUTTON_LIMIT * MESSAGE_ACTION_ROW_LIMIT,
 						lng: locale
@@ -512,7 +512,7 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 				if (lastLines?.length) {
 					message +=
 						'\n' +
-						translate('commands.story.editor-report.last-lines', { lng: locale }) +
+						translate('commands.story.owner-report.last-lines', { lng: locale }) +
 						'\n' +
 						lastLines
 							// Only include the last MAX_LAST_LINES_TO_REPORT lines in the report.
@@ -520,7 +520,7 @@ async function informStoryEditorAsync(client, storyRecord, reportType, issueDeta
 							.map(line => quote(line.text))
 							.join('');
 				}
-				message += '\n' + translate('commands.story.editor-report.no-repeat', { lng: locale });
+				message += '\n' + translate('commands.story.owner-report.no-repeat', { lng: locale });
 
 				// This *might* split up a quoted line but it's probably unlikely enough that it doesn't matter, it just looks a bit ugly/confusing then.
 				const messages = splitTextAtWhitespace(message, EMBED_DESCRIPTION_CHARACTER_LIMIT);

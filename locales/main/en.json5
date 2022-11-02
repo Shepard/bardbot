@@ -177,8 +177,8 @@
 							name: 'ink-file',
 							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
 						},
-						editor: {
-							name: 'editor',
+						owner: {
+							name: 'owner',
 							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
 						}
 					}
@@ -195,8 +195,8 @@
 							name: 'ink-file',
 							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
 						},
-						editor: {
-							name: 'editor',
+						owner: {
+							name: 'owner',
 							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
 						}
 					}
@@ -215,7 +215,7 @@
 			'story-line': '{{title}} (by {{author}}) [{{status}}]',
 			'story-status-Testing': 'Testing',
 			'story-status-Published': 'Published',
-			'show-field-editor': 'Editor',
+			'show-field-owner': 'Owner',
 			'show-field-status': 'Status',
 			'delete-button-label': 'Delete story',
 			'undo-delete-button-label': 'Undo deletion',
@@ -539,7 +539,7 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'story-state-repeat': 'You are playing this story. This is where we left off…',
 				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!"
 			},
-			'editor-report': {
+			'owner-report': {
 				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',
 				'type-InkWarning': 'The Ink engine reported warnings. The story can continue as normal for the user but you might want to look at the warning. Details follow below.',
 				'type-InkError': 'The Ink engine reported errors. The story cannot continue for the user. Details follow below.',

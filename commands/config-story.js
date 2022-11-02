@@ -22,7 +22,7 @@ import {
 	findMatchingStories,
 	changeStoryMetadata,
 	completeStoryMetadata,
-	changeStoryEditor,
+	changeStoryOwner,
 	moveStoryToTesting,
 	publishStory,
 	markStoryForDeletion,
@@ -70,7 +70,7 @@ const configStoryCommand = {
 						required: true
 					},
 					{
-						name: 'editor',
+						name: 'owner',
 						type: ApplicationCommandOptionType.User,
 						required: false
 					}
@@ -93,7 +93,7 @@ const configStoryCommand = {
 						required: false
 					},
 					{
-						name: 'editor',
+						name: 'owner',
 						type: ApplicationCommandOptionType.User,
 						required: false
 					}
@@ -190,12 +190,12 @@ async function handleCreateStory(interaction, t, logger) {
 
 	const storyData = await loadStoryFromParameter(interaction, true, t, logger);
 	if (storyData) {
-		const editor = interaction.options.getUser('editor');
-		// If no editor is supplied or we can't accept the selected user, default to the user who uploaded the story.
-		let editorId = interaction.user.id;
-		// We don't allow picking the bot itself or any other bot (cause we can't DM those) as the editor.
-		if (editor && editor.id !== interaction.client.user.id && !editor.bot) {
-			editorId = editor.id;
+		const owner = interaction.options.getUser('owner');
+		// If no owner is supplied or we can't accept the selected user, default to the user who uploaded the story.
+		let ownerId = interaction.user.id;
+		// We don't allow picking the bot itself or any other bot (cause we can't DM those) as the owner.
+		if (owner && owner.id !== interaction.client.user.id && !owner.bot) {
+			ownerId = owner.id;
 		}
 
 		const initialTitle = storyData.metadata.title;
@@ -210,7 +210,7 @@ async function handleCreateStory(interaction, t, logger) {
 			// The story will be created, prefilled with metadata found in the story file.
 			// Since there might have been none and we need at least a title to make it listable,
 			// the story will be in draft state for now.
-			storyId = await createStory(storyData, editorId, interaction.guildId);
+			storyId = await createStory(storyData, ownerId, interaction.guildId);
 		} catch (error) {
 			logger.error(error, 'Error while trying to add story in guild %s.', interaction.guildId);
 			await errorReply(interaction, t.user('reply.create-story-failure'));
@@ -287,7 +287,7 @@ async function handleCreateStory(interaction, t, logger) {
 	// else we have to assume that the user was already replied to in loadStoryFromParameter.
 }
 
-async function createStory(storyData, editorId, guildId) {
+async function createStory(storyData, ownerId, guildId) {
 	let attempts = 0;
 	const initialTitle = storyData.metadata.title;
 	while (attempts < 10) {
@@ -295,7 +295,7 @@ async function createStory(storyData, editorId, guildId) {
 			// The story will be created, prefilled with metadata found in the story file.
 			// Since there might have been none and we need at least a title to make it listable,
 			// the story will be in draft state for now. The user will have to press a button to edit the metadata before they can publish it.
-			return await addStory(storyData.storyContent, storyData.metadata, editorId, guildId);
+			return await addStory(storyData.storyContent, storyData.metadata, ownerId, guildId);
 		} catch (error) {
 			if (error.code === 'SQLITE_CONSTRAINT_UNIQUE' && storyData.metadata.title) {
 				// The title found in the metadata already existed in the database (for this guild).
@@ -309,7 +309,7 @@ async function createStory(storyData, editorId, guildId) {
 	}
 	// If it hasn't worked with other numbers yet, just ignore the title and create the story without it.
 	storyData.metadata.title = '';
-	return addStory(storyData.storyContent, storyData.metadata, editorId, guildId);
+	return addStory(storyData.storyContent, storyData.metadata, ownerId, guildId);
 }
 
 async function loadStoryFromParameter(interaction, required, t, logger) {
@@ -412,14 +412,14 @@ async function handleEditStory(interaction, t, logger) {
 		}
 	}
 
-	const editor = interaction.options.getUser('editor');
-	if (editor && editor.id !== interaction.client.user.id && !editor.bot) {
-		const editorId = editor.id;
+	const owner = interaction.options.getUser('owner');
+	if (owner && owner.id !== interaction.client.user.id && !owner.bot) {
+		const ownerId = owner.id;
 		try {
-			changeStoryEditor(storyId, interaction.guildId, editorId);
+			changeStoryOwner(storyId, interaction.guildId, ownerId);
 			dataChanged = true;
 		} catch (error) {
-			logger.error(error, 'Error while trying to change editor of story %s.', storyId);
+			logger.error(error, 'Error while trying to change owner of story %s.', storyId);
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
@@ -556,7 +556,7 @@ async function handleShowStories(interaction, t, logger) {
 
 		const storyEmbed = getDefaultStoryEmbed(story);
 		storyEmbed.addFields([
-			{ name: t.user('show-field-editor'), value: userMention(story.editorId), inline: false },
+			{ name: t.user('show-field-owner'), value: userMention(story.ownerId), inline: false },
 			{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
 		]);
 		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];

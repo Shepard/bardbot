@@ -172,8 +172,8 @@
 							name: 'ink-datei',
 							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
 						},
-						editor: {
-							name: 'herausgebende-person',
+						owner: {
+							name: 'verantwortliche-person',
 							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
 						}
 					}
@@ -190,8 +190,8 @@
 							name: 'ink-datei',
 							description: 'Eine Datei, die auf der Ink-Engine laufen kann, im kompilierten JSON-Format.'
 						},
-						editor: {
-							name: 'herausgebende-person',
+						owner: {
+							name: 'verantwortliche-person',
 							description: 'Person, die die Geschichts-Datei erstellt hat und Meldungen über Probleme empfängt. Wenn leer: Du.'
 						}
 					}
@@ -210,7 +210,7 @@
 			'story-line': '{{title}} (von {{author}}) [{{status}}]',
 			'story-status-Testing': 'Im Test',
 			'story-status-Published': 'Veröffentlicht',
-			'show-field-editor': 'Herausgebende Person',
+			'show-field-owner': 'Verantwortliche Person',
 			'show-field-status': 'Status',
 			'delete-button-label': 'Geschichte löschen',
 			'undo-delete-button-label': 'Löschung rückgängig machen',
@@ -531,7 +531,7 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'story-state-repeat': 'Du spielst diese Geschichte. Folgendes ist zuletzt passiert …',
 				'story-outro': "Du hast die Geschichte beendet! Aber vielleicht kann sie noch auf eine andere Weise enden? Versuch's nochmal, um es herauszufinden!"
 			},
-			'editor-report': {
+			'owner-report': {
 				intro: 'Es sind Probleme mit Deiner Geschichte "{{storyTitle}}" im Server "{{serverName}}" aufgetreten:',
 				'type-InkWarning': 'Die Ink-Engine hat Warnungen gemeldet. Die Geschichte kann für die spielende Person normal weiterlaufen, aber Du solltest Dir die Warnung mal anschauen. Details folgen.',
 				'type-InkError': 'Die Ink-Engine hat Fehler gemeldet. Die Geschichte kann für die spielende Person nicht fortgesetzt werden. Details folgen.',
