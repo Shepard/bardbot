@@ -74,8 +74,6 @@ export function validateWebhookName(name) {
  */
 export async function ensureWebhookCorrectness(client, guildId) {
 	try {
-		logger.info('Ensuring webhook correctness for guild %s.', guildId);
-
 		const guild = await client.guilds.fetch({ guild: guildId, withCounts: false });
 		const existingWebhooks = (await guild.fetchWebhooks()).filter(webhook => webhook.owner.id === client.user.id);
 		const rpChannelsData = getRolePlayChannelsData(guildId);
