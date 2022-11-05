@@ -8,7 +8,12 @@ import { loadCommands } from './command-handling/command-registry.js';
 import { initI18n } from './util/i18n.js';
 import logger from './util/logger.js';
 
-async function initApp() {
+process.on('unhandledRejection', err => {
+	logger.error(err, "There is an unhandled promise rejection. Forgot an 'await'?");
+	process.exit(1);
+});
+
+try {
 	await initI18n();
 	await initDatabase();
 	await loadCommands();
@@ -38,11 +43,6 @@ async function initApp() {
 		closeDatabase();
 		schedule.gracefulShutdown().then(() => process.exit(0));
 	});
+} catch (error) {
+	logger.error(error);
 }
-
-process.on('unhandledRejection', err => {
-	logger.error(err, "There is an unhandled promise rejection. Forgot an 'await'?");
-	process.exit(1);
-});
-
-initApp().catch(e => logger.error(e));

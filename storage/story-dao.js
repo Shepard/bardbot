@@ -1,4 +1,3 @@
-import fs from 'fs';
 import fsPromises from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -54,9 +53,7 @@ class StoryRecord {
 }
 
 const storyFilesDir = FILES_DIR + path.sep + 'stories';
-if (!fs.existsSync(storyFilesDir)) {
-	fs.mkdirSync(storyFilesDir);
-}
+await fsPromises.mkdir(storyFilesDir, { recursive: true });
 
 let addStoryStatement = null;
 let getStoryStatement = null;

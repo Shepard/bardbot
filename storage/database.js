@@ -1,6 +1,5 @@
 import Database from 'better-sqlite3';
 import fsPromises from 'fs/promises';
-import fs from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
 import logger from '../util/logger.js';
@@ -9,13 +8,8 @@ const UPGRADES_DIR = './storage/upgrades';
 const UPGRADE_FILE_PATTERN = /^V([1-9]\d*)__.*\.sql$/i;
 
 const dbDir = './db';
-if (!fs.existsSync(dbDir)) {
-	fs.mkdirSync(dbDir);
-}
 export const FILES_DIR = dbDir + path.sep + 'files';
-if (!fs.existsSync(FILES_DIR)) {
-	fs.mkdirSync(FILES_DIR);
-}
+await fsPromises.mkdir(FILES_DIR, { recursive: true });
 
 const db = new Database('db/bard.db');
 
