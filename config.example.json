@@ -1,4 +1,4 @@
 {
-	"clientId": "Client id of your app",
-	"token": "Secret authentication token of your bot"
+	"token": "Secret authentication token of your bot",
+	"backup": false
 }

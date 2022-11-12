@@ -5,13 +5,40 @@ import { ensureWebhookCorrectness } from '../util/webhook-util.js';
 import { cleanupStories } from './story-dao.js';
 import logger from '../util/logger.js';
 import { areGuildCommandsUpdated, updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
+import { backupDatabase } from './database.js';
+import config from '../util/config.js';
 
 export function initMaintenanceJobs(client) {
+	// TODO figure out best order and timing (considering scripts might want to copy the files elsewhere) and combine cleanup jobs.
+	addDatabaseBackupJob();
 	addDeleteObsoleteGuildDataJob();
 	addDeleteOutdatedMessageMetadataJob();
 	addEnsureGuildCommandsUpdatedJob(client);
 	addEnsureWebhookCorrectnessJob(client);
 	addCleanupStoriesJob();
+}
+
+function addDatabaseBackupJob() {
+	if (!config.backup) {
+		return;
+	}
+
+	const rule = new schedule.RecurrenceRule();
+	rule.hour = 5;
+	rule.minute = 0;
+	rule.tz = 'Etc/UTC';
+
+	schedule.scheduleJob(rule, () => {
+		try {
+			backupDatabase()
+				.then(dbFileName => {
+					logger.info('Database backup file %s created.', dbFileName);
+				})
+				.catch(error => logger.error(error, 'Error while trying to run daily backup of database'));
+		} catch (e) {
+			logger.error(e, 'Error while trying to run daily backup of database');
+		}
+	});
 }
 
 function addDeleteObsoleteGuildDataJob() {

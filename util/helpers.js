@@ -23,6 +23,10 @@ function getDaysInMonth(year, month) {
 	return new Date(year, month, 0).getDate();
 }
 
+export function getCurrentDateString() {
+	return new Date().toISOString().substring(0, 10);
+}
+
 export function codePointLength(s) {
 	let i = 0;
 	/* eslint-disable no-unused-vars */

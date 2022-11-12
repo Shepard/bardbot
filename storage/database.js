@@ -3,6 +3,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { EventEmitter } from 'events';
 import logger from '../util/logger.js';
+import { getCurrentDateString } from '../util/helpers.js';
 
 const UPGRADES_DIR = './storage/upgrades';
 const UPGRADE_FILE_PATTERN = /^V([1-9]\d*)__.*\.sql$/i;
@@ -32,8 +33,7 @@ export async function initDatabase() {
 
 	if (upgrades.length && userVersion) {
 		// Make backup of db file before applying upgrades.
-		const dateString = new Date().toISOString().substring(0, 10);
-		await fsPromises.copyFile('./db/bard.db', './db/bard_backup_v' + userVersion + '_' + dateString + '.db');
+		await db.backup('db/bard_backup_v' + userVersion + '_' + getCurrentDateString() + '.db');
 	}
 
 	for (const upgrade of upgrades) {
@@ -68,6 +68,21 @@ async function getUpgrades(startingFromVersion) {
 	).filter(x => x !== null);
 	upgrades.sort((a, b) => a.version - b.version);
 	return upgrades;
+}
+
+export async function backupDatabase() {
+	const fileName = 'bard_backup_' + getCurrentDateString() + '.db';
+	await db.backup('db/' + fileName);
+	// TODO backup files along with db.
+	//  files and db backup need to be put together in a folder or a zip file.
+	//  need to ensure we capture the files in the same state as the db backup by using a lock/mutex.
+	//  this method waits until it can get access to the lock.
+	//  then it acquires it, runs the backup in a try block and releases the lock in a finally block.
+	//  other users of the files directory (like story-dao) need to await access to the lock as well:
+	//  deleting story files only happens with cleanup jobs.
+	//  writing story files happens when adding a story or replacing its file. those would need to wait for the lock.
+	//  need to ensure that future file writers consider the lock as well.
+	return fileName;
 }
 
 export function closeDatabase() {

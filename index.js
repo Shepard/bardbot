@@ -1,5 +1,4 @@
 import process from 'process';
-import fsPromises from 'fs/promises';
 import { Client, GatewayIntentBits } from 'discord.js';
 import schedule from 'node-schedule';
 import { initDatabase, closeDatabase } from './storage/database.js';
@@ -7,6 +6,7 @@ import { getJSFilesInDir } from './util/helpers.js';
 import { loadCommands } from './command-handling/command-registry.js';
 import { initI18n } from './util/i18n.js';
 import logger from './util/logger.js';
+import config from './util/config.js';
 
 process.on('unhandledRejection', err => {
 	logger.error(err, "There is an unhandled promise rejection. Forgot an 'await'?");
@@ -34,8 +34,7 @@ try {
 		}
 	}
 
-	const { token } = JSON.parse(await fsPromises.readFile('./config.json'));
-	await client.login(token);
+	await client.login(config.token);
 
 	// Gracefully shut down when process is requested to terminate.
 	process.on('SIGINT', () => {
