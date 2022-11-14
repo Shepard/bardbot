@@ -8,7 +8,7 @@ const guildCommands = new Map();
 
 export async function loadCommands() {
 	// Find all js files in /commands, import them and collect their exported commands on the client for later use.
-	const commandFiles = await getJSFilesInDir('./commands');
+	const commandFiles = await getJSFilesInDir('./src/commands');
 	for (const file of commandFiles) {
 		const command = (await import(`../commands/${file}`)).default;
 		addCommandTranslations(command);

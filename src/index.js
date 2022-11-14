@@ -24,7 +24,7 @@ try {
 	});
 
 	// Find all js files in /events, import them and register their exported event handlers on the client.
-	const eventFiles = await getJSFilesInDir('./events');
+	const eventFiles = await getJSFilesInDir('./src/events');
 	for (const file of eventFiles) {
 		const event = (await import(`./events/${file}`)).default;
 		if (event.once) {

@@ -5,7 +5,7 @@ import { EventEmitter } from 'events';
 import logger from '../util/logger.js';
 import { getCurrentDateString } from '../util/helpers.js';
 
-const UPGRADES_DIR = './storage/upgrades';
+const UPGRADES_DIR = './upgrades';
 const UPGRADE_FILE_PATTERN = /^V([1-9]\d*)__.*\.sql$/i;
 
 const dbDir = './db';
