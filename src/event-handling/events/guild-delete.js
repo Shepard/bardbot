@@ -1,6 +1,6 @@
-import { setGuildCommandsNotUpdated } from '../command-handling/update-commands.js';
-import { setLeftTimestamp } from '../storage/guild-config-dao.js';
-import logger from '../util/logger.js';
+import { setGuildCommandsNotUpdated } from '../../command-handling/update-commands.js';
+import { setLeftTimestamp } from '../../storage/guild-config-dao.js';
+import logger from '../../util/logger.js';
 
 const guildDeleteEvent = {
 	name: 'guildDelete',

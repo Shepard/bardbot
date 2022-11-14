@@ -1,5 +1,5 @@
 import { ApplicationCommandType, userMention } from 'discord.js';
-import { sendListReply } from '../util/interaction-util.js';
+import { sendListReply } from '../../util/interaction-util.js';
 
 const namesCommand = {
 	// Configuration for registering the command

@@ -1,6 +1,6 @@
 import { ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder, ChannelType } from 'discord.js';
-import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { addMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js';
 
 const gotoCommand = {
 	// Configuration for registering the command

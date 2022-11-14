@@ -1,5 +1,3 @@
-import fsPromises from 'fs/promises';
-
 export function chunk(items, chunkSize) {
 	if (chunkSize === 0) {
 		return [];
@@ -127,10 +125,6 @@ export function splitTextAtWhitespace(text, maxCodePointsPerPart) {
 		result.push(buffer);
 	}
 	return result;
-}
-
-export async function getJSFilesInDir(path) {
-	return (await fsPromises.readdir(path)).filter(file => file.endsWith('.js'));
 }
 
 export async function wait(ms) {

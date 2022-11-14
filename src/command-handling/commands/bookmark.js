@@ -1,7 +1,7 @@
 import { ApplicationCommandType, ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
-import RandomMessageProvider from '../util/random-message-provider.js';
-import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import RandomMessageProvider from '../../util/random-message-provider.js';
+import { addMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js';
 
 export const bookmarkMessages = new RandomMessageProvider()
 	.add((url, channel, t) => t('reply.header1', { url, channel }))

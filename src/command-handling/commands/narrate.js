@@ -1,5 +1,5 @@
 import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
-import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js';
 
 const narrateCommand = {
 	// Configuration for registering the command

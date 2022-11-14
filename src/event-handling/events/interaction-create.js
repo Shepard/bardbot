@@ -1,9 +1,9 @@
 import { ApplicationCommandType } from 'discord.js';
-import { getGuildConfig } from '../storage/guild-config-dao.js';
-import { commands } from '../command-handling/command-registry.js';
-import { getTranslatorForInteraction, translate } from '../util/i18n.js';
-import logger from '../util/logger.js';
-import { errorReply } from '../util/interaction-util.js';
+import { getGuildConfig } from '../../storage/guild-config-dao.js';
+import { commands } from '../../command-handling/command-registry.js';
+import { getTranslatorForInteraction, translate } from '../../util/i18n.js';
+import logger from '../../util/logger.js';
+import { errorReply } from '../../util/interaction-util.js';
 
 const interactionCreateEvent = {
 	name: 'interactionCreate',

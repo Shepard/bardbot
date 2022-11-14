@@ -1,9 +1,9 @@
 import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
-import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { getWebhookIdForRolePlayChannel } from '../storage/guild-config-dao.js';
-import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../storage/alt-dao.js';
-import { AUTOCOMPLETE_CHOICE_LIMIT, MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
-import { errorReply, warningReply } from '../util/interaction-util.js';
+import { addMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { getWebhookIdForRolePlayChannel } from '../../storage/guild-config-dao.js';
+import { findMatchingAlts, getAlt, getNumberOfAlts, UsableByType } from '../../storage/alt-dao.js';
+import { AUTOCOMPLETE_CHOICE_LIMIT, MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js';
+import { errorReply, warningReply } from '../../util/interaction-util.js';
 
 const altCommand = {
 	// Configuration for registering the command

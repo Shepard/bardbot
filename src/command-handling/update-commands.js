@@ -1,5 +1,6 @@
 import { getGuildConfig } from '../storage/guild-config-dao.js';
-import { commands, cacheCommandIds } from './command-registry.js';
+import { commands } from './command-registry.js';
+import { cacheCommandIds } from './command-id-cache.js';
 import logger from '../util/logger.js';
 
 const updatedGuildsCache = new Set();

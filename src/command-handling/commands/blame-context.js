@@ -1,7 +1,7 @@
 import { ApplicationCommandType } from 'discord.js';
-import { getMessageMetadata } from '../storage/message-metadata-dao.js';
-import { warningReply } from '../util/interaction-util.js';
-import RandomMessageProvider from '../util/random-message-provider.js';
+import { getMessageMetadata } from '../../storage/message-metadata-dao.js';
+import { warningReply } from '../../util/interaction-util.js';
+import RandomMessageProvider from '../../util/random-message-provider.js';
 
 export const blameMessages = new RandomMessageProvider()
 	.add((user, t) => t('reply.blame1', { user }))

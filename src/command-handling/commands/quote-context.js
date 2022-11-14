@@ -1,7 +1,7 @@
 import { ApplicationCommandType, EmbedBuilder, quote } from 'discord.js';
-import RandomMessageProvider from '../util/random-message-provider.js';
-import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { warningReply } from '../util/interaction-util.js';
+import RandomMessageProvider from '../../util/random-message-provider.js';
+import { addMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { warningReply } from '../../util/interaction-util.js';
 
 const quoteMessages = new RandomMessageProvider()
 	.add((author, url, t) => t('reply.gossip1', { author, url }))

@@ -1,5 +1,5 @@
 import { ApplicationCommandType, ApplicationCommandOptionType, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
-import { findNewestRPMessageMetadata } from '../storage/message-metadata-dao.js';
+import { findNewestRPMessageMetadata } from '../../storage/message-metadata-dao.js';
 
 // Determines how many messages back the command searches in each channel.
 // It will fetch MESSAGE_BATCH many messages for up to MAX_ITERATIONS times.

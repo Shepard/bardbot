@@ -3,7 +3,7 @@ import Backend from 'i18next-fs-backend';
 import { userMention, channelMention, roleMention, time } from 'discord.js';
 import prettyBytes from 'pretty-bytes';
 import { privateReply } from './interaction-util.js';
-import { commandMention } from '../command-handling/command-registry.js';
+import { commandMention } from '../command-handling/command-id-cache.js';
 
 const INTERNAL_LANGUAGES = Object.freeze(['en', 'en-US', 'en-GB', 'de', 'es-ES']);
 

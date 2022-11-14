@@ -1,7 +1,7 @@
-import { updateCommandsForSingleGuild, areGuildCommandsUpdated } from '../command-handling/update-commands.js';
-import { ensureWebhookCorrectness } from '../util/webhook-util.js';
-import logger from '../util/logger.js';
-import { ensureGuildConfigurationExists, removeLeftTimestamp } from '../storage/guild-config-dao.js';
+import { updateCommandsForSingleGuild, areGuildCommandsUpdated } from '../../command-handling/update-commands.js';
+import { ensureWebhookCorrectness } from '../../util/webhook-util.js';
+import logger from '../../util/logger.js';
+import { ensureGuildConfigurationExists, removeLeftTimestamp } from '../../storage/guild-config-dao.js';
 
 const guildCreateEvent = {
 	name: 'guildCreate',

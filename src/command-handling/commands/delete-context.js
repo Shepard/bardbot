@@ -1,7 +1,7 @@
 import { ApplicationCommandType } from 'discord.js';
-import { getMessageMetadata } from '../storage/message-metadata-dao.js';
-import { errorReply, warningReply } from '../util/interaction-util.js';
-import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
+import { getMessageMetadata } from '../../storage/message-metadata-dao.js';
+import { errorReply, warningReply } from '../../util/interaction-util.js';
+import { getWebhookForMessageIfCreatedByBot } from '../../util/webhook-util.js';
 
 const userMentionPattern = /<@(\d+)>/;
 

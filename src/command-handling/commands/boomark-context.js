@@ -1,7 +1,7 @@
 import { ApplicationCommandType, EmbedBuilder } from 'discord.js';
 import { bookmarkMessages } from './bookmark.js';
-import { addMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { warningReply } from '../util/interaction-util.js';
+import { addMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { warningReply } from '../../util/interaction-util.js';
 
 const bookmarkContextCommand = {
 	// Configuration for registering the command

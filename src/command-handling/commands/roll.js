@@ -1,5 +1,5 @@
 import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js';
-import { warningReply } from '../util/interaction-util.js';
+import { warningReply } from '../../util/interaction-util.js';
 
 // For now this notation is localised for English and German by allowing "d" and "w" as the dice type prefix.
 // More letters can be added for other languages in the future (e.g. "t" for Swedish?).

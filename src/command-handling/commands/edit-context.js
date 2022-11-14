@@ -1,8 +1,8 @@
 import { ApplicationCommandType, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
-import { getMessageMetadata, MessageType } from '../storage/message-metadata-dao.js';
-import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
-import { errorReply, getCustomIdForCommandRouting, warningReply } from '../util/interaction-util.js';
-import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../util/discord-constants.js';
+import { getMessageMetadata, MessageType } from '../../storage/message-metadata-dao.js';
+import { getWebhookForMessageIfCreatedByBot } from '../../util/webhook-util.js';
+import { errorReply, getCustomIdForCommandRouting, warningReply } from '../../util/interaction-util.js';
+import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js';
 
 const editContextCommand = {
 	// Configuration for registering the command

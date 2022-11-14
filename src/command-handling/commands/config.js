@@ -19,17 +19,16 @@ import {
 	removeAllRolePlayChannels,
 	getWebhookIdForRolePlayChannel,
 	getWebhookIdsForRolePlayChannels
-} from '../storage/guild-config-dao.js';
-import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
-import { createWebhook } from '../util/webhook-util.js';
-import { SUPPORTED_LANGUAGES, translate } from '../util/i18n.js';
-import { codePointLength } from '../util/helpers.js';
-import { EMBED_FIELD_VALUE_CHARACTER_LIMIT } from '../util/discord-constants.js';
-import { errorReply, warningReply } from '../util/interaction-util.js';
+} from '../../storage/guild-config-dao.js';
+import { updateCommandsForSingleGuild } from '../update-commands.js';
+import { createWebhook } from '../../util/webhook-util.js';
+import { SUPPORTED_LANGUAGES, translate } from '../../util/i18n.js';
+import { codePointLength } from '../../util/helpers.js';
+import { EMBED_FIELD_VALUE_CHARACTER_LIMIT } from '../../util/discord-constants.js';
+import { errorReply, warningReply } from '../../util/interaction-util.js';
 
 const configCommand = {
-	// Configuration for registering the command
-	configuration: {
+	getConfiguration: () => ({
 		name: 'config',
 		type: ApplicationCommandType.ChatInput,
 		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
@@ -129,7 +128,7 @@ const configCommand = {
 				]
 			}
 		]
-	},
+	}),
 	// Handler for when the command is used
 	async execute(interaction, { t, guildConfig, logger }) {
 		const subcommandGroup = interaction.options.getSubcommandGroup(false);

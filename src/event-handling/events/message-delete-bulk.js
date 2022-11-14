@@ -1,5 +1,5 @@
 import { potentiallyDeleteMessageMetadata } from './message-delete.js';
-import logger from '../util/logger.js';
+import logger from '../../util/logger.js';
 
 const messageDeleteBulkEvent = {
 	name: 'messageDeleteBulk',

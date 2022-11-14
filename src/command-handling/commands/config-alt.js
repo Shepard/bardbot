@@ -6,12 +6,12 @@ import {
 	userMention,
 	roleMention
 } from 'discord.js';
-import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../storage/alt-dao.js';
-import getRandomAvatarUrl from '../util/random-avatar-provider.js';
-import { validateWebhookName } from '../util/webhook-util.js';
+import { UsableByType, addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../../storage/alt-dao.js';
+import getRandomAvatarUrl from '../../util/random-avatar-provider.js';
+import { validateWebhookName } from '../../util/webhook-util.js';
 import { updateCommandsAfterConfigChange } from './config.js';
-import { WEBHOOK_NAME_CHARACTER_LIMIT, AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
-import { errorReply, sendListReply, warningReply } from '../util/interaction-util.js';
+import { WEBHOOK_NAME_CHARACTER_LIMIT, AUTOCOMPLETE_CHOICE_LIMIT } from '../../util/discord-constants.js';
+import { errorReply, sendListReply, warningReply } from '../../util/interaction-util.js';
 
 const configAltCommand = {
 	// Configuration for registering the command

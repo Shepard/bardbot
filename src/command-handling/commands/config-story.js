@@ -29,16 +29,16 @@ import {
 	setStoryStatus,
 	deleteStory,
 	StoryStatus
-} from '../storage/story-dao.js';
+} from '../../storage/story-dao.js';
 import {
 	AUTOCOMPLETE_CHOICE_LIMIT,
 	COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT,
 	SELECT_CHOICE_LIMIT
-} from '../util/discord-constants.js';
-import { getCustomIdForCommandRouting, errorReply, warningReply, disableButtons } from '../util/interaction-util.js';
-import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../story/story-engine.js';
+} from '../../util/discord-constants.js';
+import { getCustomIdForCommandRouting, errorReply, warningReply, disableButtons } from '../../util/interaction-util.js';
+import { probeStory, StoryErrorType, stopStoryPlayAndInformPlayers } from '../../story/story-engine.js';
 import { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
-import { trimText } from '../util/helpers.js';
+import { trimText } from '../../util/helpers.js';
 import { updateCommandsAfterConfigChange } from './config.js';
 
 // To make sure malicious guilds can't fill up the bot's hard drive,

@@ -12,8 +12,8 @@ import {
 	continueStory,
 	restartStory,
 	getCurrentStoryState
-} from '../story/story-engine.js';
-import { sendStoryStepData } from '../story/story-message-sender.js';
+} from '../../story/story-engine.js';
+import { sendStoryStepData } from '../../story/story-message-sender.js';
 import {
 	getStory,
 	getStories,
@@ -21,17 +21,17 @@ import {
 	getNumberOfStories,
 	clearCurrentStoryPlay,
 	StoryStatus
-} from '../storage/story-dao.js';
-import { API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER, AUTOCOMPLETE_CHOICE_LIMIT } from '../util/discord-constants.js';
+} from '../../storage/story-dao.js';
+import { API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER, AUTOCOMPLETE_CHOICE_LIMIT } from '../../util/discord-constants.js';
 import {
 	errorReply,
 	warningReply,
 	markSelectedButton,
 	resetSelectionButtons,
 	getCustomIdForCommandRouting
-} from '../util/interaction-util.js';
-import { getTranslatorForInteraction } from '../util/i18n.js';
-import RandomMessageProvider from '../util/random-message-provider.js';
+} from '../../util/interaction-util.js';
+import { getTranslatorForInteraction } from '../../util/i18n.js';
+import RandomMessageProvider from '../../util/random-message-provider.js';
 
 const postIntroMessages = new RandomMessageProvider()
 	.add(t => t('reply.post-intro1'))

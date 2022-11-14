@@ -1,9 +1,9 @@
 import process from 'process';
-import { updateCommandsForAllGuilds } from '../command-handling/update-commands.js';
-import { initMaintenanceJobs } from '../storage/maintenance-jobs.js';
-import { syncGuilds } from '../storage/guild-config-dao.js';
-import logger from '../util/logger.js';
-import { ensureWebhookCorrectness } from '../util/webhook-util.js';
+import { updateCommandsForAllGuilds } from '../../command-handling/update-commands.js';
+import { initMaintenanceJobs } from '../../storage/maintenance-jobs.js';
+import { syncGuilds } from '../../storage/guild-config-dao.js';
+import logger from '../../util/logger.js';
+import { ensureWebhookCorrectness } from '../../util/webhook-util.js';
 
 const readyEvent = {
 	name: 'ready',

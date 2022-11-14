@@ -1,6 +1,6 @@
-import { deleteMessageMetadata } from '../storage/message-metadata-dao.js';
-import { getWebhookForMessageIfCreatedByBot } from '../util/webhook-util.js';
-import logger from '../util/logger.js';
+import { deleteMessageMetadata } from '../../storage/message-metadata-dao.js';
+import { getWebhookForMessageIfCreatedByBot } from '../../util/webhook-util.js';
+import logger from '../../util/logger.js';
 
 const messageDeleteEvent = {
 	name: 'messageDelete',
