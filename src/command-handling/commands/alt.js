@@ -80,8 +80,8 @@ const altCommand = {
 				// We need to reply to the interaction as well, otherwise it will be shown as pending and eventually failed.
 				// Since we don't really want to show a reply every time an alt message was sent, we send it and immediately delete it again.
 				await interaction.reply({
-					content: t.guild('reply.alt-message-success')
-					// Can't be ephemeral because then it can't be deleted.
+					content: t.guild('reply.alt-message-success'),
+					ephemeral: true
 				});
 				await interaction.deleteReply();
 			} catch (e) {
