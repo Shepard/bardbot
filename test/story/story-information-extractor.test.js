@@ -1,5 +1,9 @@
 import { expect } from 'chai';
-import { parseCharacters, parseDefaultButtonStyle, parseMetadata } from '../../story/story-information-extractor.js';
+import {
+	parseCharacters,
+	parseDefaultButtonStyle,
+	parseMetadata
+} from '../../src/story/story-information-extractor.js';
 
 describe('story-information-extractor', () => {
 	describe('parseCharacters()', () => {

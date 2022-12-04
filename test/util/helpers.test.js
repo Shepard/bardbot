@@ -6,7 +6,7 @@ import {
 	trimText,
 	splitTextAtWhitespace,
 	differenceSet
-} from '../../util/helpers.js';
+} from '../../src/util/helpers.js';
 
 describe('helpers', () => {
 	describe('chunk()', () => {

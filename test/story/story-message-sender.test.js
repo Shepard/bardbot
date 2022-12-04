@@ -1,12 +1,12 @@
 import { expect, assert } from 'chai';
 import { ButtonStyle } from 'discord.js';
 import fsPromises from 'fs/promises';
-import { getMessagesToSend } from '../../story/story-message-sender.js';
+import { getMessagesToSend } from '../../src/story/story-message-sender.js';
 import {
 	ACTION_ROW_BUTTON_LIMIT,
 	BUTTON_LABEL_CHARACTER_LIMIT,
 	MESSAGE_ACTION_ROW_LIMIT
-} from '../../util/discord-constants.js';
+} from '../../src/util/discord-constants.js';
 
 const over2kChars = await fsPromises.readFile('./test/story/over2kchars.txt', 'utf8');
 const over1kChars = over2kChars.substring(0, 1004);
