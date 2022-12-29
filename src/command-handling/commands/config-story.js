@@ -141,7 +141,7 @@ const configStoryCommand = {
 			// Limit to the maximum number of results Discord accepts.
 			result = result.slice(0, Math.min(result.length, AUTOCOMPLETE_CHOICE_LIMIT + 1));
 			const collator = new Intl.Collator(interaction.locale);
-			result = result.sort((a, b) => collator.compare(a?.title, b?.title));
+			result = result.sort((a, b) => collator.compare(a?.name, b?.name));
 			return result;
 		} else {
 			return [];
