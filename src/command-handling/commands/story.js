@@ -400,7 +400,7 @@ async function startStoryWithId(interaction, storyId, guildId, t, logger) {
 							components: [getStateButton(t), getRestartButton(t), getStopButton(t)]
 						}
 					];
-					await errorReply(interaction, t.user('reply.could-not-save-state', components));
+					await errorReply(interaction, t.user('reply.could-not-save-state'), components);
 					return;
 				}
 				case StoryErrorType.TimeBudgetExceeded:
