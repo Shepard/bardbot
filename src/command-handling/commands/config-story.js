@@ -579,7 +579,7 @@ async function handleShowStories(interaction, t, logger) {
 			ephemeral: true
 		});
 	} else {
-		let guildStories = null;
+		let guildStories = [];
 		try {
 			guildStories = getStories(guildId, interaction.user.id, false);
 		} catch (error) {
