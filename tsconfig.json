@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"outDir": "./built",
+		"lib": ["ES2021"],
+		"target": "ES2021",
+		"module": "node16",
+		"moduleResolution": "node16"
+	},
+	"include": ["./src/**/*"]
+}

@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/.",
+    "build": "tsc",
+    "start": "node built/.",
     "lint": "eslint ./",
     "test": "mocha --recursive"
   },
@@ -25,10 +26,14 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.2",
+    "@types/node-schedule": "^2.1.0",
+    "@types/uuid": "^9.0.0",
     "chai": "^4.3.6",
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
     "mocha": "^10.0.0",
-    "prettier": "2.5.0"
+    "prettier": "2.5.0",
+    "typescript": "^4.9.4"
   }
 }

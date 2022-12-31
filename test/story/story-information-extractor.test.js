@@ -3,7 +3,7 @@ import {
 	parseCharacters,
 	parseDefaultButtonStyle,
 	parseMetadata
-} from '../../src/story/story-information-extractor.js';
+} from '../../built/story/story-information-extractor.js';
 
 describe('story-information-extractor', () => {
 	describe('parseCharacters()', () => {

@@ -1,12 +1,12 @@
 import { expect, assert } from 'chai';
 import { ButtonStyle } from 'discord.js';
 import fsPromises from 'fs/promises';
-import { getMessagesToSend } from '../../src/story/story-message-sender.js';
+import { getMessagesToSend } from '../../built/story/story-message-sender.js';
 import {
 	ACTION_ROW_BUTTON_LIMIT,
 	BUTTON_LABEL_CHARACTER_LIMIT,
 	MESSAGE_ACTION_ROW_LIMIT
-} from '../../src/util/discord-constants.js';
+} from '../../built/util/discord-constants.js';
 
 const over2kChars = await fsPromises.readFile('./test/story/over2kchars.txt', 'utf8');
 const over1kChars = over2kChars.substring(0, 1004);
@@ -67,8 +67,10 @@ describe('story-message-sender', () => {
 			const messages = getMessages(stepData);
 			// It should ignore the message created for the line and create a new one (for the full choice text).
 			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
-			expect(messages[1].components[0].components[0].label).to.have.lengthOf.at.most(BUTTON_LABEL_CHARACTER_LIMIT);
-			expect(messages[1].components[0].components[1].label).to.equal('2. ' + stepData.choices[1].text);
+			expect(messages[1].components[0].components[0].toJSON().label).to.have.lengthOf.at.most(
+				BUTTON_LABEL_CHARACTER_LIMIT
+			);
+			expect(messages[1].components[0].components[1].toJSON().label).to.equal('2. ' + stepData.choices[1].text);
 		});
 
 		it('restricts the number of choice buttons', () => {
@@ -124,10 +126,10 @@ describe('story-message-sender', () => {
 			};
 			const messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[0].components[0].components[0].label).to.equal('Pick me!');
-			expect(messages[0].components[0].components[0].style).to.equal(ButtonStyle.Primary);
-			expect(messages[0].components[0].components[1].label).to.equal("Don't pick me!");
-			expect(messages[0].components[0].components[1].style).to.equal(ButtonStyle.Danger);
+			expect(messages[0].components[0].components[0].toJSON().label).to.equal('Pick me!');
+			expect(messages[0].components[0].components[0].toJSON().style).to.equal(ButtonStyle.Primary);
+			expect(messages[0].components[0].components[1].toJSON().label).to.equal("Don't pick me!");
+			expect(messages[0].components[0].components[1].toJSON().style).to.equal(ButtonStyle.Danger);
 		});
 
 		it('combines and splits lines as necessary', () => {
@@ -427,7 +429,7 @@ describe('story-message-sender', () => {
 			expect(messages[0].components).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[1].embeds).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[1].components).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[1].components[0].components[0].custom_id).to.equal(mockStartButtonId);
+			expect(messages[1].components[0].components[0].toJSON().custom_id).to.equal(mockStartButtonId);
 		});
 	});
 });
