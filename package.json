@@ -15,7 +15,7 @@
   "dependencies": {
     "@shepard4711/inkjs": "2.1.1",
     "axios": "^0.27.2",
-    "better-sqlite3": "^7.6.2",
+    "better-sqlite3": "^8.0.1",
     "discord.js": "^14.7.1",
     "i18next": "^22.4.6",
     "i18next-fs-backend": "^2.1.1",
@@ -26,7 +26,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.2",
+    "@types/better-sqlite3": "^7.6.3",
     "@types/node-schedule": "^2.1.0",
     "@types/uuid": "^9.0.0",
     "chai": "^4.3.6",
