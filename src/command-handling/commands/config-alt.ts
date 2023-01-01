@@ -191,7 +191,7 @@ async function handleAddAlt(interaction: ChatInputCommandInteraction, t: Context
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 async function handleEditAlt(interaction: ChatInputCommandInteraction, t: ContextTranslatorFunctions, logger: Logger) {
@@ -249,7 +249,7 @@ async function handleEditAlt(interaction: ChatInputCommandInteraction, t: Contex
 		ephemeral: true
 	});
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 async function handleDeleteAlt(
@@ -266,7 +266,7 @@ async function handleDeleteAlt(
 			logger.info('An alt with the name "%s" was deleted in guild %s.', name, guildId);
 			await t.privateReply(interaction, 'reply.delete-success', { name });
 
-			await updateCommandsAfterConfigChange(interaction, t, logger);
+			await updateCommandsAfterConfigChange(interaction, logger);
 		} else {
 			await warningReply(interaction, t.userShared('no-alt-with-name', { altName: name }));
 		}

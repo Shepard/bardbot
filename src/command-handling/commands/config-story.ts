@@ -309,7 +309,7 @@ async function handleCreateStory(
 		}
 
 		if (inTesting) {
-			await updateCommandsAfterConfigChange(interaction, t, logger);
+			await updateCommandsAfterConfigChange(interaction, logger);
 		}
 	}
 	// else we have to assume that the user was already replied to in loadStoryFromParameter.
@@ -537,7 +537,7 @@ async function handleDeleteStory(
 			await t.privateReply(interaction, 'reply.delete-success');
 		}
 
-		await updateCommandsAfterConfigChange(interaction, t, logger);
+		await updateCommandsAfterConfigChange(interaction, logger);
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}
@@ -570,7 +570,7 @@ async function handleUndoDeleteStory(
 	if (found) {
 		await disableButtons(interaction);
 		await t.privateReply(interaction, 'reply.undo-delete-success');
-		await updateCommandsAfterConfigChange(interaction, t, logger);
+		await updateCommandsAfterConfigChange(interaction, logger);
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}
@@ -875,12 +875,10 @@ async function handleMetadataDialogSubmit(
 						components: buttons
 					}
 				]
-				// : test
-				//ephemeral: true
 			});
 		}
 
-		await updateCommandsAfterConfigChange(interaction, t, logger);
+		await updateCommandsAfterConfigChange(interaction, logger);
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}
@@ -906,7 +904,7 @@ async function handlePublishStory(
 		await disableButtons(interaction);
 		await postStory(storyId, true, interaction, guildConfig, logger);
 
-		await updateCommandsAfterConfigChange(interaction, t, logger);
+		await updateCommandsAfterConfigChange(interaction, logger);
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}

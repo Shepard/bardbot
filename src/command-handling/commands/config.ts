@@ -275,7 +275,7 @@ async function setConfiguration(
 
 	await t.privateReply(interaction, 'reply.set-success');
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 async function resetConfiguration(
@@ -329,7 +329,7 @@ async function resetConfiguration(
 
 	await t.privateReply(interaction, 'reply.reset-success');
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 async function handleAddRolePlayChannelInteraction(
@@ -359,7 +359,7 @@ async function handleAddRolePlayChannelInteraction(
 
 	await t.privateReply(interaction, 'reply.add-success');
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 async function handleRemoveRolePlayChannelInteraction(
@@ -400,7 +400,7 @@ async function handleRemoveRolePlayChannelInteraction(
 
 	await t.privateReply(interaction, 'reply.remove-success');
 
-	await updateCommandsAfterConfigChange(interaction, t, logger);
+	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
 function getChannel(interaction: ChatInputCommandInteraction): TextChannel | null {
@@ -455,12 +455,7 @@ function getLanguageChoices() {
 	);
 }
 
-export async function updateCommandsAfterConfigChange(
-	interaction: BaseInteraction,
-	// TODO typings: This is unused.
-	t: ContextTranslatorFunctions,
-	logger: Logger
-) {
+export async function updateCommandsAfterConfigChange(interaction: BaseInteraction, logger: Logger) {
 	try {
 		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
 	} catch (e) {
