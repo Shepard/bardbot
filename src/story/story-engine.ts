@@ -4,8 +4,8 @@
  * Does not concern itself with how to send the story state to the user but it does deal with reporting problems in the story to the story owner via DMs.
  */
 
-import { Story } from 'inkjs/engine/Story.js';
-import { ErrorType } from 'inkjs/engine/Error.js';
+import { Story } from '@shepard4711/inkjs/engine/Story.js';
+import { ErrorType } from '@shepard4711/inkjs/engine/Error.js';
 import { ButtonStyle, Client, ComponentType, DiscordAPIError, EmbedBuilder, Guild, quote } from 'discord.js';
 import { Logger } from 'pino';
 import { FullGuildConfiguration, OwnerReportType, StoryRecord } from '../storage/record-types.js';

@@ -13,12 +13,12 @@
   "author": "Simon Reinhardt",
   "license": "MIT",
   "dependencies": {
+    "@shepard4711/inkjs": "2.1.1",
     "axios": "^0.27.2",
     "better-sqlite3": "^7.6.2",
     "discord.js": "^14.7.1",
     "i18next": "^22.4.6",
     "i18next-fs-backend": "^2.1.1",
-    "inkjs": "Shepard/inkjs#robust",
     "node-schedule": "^2.1.0",
     "pino": "^7.6.4",
     "pino-pretty": "^7.5.0",

@@ -8,7 +8,7 @@ import {
 	MessageCreateOptions,
 	ButtonBuilder
 } from 'discord.js';
-import { Choice } from 'inkjs/engine/Choice.js';
+import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
 import { ChoiceButtonStyle, EnhancedStepData, StoryCharacter, StoryLine } from './story-types.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../util/interaction-types.js';
 import { codePointLength, trimText, chunk, splitTextAtWhitespace, wait } from '../util/helpers.js';

@@ -1,5 +1,5 @@
 import { HexColorString } from 'discord.js';
-import { Story } from 'inkjs/engine/Story.js';
+import { Story } from '@shepard4711/inkjs/engine/Story.js';
 import { StoryMetadata, StoryCharacter, ChoiceButtonStyle } from './story-types.js';
 
 /**

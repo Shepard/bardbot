@@ -1,6 +1,6 @@
 // TODO typings: revisit this. I want the type definitions. might have to adjust inkjs ts support.
-import { Story } from 'inkjs/engine/Story.js';
-import { Choice } from 'inkjs/engine/Choice.js';
+import { Story } from '@shepard4711/inkjs/engine/Story.js';
+import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
 import { HexColorString } from 'discord.js';
 import { StoryRecord } from '../storage/record-types.js';
 
