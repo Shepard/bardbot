@@ -18,9 +18,9 @@ import { updateCommandsAfterConfigChange } from './config.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT, AUTOCOMPLETE_CHOICE_LIMIT } from '../../util/discord-constants.js';
 import { errorReply, sendListReply, warningReply } from '../../util/interaction-util.js';
 
-const configAltCommand: CommandModule<ChatInputCommandInteraction> = {
+const manageAltsCommand: CommandModule<ChatInputCommandInteraction> = {
 	configuration: {
-		name: 'config-alt',
+		name: 'manage-alts',
 		description: '',
 		type: ApplicationCommandType.ChatInput,
 		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
@@ -172,7 +172,7 @@ async function handleAddAlt(interaction: ChatInputCommandInteraction, t: Context
 		logger.info('An alt with the id %d and the name "%s" was created in guild %s.', id, name, guildId);
 	} catch (e) {
 		if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-			await warningReply(interaction, t.user('reply.alt-exists', { name, command: '/config-alt edit', guildId }));
+			await warningReply(interaction, t.user('reply.alt-exists', { name, command: '/manage-alts edit', guildId }));
 		} else {
 			logger.error(e, 'Error while trying to create alt in db');
 			await errorReply(interaction, t.user('reply.add-failure'));
@@ -355,4 +355,4 @@ async function getPatchedAlt(alt: Alt, interaction: ChatInputCommandInteraction,
 	return patchedAlt;
 }
 
-export default configAltCommand;
+export default manageAltsCommand;

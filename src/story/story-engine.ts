@@ -621,7 +621,7 @@ async function informPlayerAboutStoppedStoryPlay(
 			embeds: [
 				new EmbedBuilder()
 					.setDescription(
-						translate('commands.config-story.story-updated-and-stopped-notification', {
+						translate('commands.manage-stories.story-updated-and-stopped-notification', {
 							storyTitle: storyRecord.title,
 							serverName: guild.name,
 							lng: locale
@@ -636,7 +636,7 @@ async function informPlayerAboutStoppedStoryPlay(
 						{
 							type: ComponentType.Button,
 							style: ButtonStyle.Success,
-							label: translate('commands.config-story.restart-button-label', {
+							label: translate('commands.manage-stories.restart-button-label', {
 								lng: locale
 							}),
 							custom_id: getStartStoryButtonId(storyRecord.id, guild.id)

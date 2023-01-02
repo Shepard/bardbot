@@ -7,12 +7,12 @@ import blameContextCommand from './commands/blame-context.js';
 import bookmarkCommand from './commands/bookmark.js';
 import bookmarkContextCommand from './commands/boomark-context.js';
 import cointossCommand from './commands/coin.js';
-import configAltCommand from './commands/config-alt.js';
-import configStoryCommand from './commands/config-story.js';
 import configCommand from './commands/config.js';
 import deleteContextCommand from './commands/delete-context.js';
 import editContextCommand from './commands/edit-context.js';
 import gotoCommand from './commands/goto.js';
+import manageAltsCommand from './commands/manage-alts.js';
+import manageStoriesCommand from './commands/manage-stories.js';
 import namesCommand from './commands/names.js';
 import narrateCommand from './commands/narrate.js';
 import quoteContextCommand from './commands/quote-context.js';
@@ -26,12 +26,12 @@ const commandModules: CommandModule[] = [
 	bookmarkCommand,
 	bookmarkContextCommand,
 	cointossCommand,
-	configAltCommand,
-	configStoryCommand,
 	configCommand,
 	deleteContextCommand,
 	editContextCommand,
 	gotoCommand,
+	manageAltsCommand,
+	manageStoriesCommand,
 	namesCommand,
 	narrateCommand,
 	quoteContextCommand,

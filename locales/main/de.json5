@@ -82,9 +82,9 @@
 			tails: 'Zahl',
 			reply: '{{member}} wirft eine Münze. Sie landet auf… {{result}}!'
 		},
-		'config-alt': {
-			name: 'konfig-alt',
-			description: 'Konfiguriere einen alternativen Charakter.',
+		'manage-alts': {
+			name: 'verwalte-alts',
+			description: 'Verwalte alternative Charaktere.',
 			options: {
 				add: {
 					name: 'hinzufügen',
@@ -160,8 +160,8 @@
 				'show-alts': 'Die folgenden alternativen Charaktere gibt es aktuell. Verwende diesen Befehl mit dem Parameter `name`, um Details über einen bestimmten alternativen Charakter angezeigt zu bekommen.'
 			}
 		},
-		'config-story': {
-			name: 'konfig-geschichte',
+		'manage-stories': {
+			name: 'verwalte-geschichten',
 			description: 'Verwalte interaktive Geschichten auf diesem Server.',
 			options: {
 				create: {

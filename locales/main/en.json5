@@ -87,9 +87,9 @@
 			tails: 'tails',
 			reply: '{{member}} tosses a coin. It lands on… {{result}}!'
 		},
-		'config-alt': {
-			name: 'config-alt',
-			description: 'Configure an alternate character.',
+		'manage-alts': {
+			name: 'manage-alts',
+			description: 'Manage alternate characters.',
 			options: {
 				add: {
 					name: 'add',
@@ -165,8 +165,8 @@
 				'show-alts': 'The following alternate characters currently exist. Use this command with the parameter `name` to find out details about a particular alternate character.'
 			}
 		},
-		'config-story': {
-			name: 'config-story',
+		'manage-stories': {
+			name: 'manage-stories',
 			description: 'Manage interactive stories on this server.',
 			options: {
 				create: {

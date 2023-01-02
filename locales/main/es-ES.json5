@@ -52,7 +52,7 @@
 			tails: 'cruz',
 			reply: '{{member}} lanza una moneda. Aterriza en… {{result}}!'
 		},
-		'config-alt': {
+		'manage-alts': {
 			'field-usable-by': 'Puede ser utilizado por',
 			reply: {
 				'alt-exists': 'Un personaje alternativo con el nombre "{{name}}" ya existe. Si desea ajustarlo, utilice el comando {{command, commandmention}}.',

@@ -69,9 +69,9 @@ const MAX_AUTHOR_LENGTH = 100;
 // Something that will easily fit into a message.
 const MAX_TEASER_LENGTH = 1000;
 
-const configStoryCommand: CommandModule<ChatInputCommandInteraction> = {
+const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 	configuration: {
-		name: 'config-story',
+		name: 'manage-stories',
 		description: '',
 		type: ApplicationCommandType.ChatInput,
 		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
@@ -264,7 +264,7 @@ async function handleCreateStory(
 				t.user('reply.story-test-created') +
 				'\n' +
 				t.user('reply.story-possible-actions-in-testing', {
-					command: '/config-story show',
+					command: '/manage-stories show',
 					guildId: interaction.guildId
 				});
 			const buttons = [
@@ -739,7 +739,7 @@ function getConfigStoryButton(
 }
 
 function getConfigStoryComponentId(innerCustomId: string) {
-	return getCustomIdForCommandRouting(configStoryCommand, innerCustomId);
+	return getCustomIdForCommandRouting(manageStoriesCommand, innerCustomId);
 }
 
 async function handleTriggerEditMetadataDialog(
@@ -769,7 +769,7 @@ async function showMetadataDialog(
 	interaction: MessageComponentInteraction,
 	t: ContextTranslatorFunctions
 ) {
-	const dialogId = getCustomIdForCommandRouting(configStoryCommand, 'metadata ' + storyRecord.id);
+	const dialogId = getCustomIdForCommandRouting(manageStoriesCommand, 'metadata ' + storyRecord.id);
 	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('metadata-dialog-title'));
 
 	const titleField = new TextInputBuilder()
@@ -859,7 +859,7 @@ async function handleMetadataDialogSubmit(
 			content +=
 				'\n' +
 				t.user('reply.story-possible-actions-in-testing', {
-					command: '/config-story show',
+					command: '/manage-stories show',
 					guildId: interaction.guildId
 				});
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
@@ -913,4 +913,4 @@ async function handlePublishStory(
 	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
 }
 
-export default configStoryCommand;
+export default manageStoriesCommand;
