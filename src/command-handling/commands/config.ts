@@ -192,13 +192,13 @@ async function showConfiguration(
 
 	const bookmarksChannelValue = guildConfig.bookmarksChannelId
 		? channelMention(guildConfig.bookmarksChannelId)
-		: italic(t.user('show-value-none'));
+		: italic(t.user('show-value-no-channel'));
 	const quotesChannelValue = guildConfig.quotesChannelId
 		? channelMention(guildConfig.quotesChannelId)
-		: italic(t.user('show-value-none'));
+		: italic(t.user('show-value-no-channel'));
 	const languageValue = guildConfig.language
 		? translate('languageName', { lng: guildConfig.language })
-		: italic(t.user('show-value-none'));
+		: italic(t.user('show-value-no-language'));
 
 	const rolePlayChannelsList = getChannelsList(guildConfig.rolePlayChannelIds);
 	const rolePlayChannelsListFitsInField = codePointLength(rolePlayChannelsList) <= EMBED_FIELD_VALUE_CHARACTER_LIMIT;

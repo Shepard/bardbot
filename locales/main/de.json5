@@ -332,7 +332,8 @@
 			'show-field-quotes-channel': 'Zitate-Kanal',
 			'show-field-role-play-channels': 'Rollenspiel-Kanäle',
 			'show-field-language': 'Sprache',
-			'show-value-none': 'keiner',
+			'show-value-no-channel': 'keiner',
+			'show-value-no-language': 'keine',
 			reply: {
 				'missing-option': 'Bitte gib eine Einstellung an, die Du setzen möchtest.',
 				'set-failure': 'Ändern der Konfiguration fehlgeschlagen.',

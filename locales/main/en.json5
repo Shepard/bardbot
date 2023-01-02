@@ -337,7 +337,8 @@
 			'show-field-quotes-channel': 'Quotes channel',
 			'show-field-role-play-channels': 'Role-play channels',
 			'show-field-language': 'Language',
-			'show-value-none': 'none',
+			'show-value-no-channel': 'none',
+			'show-value-no-language': 'none',
 			reply: {
 				'missing-option': 'Please specify an option to set.',
 				'set-failure': 'Changing configuration failed.',

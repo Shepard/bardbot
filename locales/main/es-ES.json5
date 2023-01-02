@@ -73,7 +73,8 @@
 			'show-field-quotes-channel': 'Canal de citas',
 			'show-field-role-play-channels': 'Canales de juego de roles',
 			'show-field-language': 'Idioma',
-			'show-value-none': 'ninguno',
+			'show-value-no-channel': 'ninguno',
+			'show-value-no-language': 'ninguno',
 			reply: {
 				'missing-option': 'Especifique una opción para configurar.',
 				'set-failure': 'Error al cambiar la configuración.',
