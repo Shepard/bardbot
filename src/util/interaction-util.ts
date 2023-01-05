@@ -237,10 +237,13 @@ function isGuildMember(member: GuildMember | APIInteractionGuildMember): member 
 	return (member as GuildMember).fetch !== undefined;
 }
 
-export function getMemberDisplayName(interaction) {
+export function getMemberDisplayName(interaction: ChatInputCommandInteraction) {
 	const member = getMember(interaction);
-	// Could do fancy fallbacks and translation but the member should usually be there so it's not worth it.
-	return member ? member.displayName : 'unknown';
+	if (member) {
+		return member.displayName;
+	} else {
+		return interaction.user.username;
+	}
 }
 
 export function isStringSelectMenuInteraction(

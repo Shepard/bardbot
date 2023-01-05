@@ -79,7 +79,9 @@ export function getTranslatorForInteraction(
 	guildConfig: GuildConfiguration
 ): ContextTranslatorFunctions {
 	const userLocale = interaction.locale ?? 'en';
-	const guildLocale = (guildConfig as FullGuildConfiguration).language ?? interaction.guildLocale ?? 'en';
+	const guildLocale = interaction.inGuild()
+		? (guildConfig as FullGuildConfiguration).language ?? interaction.guildLocale ?? 'en'
+		: userLocale;
 	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? command.configuration.name);
 	const sharedPrefix = 'shared';
 	const t = {
