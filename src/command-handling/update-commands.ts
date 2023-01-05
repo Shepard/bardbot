@@ -1,11 +1,27 @@
-import { Client, Guild, Snowflake, ApplicationCommandData } from 'discord.js';
+import { Client, Guild, Snowflake } from 'discord.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import { commands } from './command-registry.js';
-import { cacheCommandIds } from './command-id-cache.js';
+import { cacheGuildCommandIds, cacheGlobalCommandIds } from './command-id-cache.js';
 import { isGuardedCommand } from './command-module-types.js';
 import logger from '../util/logger.js';
 
 const updatedGuildsCache = new Set<string>();
+
+export async function updateGlobalCommands(client: Client) {
+	try {
+		logger.info('Updating global commands.');
+
+		const globalCommandConfigurations = commands
+			.filter(command => !isGuardedCommand(command))
+			.map(command => command.configuration);
+		const remoteCommands = await client.application.commands.set(globalCommandConfigurations);
+		cacheGlobalCommandIds(remoteCommands);
+
+		logger.info('Global commands updated.');
+	} catch (e) {
+		logger.error('Error while trying to update global commands:', e);
+	}
+}
 
 export async function updateCommandsForAllGuilds(client: Client) {
 	logger.info('Updating commands for all guilds.');
@@ -27,16 +43,11 @@ export async function updateCommandsForSingleGuild(client: Client, guild: Guild)
 	try {
 		const guildConfig = getGuildConfig(guild.id, logger);
 
-		const guildCommands: ApplicationCommandData[] = [];
-		commands.each(command => {
-			// If the command has a check (a 'guard') then perform that first before adding that command's configuration.
-			if (!isGuardedCommand(command) || command.guard(client, guild, guildConfig, logger)) {
-				guildCommands.push(command.configuration);
-			}
-		});
-
-		const remoteCommands = await guild.commands.set(guildCommands);
-		cacheCommandIds(guild.id, remoteCommands);
+		const guildCommandConfigurations = commands
+			.filter(command => isGuardedCommand(command) && command.guard(client, guild, guildConfig, logger))
+			.map(command => command.configuration);
+		const remoteCommands = await guild.commands.set(guildCommandConfigurations);
+		cacheGuildCommandIds(guild.id, remoteCommands);
 
 		updatedGuildsCache.add(guild.id);
 	} catch (error) {

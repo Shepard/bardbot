@@ -21,7 +21,8 @@ import { MESSAGE_CONTENT_CHARACTER_LIMIT } from '../../util/discord-constants.js
 const editContextCommand: CommandModule<MessageContextMenuCommandInteraction> = {
 	configuration: {
 		name: 'Edit',
-		type: ApplicationCommandType.Message
+		type: ApplicationCommandType.Message,
+		dmPermission: false
 	},
 	i18nKeyPrefix: 'edit-context',
 	async execute(interaction, { t, logger }) {

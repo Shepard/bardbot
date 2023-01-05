@@ -47,6 +47,7 @@ const configCommand: CommandModule<ChatInputCommandInteraction> = {
 		description: '',
 		type: ApplicationCommandType.ChatInput,
 		defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
+		dmPermission: false,
 		options: [
 			{
 				name: 'show',

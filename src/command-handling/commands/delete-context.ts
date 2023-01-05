@@ -11,7 +11,8 @@ const userMentionPattern = /<@(\d+)>/;
 const deleteContextCommand: CommandModule<MessageContextMenuCommandInteraction> = {
 	configuration: {
 		name: 'Delete',
-		type: ApplicationCommandType.Message
+		type: ApplicationCommandType.Message,
+		dmPermission: false
 	},
 	i18nKeyPrefix: 'delete-context',
 	async execute(interaction, { t, logger }) {

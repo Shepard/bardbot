@@ -1,21 +1,51 @@
 import { Snowflake, Collection, ApplicationCommand } from 'discord.js';
+import {
+	loadGlobalCommandIds,
+	loadGuildCommandIds,
+	persistGlobalCommandIds,
+	persistGuildCommandIds
+} from '../storage/command-id-dao.js';
 
-const guildCommands = new Map();
+let globalCommands = new Map<string, string>();
+let guildCommands = new Map<string, Map<string, string>>();
 
-export function cacheCommandIds(guildId: Snowflake, applicationCommands: Collection<Snowflake, ApplicationCommand>) {
-	const commandIds = new Map();
+export function loadPersistedCommandIds() {
+	globalCommands = loadGlobalCommandIds();
+	guildCommands = loadGuildCommandIds();
+}
+
+export function cacheGuildCommandIds(
+	guildId: Snowflake,
+	applicationCommands: Collection<Snowflake, ApplicationCommand>
+) {
+	const commandIds = new Map<string, string>();
 	applicationCommands.each(command => {
 		commandIds.set(command.name, command.id);
 	});
 	guildCommands.set(guildId, commandIds);
+
+	persistGuildCommandIds(guildId, commandIds);
+}
+
+export function cacheGlobalCommandIds(applicationCommands: Collection<Snowflake, ApplicationCommand>) {
+	globalCommands = new Map<string, string>();
+	applicationCommands.each(command => {
+		globalCommands.set(command.name, command.id);
+	});
+
+	persistGlobalCommandIds(globalCommands);
 }
 
 function getCommandId(commandName: string, guildId: Snowflake) {
-	const commandIds = guildCommands.get(guildId);
-	if (commandIds) {
-		const commandId = commandIds.get(commandName);
-		if (commandId) {
-			return commandId;
+	const globalCommandId = globalCommands.get(commandName);
+	if (globalCommandId) {
+		return globalCommandId;
+	}
+	const guildCommandIds = guildCommands.get(guildId);
+	if (guildCommandIds) {
+		const guildCommandId = guildCommandIds.get(commandName);
+		if (guildCommandId) {
+			return guildCommandId;
 		}
 	}
 	return null;
@@ -29,12 +59,10 @@ export function commandMention(slashCommand: string, guildId: Snowflake) {
 	const rootCommandName = commandParts[0].substring(1);
 
 	if (rootCommandName) {
-		if (guildId && rootCommandName) {
-			const commandId = getCommandId(rootCommandName, guildId);
-			if (commandId) {
-				// This command exists, so we can create a mention for it.
-				return '<' + slashCommand + ':' + commandId + '>';
-			}
+		const commandId = getCommandId(rootCommandName, guildId);
+		if (commandId) {
+			// This command exists, so we can create a mention for it.
+			return '<' + slashCommand + ':' + commandId + '>';
 		}
 	}
 

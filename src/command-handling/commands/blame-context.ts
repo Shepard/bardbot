@@ -16,7 +16,8 @@ export const blameMessages = new RandomMessageProvider()
 const blameContextCommand: CommandModule<MessageContextMenuCommandInteraction> = {
 	configuration: {
 		name: 'Who dunnit?',
-		type: ApplicationCommandType.Message
+		type: ApplicationCommandType.Message,
+		dmPermission: false
 	},
 	i18nKeyPrefix: 'blame-context',
 	async execute(interaction, { t, logger }) {

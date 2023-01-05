@@ -16,6 +16,7 @@ const gotoCommand: CommandModule<ChatInputCommandInteraction> = {
 		name: 'goto',
 		description: '',
 		type: ApplicationCommandType.ChatInput,
+		dmPermission: false,
 		options: [
 			{
 				name: 'destination',

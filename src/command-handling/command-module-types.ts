@@ -87,7 +87,6 @@ export interface CommandModule<I extends CommandInteraction = CommandInteraction
 }
 
 export interface GuildCommandModule<I extends CommandInteraction = CommandInteraction> extends CommandModule<I> {
-	// TODO typings: this means only commands with guards will be guild commands.
 	/**
 	 * Test function to check if the command should apply to a guild
 	 */

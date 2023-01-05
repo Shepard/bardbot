@@ -6,7 +6,8 @@ const namesCommand: CommandModule<ChatInputCommandInteraction> = {
 	configuration: {
 		name: 'names',
 		description: '',
-		type: ApplicationCommandType.ChatInput
+		type: ApplicationCommandType.ChatInput,
+		dmPermission: false
 	},
 	async execute(interaction, { t }) {
 		// Defer reply for now so we get more time to reply in case fetching the member list takes an unusual amount of time.

@@ -1,7 +1,7 @@
 import { Client } from 'discord.js';
 import process from 'process';
 import { ClientEventHandler } from '../event-handler-types.js';
-import { updateCommandsForAllGuilds } from '../../command-handling/update-commands.js';
+import { updateCommandsForAllGuilds, updateGlobalCommands } from '../../command-handling/update-commands.js';
 import { initMaintenanceJobs } from '../../storage/maintenance-jobs.js';
 import { syncGuilds } from '../../storage/guild-config-dao.js';
 import logger from '../../util/logger.js';
@@ -35,12 +35,14 @@ async function handleReady(client: Client) {
 			})
 		);
 
-		// TODO later: and update commands for activatedGuildIds returned by this call when we don't do that for all anymore.
+		// TODO: and update commands for activatedGuildIds returned by this call when we don't do that for all anymore.
 	} catch (error) {
 		logger.error(error, 'Could not synchronise guilds on startup.');
 	}
 
-	// Only update the commands when the client is ready so we know the guilds cache in the client is filled.
+	// TODO only when requested. otherwise: loadPersistedCommandIds();
+	await updateGlobalCommands(client);
+	// Only update the guild commands when the client is ready so we know the guilds cache in the client is filled.
 	await updateCommandsForAllGuilds(client);
 
 	initMaintenanceJobs(client);
