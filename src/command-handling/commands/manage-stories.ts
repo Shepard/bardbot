@@ -404,7 +404,7 @@ async function loadStoryFromParameter(
 }
 
 function isJsonFile(contentType: string) {
-	return contentType === 'application/json' || contentType.startsWith('application/json;');
+	return contentType && (contentType === 'application/json' || contentType.startsWith('application/json;'));
 }
 
 async function handleEditStory(
