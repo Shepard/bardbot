@@ -20,3 +20,12 @@ A Discord bot for supporting role-playing servers.
 - Copy the `config.example.json` file and rename the copy to `config.json`.
 - In that file, replace the text `Client id of your app` with the client id of your application. This is the "Application Id" on the "General Information" page of the application you created.
 - Replace the text `Secret authentication token of your bot` with the token of your bot. You can find this token on the "Bot" page of the application you created. Don't give this token to anyone!
+
+### Upgrading
+
+To get the latest version of the code and deploy it:
+
+- Stop the bot if it's running.
+- Run `git pull`.
+- Run `npm run upgrade`.
+- Start the bot again.
