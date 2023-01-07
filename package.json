@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "deploy": "node built/deploy-global-commands.js & node built/deploy-guild-commands.js",
     "start": "node built/.",
     "lint": "eslint ./",
     "test": "mocha --recursive"

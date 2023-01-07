@@ -1,4 +1,4 @@
-import { Snowflake, Collection, ApplicationCommand } from 'discord.js';
+import { Snowflake, Collection } from 'discord.js';
 import {
 	loadGlobalCommandIds,
 	loadGuildCommandIds,
@@ -14,23 +14,20 @@ export function loadPersistedCommandIds() {
 	guildCommands = loadGuildCommandIds();
 }
 
-export function cacheGuildCommandIds(
-	guildId: Snowflake,
-	applicationCommands: Collection<Snowflake, ApplicationCommand>
-) {
+export function cacheGuildCommandIds(guildId: Snowflake, applicationCommands: Collection<Snowflake, string>) {
 	const commandIds = new Map<string, string>();
-	applicationCommands.each(command => {
-		commandIds.set(command.name, command.id);
+	applicationCommands.each((commandName, commandId) => {
+		commandIds.set(commandName, commandId);
 	});
 	guildCommands.set(guildId, commandIds);
 
 	persistGuildCommandIds(guildId, commandIds);
 }
 
-export function cacheGlobalCommandIds(applicationCommands: Collection<Snowflake, ApplicationCommand>) {
+export function cacheGlobalCommandIds(applicationCommands: Collection<Snowflake, string>) {
 	globalCommands = new Map<string, string>();
-	applicationCommands.each(command => {
-		globalCommands.set(command.name, command.id);
+	applicationCommands.each((commandName, commandId) => {
+		globalCommands.set(commandName, commandId);
 	});
 
 	persistGlobalCommandIds(globalCommands);

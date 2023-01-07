@@ -29,11 +29,15 @@ const quoteContextCommand: GuildCommandModule<MessageContextMenuCommandInteracti
 		type: ApplicationCommandType.Message
 	},
 	i18nKeyPrefix: 'quote-context',
-	guard(client, guild, guildConfig) {
+	guard(guildConfig, logger, client) {
 		if (hasQuotesChannel(guildConfig)) {
-			const quotesChannel = client.channels.cache.get(guildConfig.quotesChannelId);
-			if (quotesChannel) {
+			if (!client) {
 				return true;
+			} else {
+				const quotesChannel = client.channels.cache.get(guildConfig.quotesChannelId);
+				if (quotesChannel) {
+					return true;
+				}
 			}
 		}
 		return false;

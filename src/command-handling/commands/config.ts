@@ -458,7 +458,7 @@ function getLanguageChoices() {
 
 export async function updateCommandsAfterConfigChange(interaction: BaseInteraction, logger: Logger) {
 	try {
-		await updateCommandsForSingleGuild(interaction.client, interaction.guild);
+		await updateCommandsForSingleGuild(interaction.guild);
 	} catch (e) {
 		logger.error(
 			e,

@@ -20,11 +20,15 @@ const bookmarkContextCommand: GuildCommandModule<MessageContextMenuCommandIntera
 	// However for the purpose of translating the name of this context command (which should translate differently than the slash command)
 	// we want to use a different prefix, so we provide this special override.
 	commandNameKeyPrefixOverride: 'bookmark-context',
-	guard(client, guild, guildConfig) {
+	guard(guildConfig, logger, client) {
 		if (hasBookmarksChannel(guildConfig)) {
-			const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannelId);
-			if (bookmarksChannel) {
+			if (!client) {
 				return true;
+			} else {
+				const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannelId);
+				if (bookmarksChannel) {
+					return true;
+				}
 			}
 		}
 		return false;

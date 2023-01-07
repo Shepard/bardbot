@@ -103,8 +103,8 @@ const storyCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			}
 		]
 	},
-	guard(client, guild, guildConfig, logger) {
-		return getNumberOfStories(guild.id, logger) > 0;
+	guard(guildConfig, logger) {
+		return getNumberOfStories(guildConfig.id, logger) > 0;
 	},
 	async execute(interaction, { t, logger }) {
 		const subcommand = interaction.options.getSubcommand(false);

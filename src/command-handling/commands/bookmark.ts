@@ -35,11 +35,15 @@ const bookmarkCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			}
 		]
 	},
-	guard(client, guild, guildConfig) {
+	guard(guildConfig, logger, client) {
 		if (hasBookmarksChannel(guildConfig)) {
-			const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannelId);
-			if (bookmarksChannel) {
+			if (!client) {
 				return true;
+			} else {
+				const bookmarksChannel = client.channels.cache.get(guildConfig.bookmarksChannelId);
+				if (bookmarksChannel) {
+					return true;
+				}
 			}
 		}
 		return false;

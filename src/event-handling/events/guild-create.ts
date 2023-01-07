@@ -1,6 +1,6 @@
 import { Guild } from 'discord.js';
 import { ClientEventHandler } from '../event-handler-types.js';
-import { updateCommandsForSingleGuild, areGuildCommandsUpdated } from '../../command-handling/update-commands.js';
+import { updateCommandsForSingleGuild } from '../../command-handling/update-commands.js';
 import { ensureWebhookCorrectness } from '../../util/webhook-util.js';
 import logger from '../../util/logger.js';
 import { ensureGuildConfigurationExists, removeLeftTimestamp } from '../../storage/guild-config-dao.js';
@@ -26,9 +26,10 @@ async function handleGuildCreate(guild: Guild) {
 					guild.client.guilds.cache.size
 				);
 
-				// When the bot gets removed from a guild and rejoins it, all webhooks in Discord should be deleted.
+				// When the bot gets removed from a guild and rejoins it, all webhooks and commands in Discord should be deleted.
 				// So for this case we need to make sure they get recreated.
 				await ensureWebhookCorrectness(guild.client, guild.id);
+				await updateCommandsForSingleGuild(guild);
 			}
 		}
 	} catch (error) {
@@ -37,11 +38,6 @@ async function handleGuildCreate(guild: Guild) {
 			'Error while trying to ensure configuration for guild %s exists after receving guild create event.',
 			guild.id
 		);
-	}
-
-	if (!areGuildCommandsUpdated(guild.id)) {
-		logger.info('Updating commands for guild %s after receiving guild create event.', guild.id);
-		await updateCommandsForSingleGuild(guild.client, guild);
 	}
 }
 

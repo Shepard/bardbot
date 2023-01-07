@@ -30,7 +30,7 @@ async function handleInteraction(interaction: BaseInteraction) {
 				const context = getExecutionContext(interaction, command);
 				if (!isGuardedCommand(command)) {
 					await executeCommand(command, interaction, context);
-				} else if (command.guard(interaction.client, interaction.guild, context.guildConfig, context.logger)) {
+				} else if (command.guard(context.guildConfig, context.logger, interaction.client)) {
 					await executeCommand(command, interaction, context);
 				} else {
 					context.logger.error('Command was called in guild that it should not apply to.');

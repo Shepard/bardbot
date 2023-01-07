@@ -109,7 +109,7 @@ function addEnsureGuildCommandsUpdatedJob(client: Client) {
 				.map(guildId => client.guilds.cache.get(guildId))
 				.filter(guild => !!guild)
 				.map(guild => {
-					return updateCommandsForSingleGuild(client, guild).catch(e => {
+					return updateCommandsForSingleGuild(guild).catch(e => {
 						logger.error(e, 'Error while trying to update commands for guild %s', guild.id);
 					});
 				})

@@ -35,7 +35,7 @@ const whereCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			}
 		]
 	},
-	guard(client, guild, guildConfig) {
+	guard(guildConfig) {
 		return (guildConfig as FullGuildConfiguration)?.rolePlayChannelIds?.length > 0;
 	},
 	async execute(interaction, { t, guildConfig, logger }) {

@@ -88,9 +88,12 @@ export interface CommandModule<I extends CommandInteraction = CommandInteraction
 
 export interface GuildCommandModule<I extends CommandInteraction = CommandInteraction> extends CommandModule<I> {
 	/**
-	 * Test function to check if the command should apply to a guild
+	 * Test function to check if the command should apply to a guild. This gets called both when updating commands,
+	 * to see if this command should apply to a certain guild, and when receiving a command interaction,
+	 * to check if this command should be executed then.
+	 * The client parameter will only be present when receiving a command interaction.
 	 */
-	guard: (client: Client, guild: Guild, guildConfig: GuildConfiguration, logger: Logger) => boolean;
+	guard: (guildConfig: GuildConfiguration, logger: Logger, client?: Client) => boolean;
 }
 
 export function isGuardedCommand<I extends CommandInteraction>(

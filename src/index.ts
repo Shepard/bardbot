@@ -7,6 +7,7 @@ import { loadCommands } from './command-handling/command-registry.js';
 import registerEventHandlers from './event-handling/event-registry.js';
 import logger from './util/logger.js';
 import config from './util/config.js';
+import { loadPersistedCommandIds } from './command-handling/command-id-cache.js';
 
 process.on('unhandledRejection', err => {
 	logger.error(err, "There is an unhandled promise rejection. Forgot an 'await'?");
@@ -17,6 +18,7 @@ try {
 	await initI18n();
 	await initDatabase();
 	loadCommands();
+	loadPersistedCommandIds();
 
 	const client = new Client({
 		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],

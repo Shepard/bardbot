@@ -36,8 +36,10 @@ const altCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			}
 		]
 	},
-	guard(client, guild, guildConfig, logger) {
-		return (guildConfig as FullGuildConfiguration)?.rolePlayChannelIds?.length && getNumberOfAlts(guild.id, logger) > 0;
+	guard(guildConfig, logger) {
+		return (
+			(guildConfig as FullGuildConfiguration)?.rolePlayChannelIds?.length && getNumberOfAlts(guildConfig.id, logger) > 0
+		);
 	},
 	async execute(interaction, { t, logger }) {
 		const altName = interaction.options.getString('name');
