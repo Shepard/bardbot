@@ -776,11 +776,14 @@ async function showMetadataDialog(
 	const titleField = new TextInputBuilder()
 		.setCustomId('metadata-dialog-title-field')
 		.setLabel(t.user('metadata-dialog-title-field-label'))
-		.setValue(storyRecord.title)
 		.setStyle(TextInputStyle.Short)
 		.setRequired(true)
 		.setMinLength(1)
 		.setMaxLength(MAX_TITLE_LENGTH);
+	if (storyRecord.title) {
+		// If we set an empty value, Discord will complain that it's under the min length.
+		titleField.setValue(storyRecord.title);
+	}
 
 	const authorField = new TextInputBuilder()
 		.setCustomId('metadata-dialog-author-field')
