@@ -20,10 +20,9 @@ export function transformCommandConfigurations(commands: ApplicationCommandData[
 }
 
 function transformCommandConfiguration(command: ApplicationCommandData) {
-	const default_member_permissions =
-		command.defaultMemberPermissions !== null
-			? new PermissionsBitField(command.defaultMemberPermissions).bitfield.toString()
-			: null;
+	const default_member_permissions = !!command.defaultMemberPermissions
+		? new PermissionsBitField(command.defaultMemberPermissions).bitfield.toString()
+		: null;
 
 	return {
 		name: command.name,
