@@ -155,6 +155,10 @@ export async function addStory(
 	// If this fails, we don't need to execute the rest.
 	ensureGuildConfigurationExists(guildId);
 
+	if (title === '') {
+		title = null;
+	}
+
 	let id: string;
 	let inserted = false;
 	let attempts = 0;
@@ -274,14 +278,8 @@ export async function loadStoryContent(storyId: string) {
 	return await fsPromises.readFile(getStoryFilePath(storyId), 'utf-8');
 }
 
-export function changeStoryMetadata(
-	storyId: string,
-	guildId: string,
-	// TODO typings: caller wants to leave out the title so StoryMetadata type is deactivated for now.
-	// there might be a bug with empty titles and the unique constraint of the table.
-	{ title = '', author = '', teaser = '' } //: StoryMetadata
-) {
-	const info = changeStoryMetadataStatement.run({ title, author, teaser, storyId, guildId });
+export function changeStoryMetadata(storyId: string, guildId: string, { author = '', teaser = '' }) {
+	const info = changeStoryMetadataStatement.run({ title: null, author, teaser, storyId, guildId });
 	return info.changes > 0;
 }
 
