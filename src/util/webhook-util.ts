@@ -8,6 +8,7 @@ import {
 } from '../storage/guild-config-dao.js';
 import logger from './logger.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
+import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 
 export async function createWebhook(channel: TextChannel, client: Client, logger: Logger) {
 	try {
@@ -153,7 +154,7 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 			} catch (e) {
 				if (e instanceof DiscordAPIError && (e.message === 'Unknown Channel' || e.status === 404)) {
 					// The server doesn't know this channel anymore so we can clean it up from the database.
-					removeNonExistingRolePlayChannel(guild.id, rpChannelId);
+					await removeNonExistingRolePlayChannel(guild, rpChannelId);
 				} else {
 					logger.error(
 						e,
@@ -186,15 +187,22 @@ async function ensureRolePlayChannelHasCorrectWebhook(
 	return createdCounter;
 }
 
-function removeNonExistingRolePlayChannel(guildId: string, rpChannelId: string) {
+async function removeNonExistingRolePlayChannel(guild: Guild, rpChannelId: string) {
 	try {
-		removeRolePlayChannel(guildId, rpChannelId);
+		removeRolePlayChannel(guild.id, rpChannelId);
 		logger.info(
 			'Detected non-existing role-play channel %s in guild %s while trying to ensure webhook correctness. Removed channel from database.',
 			rpChannelId,
-			guildId
+			guild.id
 		);
+
+		// Since this is a configuration change, we have to update the guild commands as well - some commands are guarded by the existence of RP channels.
+		try {
+			await updateCommandsForSingleGuild(guild);
+		} catch (e) {
+			logger.error(e, 'Error while trying to update commands for guild %s after removing role-play channel', guild.id);
+		}
 	} catch (e) {
-		logger.error(e, 'Database error while trying to remove role-play channel for guild %s', guildId);
+		logger.error(e, 'Database error while trying to remove role-play channel for guild %s', guild.id);
 	}
 }

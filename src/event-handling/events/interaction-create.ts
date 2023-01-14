@@ -34,6 +34,7 @@ async function handleInteraction(interaction: BaseInteraction) {
 					await executeCommand(command, interaction, context);
 				} else {
 					context.logger.error('Command was called in guild that it should not apply to.');
+					await commandExecutionErrorReply(interaction, context);
 				}
 			} else if (interaction.isAutocomplete() && command.configuration.type === ApplicationCommandType.ChatInput) {
 				// We probably don't need to guard the autocomplete.
