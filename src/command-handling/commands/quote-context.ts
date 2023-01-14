@@ -83,7 +83,7 @@ const quoteContextCommand: GuildCommandModule<MessageContextMenuCommandInteracti
 };
 
 function hasQuotesChannel(guildConfig: GuildConfiguration): guildConfig is FullGuildConfiguration {
-	return (guildConfig as FullGuildConfiguration)?.quotesChannelId !== undefined;
+	return !!(guildConfig as FullGuildConfiguration).quotesChannelId;
 }
 
 export default quoteContextCommand;

@@ -82,7 +82,7 @@ const bookmarkCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 };
 
 export function hasBookmarksChannel(guildConfig: GuildConfiguration): guildConfig is FullGuildConfiguration {
-	return (guildConfig as FullGuildConfiguration)?.bookmarksChannelId !== undefined;
+	return !!(guildConfig as FullGuildConfiguration).bookmarksChannelId;
 }
 
 export default bookmarkCommand;
