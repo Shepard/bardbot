@@ -413,6 +413,10 @@
 					name: 'story',
 					description: 'The story I should tell'
 				}
+			},
+			reply: {
+				'dialog-title': 'Input narration',
+				'story-text-field-label': 'Story text'
 			}
 		},
 		'quote-context': {

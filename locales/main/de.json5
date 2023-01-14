@@ -406,6 +406,10 @@
 					name: 'geschichte',
 					description: 'Die Geschichte, die ich erzählen soll'
 				}
+			},
+			reply: {
+				'dialog-title': 'Erzählung eingeben',
+				'story-text-field-label': 'Text der Geschichte'
 			}
 		},
 		'quote-context': {
