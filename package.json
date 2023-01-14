@@ -21,7 +21,7 @@
     "discord.js": "^14.7.1",
     "i18next": "^22.4.6",
     "i18next-fs-backend": "^2.1.1",
-    "node-schedule": "^2.1.0",
+    "node-schedule": "^2.1.1",
     "pino": "^7.6.4",
     "pino-pretty": "^7.5.0",
     "pretty-bytes": "^6.0.0",
