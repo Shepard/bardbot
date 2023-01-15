@@ -10,7 +10,7 @@ import {
 import { Logger } from 'pino';
 import { CommandModule } from '../command-module-types.js';
 import { ContextTranslatorFunctions } from '../../util/interaction-types.js';
-import { Alt, UsableByType } from '../../storage/record-types.js';
+import { Alt, GuildConfiguration, isFullGuildConfiguration, UsableByType } from '../../storage/record-types.js';
 import { addAlt, findMatchingAlts, getAlt, getAlts, editAlt, deleteAlt } from '../../storage/alt-dao.js';
 import getRandomAvatarUrl from '../../util/random-avatar-provider.js';
 import { validateWebhookName } from '../../util/webhook-util.js';
@@ -117,10 +117,10 @@ const manageAltsCommand: CommandModule<ChatInputCommandInteraction> = {
 			}
 		]
 	},
-	async execute(interaction, { t, logger }) {
+	async execute(interaction, { guildConfig, t, logger }) {
 		const subcommand = interaction.options.getSubcommand(false);
 		if (subcommand === 'add') {
-			await handleAddAlt(interaction, t, logger);
+			await handleAddAlt(interaction, guildConfig, t, logger);
 		} else if (subcommand === 'edit') {
 			await handleEditAlt(interaction, t, logger);
 		} else if (subcommand === 'delete') {
@@ -148,7 +148,12 @@ const manageAltsCommand: CommandModule<ChatInputCommandInteraction> = {
 	}
 };
 
-async function handleAddAlt(interaction: ChatInputCommandInteraction, t: ContextTranslatorFunctions, logger: Logger) {
+async function handleAddAlt(
+	interaction: ChatInputCommandInteraction,
+	guildConfig: GuildConfiguration,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
 	const guildId = interaction.guildId;
 
 	const name = interaction.options.getString('name', true).trim();
@@ -191,6 +196,13 @@ async function handleAddAlt(interaction: ChatInputCommandInteraction, t: Context
 		embeds: [altEmbed],
 		ephemeral: true
 	});
+
+	if (isFullGuildConfiguration(guildConfig) && guildConfig.rolePlayChannelIds.length === 0) {
+		await interaction.followUp({
+			content: t.user('reply.no-rp-channels-hint', { command: '/config add role-play-channel' }),
+			ephemeral: true
+		});
+	}
 
 	await updateCommandsAfterConfigChange(interaction, logger);
 }
