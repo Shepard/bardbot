@@ -223,6 +223,7 @@
 			'edit-metadata-button-label': 'Edit metadata',
 			'playtest-button-label': 'Playtest story',
 			'publish-button-label': 'Publish story',
+			'post-button-label': 'Post story publicly',
 			'metadata-dialog-title': 'Edit story metadata',
 			'metadata-dialog-title-field-label': 'Title',
 			'metadata-dialog-author-field-label': 'Author',

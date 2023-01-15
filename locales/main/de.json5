@@ -218,6 +218,7 @@
 			'edit-metadata-button-label': 'Metadaten bearbeiten',
 			'playtest-button-label': 'Testdurchlauf',
 			'publish-button-label': 'Geschichte veröffentlichen',
+			'post-button-label': 'Geschichte öffentlich posten',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
 			'metadata-dialog-title-field-label': 'Titel',
 			'metadata-dialog-author-field-label': 'Verfassende Person',

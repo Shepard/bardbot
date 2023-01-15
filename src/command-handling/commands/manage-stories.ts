@@ -195,6 +195,9 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
 			await handlePublishStory(interaction, storyId, t, guildConfig, logger);
+		} else if (innerCustomId.startsWith('post ')) {
+			const storyId = innerCustomId.substring('post '.length);
+			await handlePostStory(interaction, storyId, guildConfig, logger);
 		} else if (innerCustomId.startsWith('show')) {
 			await handleShowStories(interaction, t, logger);
 		} else {
@@ -619,6 +622,7 @@ async function handleShowStories(
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishButton(t, storyId));
 		} else if (story.status === StoryStatus.Published) {
+			buttons.push(getPostButton(t, storyId));
 			// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 		}
 		buttons.push(getDeleteButton(t, storyId));
@@ -703,6 +707,10 @@ function getDeleteButton(t: ContextTranslatorFunctions, storyId: string) {
 
 function getPublishButton(t: ContextTranslatorFunctions, storyId: string) {
 	return getTranslatedConfigStoryButton(t, 'publish-button-label', 'publish ' + storyId, ButtonStyle.Success);
+}
+
+function getPostButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(t, 'post-button-label', 'post ' + storyId, ButtonStyle.Secondary);
 }
 
 function getPlaytestButton(t: ContextTranslatorFunctions, storyId: string, guildId: string) {
@@ -915,6 +923,15 @@ async function handlePublishStory(
 
 	// TODO later: via config commands you can publish a story for everyone or selectively or you can set unlock triggers
 	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
+}
+
+async function handlePostStory(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	guildConfig: GuildConfiguration,
+	logger: Logger
+) {
+	await postStory(storyId, true, interaction, guildConfig, logger);
 }
 
 export default manageStoriesCommand;
