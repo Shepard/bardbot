@@ -393,13 +393,6 @@
 				'destination-message': 'Nach [den Ereignissen]({{url}}) in {{channel, channelmention}}…'
 			}
 		},
-		names: {
-			name: 'namen',
-			description: 'Bewahre die aktuellen Server-Nicknamen aller Mitglieder in Erinnerung!',
-			reply: {
-				title: 'Wenn wir zurückschauen, hatten die Mitglieder von {{guildName}} die folgenden Namen:'
-			}
-		},
 		narrate: {
 			name: 'erzählen',
 			description: 'Lässt mich erzählen was Du eingibst.',

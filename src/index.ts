@@ -21,7 +21,7 @@ try {
 	loadPersistedCommandIds();
 
 	const client = new Client({
-		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],
+		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 		presence: { activities: [{ name: 'your stories', type: 0 }] }
 	});
 

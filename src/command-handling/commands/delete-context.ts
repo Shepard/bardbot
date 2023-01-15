@@ -24,20 +24,14 @@ const deleteContextCommand: CommandModule<MessageContextMenuCommandInteraction> 
 
 				const commandName = message.interaction?.commandName;
 				if (
-					(commandName === 'bookmark' ||
-						commandName === 'names' ||
-						commandName === 'goto' ||
-						commandName === 'narrate') &&
+					(commandName === 'bookmark' || commandName === 'goto' || commandName === 'narrate') &&
 					message.interaction?.user.id === interaction.user.id
 				) {
 					// This was the bot's reply to a command interaction
 					// and it was used by the current user so we allow it to be deleted.
 					await deleteMessage(message, interaction, t, logger);
 					return;
-				} else if (message.embeds?.length && message.embeds[0].description && commandName !== 'names') {
-					// We're excluding interaction replies to /names here so that the last line of the embed description
-					// of that is not checked for mentions (because it can contain an arbitrary user).
-
+				} else if (message.embeds?.length && message.embeds[0].description) {
 					// TODO Remove most of this after the metadata-based approach has been deployed for a while.
 					//  Not sure yet if the metadata should also contain the quoted user.
 
@@ -84,8 +78,6 @@ const deleteContextCommand: CommandModule<MessageContextMenuCommandInteraction> 
 				t.user('reply.not-deletable4', { command: '/goto', guildId: interaction.guildId }) +
 				'\n' +
 				t.user('reply.not-deletable5', { command: '/narrate', guildId: interaction.guildId }) +
-				'\n' +
-				t.user('reply.not-deletable5', { command: '/names', guildId: interaction.guildId }) +
 				'\n' +
 				t.user('reply.not-deletable6')
 		);

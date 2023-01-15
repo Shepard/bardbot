@@ -400,13 +400,6 @@
 				'destination-message': 'Following [the events]({{url}}) from {{channel, channelmention}}…'
 			}
 		},
-		names: {
-			name: 'names',
-			description: 'Keep a memory of all the fun nicknames that everyone currently has!',
-			reply: {
-				title: 'When we turn back the pages, the members of {{guildName}} had the following names:'
-			}
-		},
 		narrate: {
 			name: 'narrate',
 			description: 'Makes me narrate what you input.',

@@ -105,13 +105,7 @@ export function getCustomIdForCommandRouting(command: CommandModule, innerId: st
 	return '/' + command.configuration.name + '#' + innerId;
 }
 
-export async function sendListReply(
-	interaction: ReplyableInteraction,
-	listItems: string[],
-	title: string,
-	suppressMentions: boolean,
-	ephemeral: boolean
-) {
+export async function sendListReply(interaction: ReplyableInteraction, listItems: string[], title: string) {
 	let messageText = '';
 	const messageTexts = [];
 	listItems.forEach(listItem => {
@@ -139,15 +133,13 @@ export async function sendListReply(
 	const embedChunks = chunk(embeds, EMBEDS_PER_MESSAGE_LIMIT);
 
 	const messages = embedChunks.map(embedChunk => {
-		const message: InteractionReplyOptions = { embeds: embedChunk };
-		if (suppressMentions) {
-			message.allowedMentions = {
+		const message: InteractionReplyOptions = {
+			embeds: embedChunk,
+			allowedMentions: {
 				parse: []
-			};
-		}
-		if (ephemeral) {
-			message.ephemeral = ephemeral;
-		}
+			},
+			ephemeral: true
+		};
 		return message;
 	});
 

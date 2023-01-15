@@ -13,7 +13,6 @@ import editContextCommand from './commands/edit-context.js';
 import gotoCommand from './commands/goto.js';
 import manageAltsCommand from './commands/manage-alts.js';
 import manageStoriesCommand from './commands/manage-stories.js';
-import namesCommand from './commands/names.js';
 import narrateCommand from './commands/narrate.js';
 import quoteContextCommand from './commands/quote-context.js';
 import rollCommand from './commands/roll.js';
@@ -32,7 +31,6 @@ const commandModules: CommandModule[] = [
 	gotoCommand,
 	manageAltsCommand,
 	manageStoriesCommand,
-	namesCommand,
 	narrateCommand,
 	quoteContextCommand,
 	rollCommand,

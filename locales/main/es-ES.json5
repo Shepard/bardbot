@@ -107,11 +107,6 @@
 				'destination-message': 'Siguiendo [los eventos]({{url}}) de {{channel, channelmention}}…'
 			}
 		},
-		names: {
-			reply: {
-				title: 'Cuando damos la vuelta a las páginas, los miembros de {{guildName}} tenía los siguientes nombres:'
-			}
-		},
 		'quote-context': {
 			reply: {
 				gossip1: '¿Escuchaste lo que {{author, usermention}} [acaba de decir]({{url}})?',
