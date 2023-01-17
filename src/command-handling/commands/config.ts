@@ -345,9 +345,15 @@ async function handleAddRolePlayChannelInteraction(
 		return;
 	}
 
-	// TODO check if it's already an RP channel
-
 	try {
+		// Check if it's already an RP channel.
+		const webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, channel.id);
+		if (webhookId) {
+			// Just tell the user it went fine even though we didn't need to do anything.
+			await t.privateReply(interaction, 'reply.add-success');
+			return;
+		}
+
 		const webhook = await createWebhook(channel, interaction.client, logger);
 		if (webhook) {
 			addRolePlayChannel(interaction.guildId, channel.id, webhook.id);
