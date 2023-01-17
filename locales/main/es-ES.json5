@@ -6,6 +6,12 @@
 	shared: {
 		'alt-db-fetch-error': 'Ocurrió un error al intentar encontrar el personaje alternativo en la base de datos. Por favor, inténtelo de nuevo más tarde.',
 		'no-alt-with-name': 'No hay ningún personaje alternativo junto al nombre "{{altName}}".',
+		// New, please translate!
+		'story-db-fetch-error': 'An error occurred while trying to find the story in the database. Please try again later.',
+		'story-not-found': 'I could not find this story.',
+		'show-stories-failure': 'An error occurred while trying to find the stories of this server in the database. Please try again later.',
+		'show-story-details-select-label': 'Show details about a story',
+		//
 		'webhook-validation-error': {
 			'name-length': 'El nombre debe tener entre 1 y 80 caracteres.',
 			clyde: "La palabra 'clyde' está reservada por Discord y no puede aparecer en ninguna parte del nombre, en cualquier capitalización."
@@ -13,7 +19,24 @@
 		'unknown-command': 'Comando desconocido'
 	},
 	commands: {
+		// New sections in every command: name, description, options
+		// These have some restrictions!
+		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_". Accents are allowed.
+		// Descriptions: 1-100 characters
+		// Choices: 1-100 characters
 		alt: {
+			name: 'alt',
+			description: 'Write messages through an alternate character.',
+			options: {
+				name: {
+					name: 'name',
+					description: 'The name of the alt you want to pick'
+				},
+				message: {
+					name: 'message',
+					description: 'The message the alternate character should send'
+				}
+			},
 			reply: {
 				'alt-not-usable': 'El personaje alternativo "{{altName}}"no puede ser utilizado para el juego de roles por usted.',
 				'channel-not-viewable': 'Este no es un lugar que pueda ver, desafortunadamente. Así que no puedes usar personajes alternativos aquí.',
@@ -23,6 +46,8 @@
 			}
 		},
 		'blame-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Who dunnit?',
 			reply: {
 				blame1: '{{user, usermention}} me dijo que lo hiciera!',
 				blame2: '{{user, usermention}} me hizo hacerlo!',
@@ -35,6 +60,14 @@
 			}
 		},
 		bookmark: {
+			name: 'bookmark',
+			description: 'Creates a bookmark to identify a new chapter in the lore for easy referencing.',
+			options: {
+				event: {
+					name: 'event',
+					description: 'Description of the event starting the chapter'
+				}
+			},
 			reply: {
 				header1: 'Un [nuevo capítulo]({{url}}) fue escrito en {{channel, channelmention}}.',
 				header2: 'Algo [nuevo acaba de pasar]({{url}}) en {{channel, channelmention}}!',
@@ -47,17 +80,89 @@
 				'no-bookmarkable-content': 'Este mensaje no tiene ningún contenido que se pueda marcar.'
 			}
 		},
+		'bookmark-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Bookmark'
+		},
 		coin: {
+			name: 'coin',
+			description: 'Toss a coin and see which side it lands on.',
 			heads: 'cara',
 			tails: 'cruz',
 			reply: '{{member}} lanza una moneda. Aterriza en… {{result}}!'
 		},
 		'manage-alts': {
+			name: 'manage-alts',
+			description: 'Configure an alternate character.',
+			options: {
+				add: {
+					name: 'add',
+					description: 'Add a new alternate character.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the alternate character to create. Needs to be unique.'
+						},
+						'usable-by': {
+							name: 'usable-by',
+							description: 'A user or role who is allowed to use this alternate character.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'A URL pointing to an image file to be used as the avatar of the alternate character.'
+						}
+					}
+				},
+				edit: {
+					name: 'edit',
+					description: 'Change some properties of an alternate character.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the existing alternate character to edit.'
+						},
+						'new-name': {
+							name: 'new-name',
+							description: 'A new name for the alternate character. Needs to be unique.'
+						},
+						'usable-by': {
+							name: 'usable-by',
+							description: 'A user or role who is allowed to use this alternate character.'
+						},
+						'avatar-url': {
+							name: 'avatar-url',
+							description: 'A URL pointing to an image file to be used as the avatar of the alternate character.'
+						}
+					}
+				},
+				delete: {
+					name: 'delete',
+					description: 'Delete an alternate character. It will not be usable anymore but old messages stay.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of the existing alternate character to delete.'
+						}
+					}
+				},
+				show: {
+					name: 'show',
+					description: 'List currently configured alternate characters.',
+					options: {
+						name: {
+							name: 'name',
+							description: 'The name of an alternate character to show. If left out, lists all characters.'
+						}
+					}
+				}
+			},
 			'field-usable-by': 'Puede ser utilizado por',
 			reply: {
 				'alt-exists': 'Un personaje alternativo con el nombre "{{name}}" ya existe. Si desea ajustarlo, utilice el comando {{command, commandmention}}.',
 				'add-failure': 'No se pudo agregar el personaje alternativo.',
 				'add-success': 'El nuevo personaje alternativo se creó con éxito.',
+				// New reply!
+				'no-rp-channels-hint': "Alternate characters can only be used in role-play channels (or threads inside of them). You haven't determined any yet. With {{command, commandmention}} you can add role-play channels. Once you have done that, the command `/alt` will become available.",
 				'edit-failure': 'Error al actualizar el personaje alternativo.',
 				'edit-success': 'El personaje alternativo se actualizó con éxito.',
 				'delete-failure': 'No se pudo eliminar el personaje alternativo por el nombre "{{name}}".',
@@ -66,7 +171,174 @@
 				'show-alts': 'Actualmente existen los siguientes personajes alternativos. Utilice este comando con el parámetro `nombre` para averiguar detalles sobre un personaje alternativo en particular.'
 			}
 		},
+		// New command!
+		'manage-stories': {
+			name: 'manage-stories',
+			description: 'Manage interactive stories on this server.',
+			options: {
+				create: {
+					name: 'create',
+					description: 'Create an interactive story on this server.',
+					options: {
+						'ink-file': {
+							name: 'ink-file',
+							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
+						},
+						owner: {
+							name: 'owner',
+							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
+						}
+					}
+				},
+				edit: {
+					name: 'edit',
+					description: 'Make changes to an existing story.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the existing story to edit.'
+						},
+						'ink-file': {
+							name: 'ink-file',
+							description: 'A file that can be run by the Ink engine, in compiled JSON format.'
+						},
+						owner: {
+							name: 'owner',
+							description: 'A user who created the story file and will receive reports about issues. Defaults to you.'
+						}
+					}
+				},
+				show: {
+					name: 'show',
+					description: 'List currently existing stories on this server.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the existing story to show. If left out, lists all stories.'
+						}
+					}
+				}
+			},
+			'story-line': '{{title}} (by {{author}}) [{{status}}]',
+			'story-status-Testing': 'Testing',
+			'story-status-Published': 'Published',
+			'show-field-owner': 'Owner',
+			'show-field-status': 'Status',
+			'delete-button-label': 'Delete story',
+			'undo-delete-button-label': 'Undo deletion',
+			'edit-metadata-button-label': 'Edit metadata',
+			'playtest-button-label': 'Playtest story',
+			'publish-button-label': 'Publish story',
+			'post-button-label': 'Post story publicly',
+			'metadata-dialog-title': 'Edit story metadata',
+			'metadata-dialog-title-field-label': 'Title',
+			'metadata-dialog-author-field-label': 'Author',
+			'metadata-dialog-teaser-field-label': 'Teaser',
+			'story-updated-and-stopped-notification': 'The story "{{storyTitle}}" which you are currently playing on "{{serverName}}" has been updated. Unfortunately that means I had to reset your progress and stop the story for you. You can start from the beginning by pressing the button below.',
+			'restart-button-label': 'Start playing again',
+			'show-stories-title': 'The following stories currently exist on this server.',
+			reply: {
+				'max-stories-reached': "You have reached the maximum number of stories for this server, I cannot accept any more. Please delete any stories you don't need first.",
+				'wrong-content-type': 'The file you uploaded has the wrong file type. Please upload a .json file compiled from an Ink file. The type of your file is "{{providedType}}".',
+				'file-too-large': 'The file you uploaded is too large. I can only accept stories of up to {{maxFileSize, bytes}}.',
+				'could-not-load-file': 'The file you uploaded could not be received from Discord.',
+				'time-budget-exceeded': 'The first steps in the story could not be evaluated fast enough. You might have an infinite loop in your story, or the bot might just be too overloaded at the moment. Please check your story file or try again later.',
+				'story-errors': 'When trying to run the story, the Ink engine reported errors. Details follow below.\n{{errors}}',
+				'story-warnings': 'When trying to run the story, the Ink engine reported warnings. I will still accept this story, but you might want to take a look at these warnings anyway.\n{{warnings}}',
+				'story-draft-created': 'I have memorised your story. Before it can be published, please fill out some more information by pressing the button below. This will help users find the story and learn more about it.',
+				'story-test-created': 'I have memorised your story. This is what it currently looks like.',
+				'create-story-failure': 'Creating the story failed.',
+				'edit-failure': 'Saving the changes to the story failed.',
+				'edit-failure-title-not-unique': "There's already a story with the same title. Please change it to a different one.",
+				'story-updated': "Your changes to the story have been saved. If you want to, you can also edit the story's metadata.",
+				'edit-metadata-prompt': "You can edit the story's metadata by pressing the button below.",
+				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
+				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Publishing the story will make a publicly visible post in this channel. If you would rather post it in another channel, you can use {{command, commandmention}} there, select the story and click the publish button in the reply to that.',
+				'delete-failure': 'Deleting the story failed.',
+				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
+				'delete-success': 'The story has successfully been deleted.',
+				'undo-delete-failure': 'Restoring the story failed.',
+				'undo-delete-success': 'The story has been restored and will not be deleted. Members that were playing it will have to start it again themselves.',
+				'publish-failure': 'Publishing the story failed.',
+				'no-stories-in-server': 'There are no stories on this server yet.'
+			}
+		},
 		config: {
+			name: 'config',
+			description: 'Configure the bot for your server.',
+			options: {
+				show: {
+					name: 'show',
+					description: 'List the current values of all options.'
+				},
+				set: {
+					name: 'set',
+					description: 'Set the values of one or more options.',
+					options: {
+						'bookmarks-channel': {
+							name: 'bookmarks-channel',
+							description: 'The channel to set for posting bookmarks in'
+						},
+						'quotes-channel': {
+							name: 'quotes-channel',
+							description: 'The channel to set for posting quotes in'
+						},
+						language: {
+							name: 'language',
+							description: 'The language the bot should use for posting public messages in this server'
+						}
+					}
+				},
+				reset: {
+					name: 'reset',
+					description: 'Clear the value of one or all options or reset to the default.',
+					options: {
+						option: {
+							name: 'option',
+							description: 'The option to clear',
+							choices: {
+								all: 'all',
+								'role-play channels': 'role-play channels',
+								'bookmarks channel': 'bookmarks channel',
+								'quotes channel': 'quotes channel',
+								language: 'language'
+							}
+						}
+					}
+				},
+				add: {
+					name: 'add',
+					description: 'Add a value to the options.',
+					options: {
+						'role-play-channel': {
+							name: 'role-play-channel',
+							description: 'Add a channel to the list of role-play channels for this server.',
+							options: {
+								channel: {
+									name: 'channel',
+									description: 'The channel to add as a role-play channel. Leave empty to use the current channel.'
+								}
+							}
+						}
+					}
+				},
+				remove: {
+					name: 'remove',
+					description: 'Remove a value from the options.',
+					options: {
+						'role-play-channel': {
+							name: 'role-play-channel',
+							description: 'Remove a channel from the list of role-play channels for this server.',
+							options: {
+								channel: {
+									name: 'channel',
+									description: 'The role-play channel to remove. Leave empty to use the current channel.'
+								}
+							}
+						}
+					}
+				}
+			},
 			'show-title': 'Configuración',
 			'show-description': 'Esta es la configuración actual del bot en este servidor. Para cambiar cualquier opción, use el comando {{command1, commandmention}}. Para agregar canales de juego de roles, use {{command2, commandmention}}.',
 			'show-field-bookmarks-channel': 'Canal de marcadores',
@@ -89,6 +361,8 @@
 			}
 		},
 		'delete-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Delete',
 			reply: {
 				'not-deletable1': 'Este no es un mensaje que puedas borrar. Este comando solo funcionará en:',
 				'not-deletable2': '- citas o marcadores que creó a través de mí (incluida mi respuesta al comando {{command, commandmention}}),',
@@ -100,14 +374,57 @@
 				'delete-success': 'El mensaje fue eliminado con éxito.'
 			}
 		},
+		// New command!
+		'edit-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Edit',
+			reply: {
+				'edit-dialog-title': 'Edit message',
+				'edit-dialog-text-field-label': 'Message text',
+				'not-editable1': 'This is not a message you can edit. This command will only work on:',
+				'not-editable2': '- My reply to {{command, commandmention}},',
+				'not-editable3': '- Messages of alternate characters sent through me.',
+				'edit-failure': 'There was an error trying to edit the message.',
+				'edit-success': 'Message was successfully edited.'
+			}
+		},
 		goto: {
+			name: 'goto',
+			description: 'Creates a link in the lore for characters to easily travel between two channels.',
+			options: {
+				destination: {
+					name: 'destination',
+					description: 'The destination channel or thread to go to'
+				},
+				action: {
+					name: 'action',
+					description: 'A short description of the action taking place as people travel to a new place'
+				}
+			},
 			reply: {
 				'origin-message-unlinked': 'La historia continua en {{channel, channelmention}}.',
 				'origin-message-linked': 'La [historia continua]({{url}}) en {{channel, channelmention}}.',
 				'destination-message': 'Siguiendo [los eventos]({{url}}) de {{channel, channelmention}}…'
 			}
 		},
+		narrate: {
+			name: 'narrate',
+			description: 'Makes me narrate what you input.',
+			options: {
+				story: {
+					name: 'story',
+					description: 'The story I should tell'
+				}
+			},
+			// New replies!
+			reply: {
+				'dialog-title': 'Input narration',
+				'story-text-field-label': 'Story text'
+			}
+		},
 		'quote-context': {
+			// Exception: For this name you can use upper-case letters and some special characters.
+			name: 'Quote',
 			reply: {
 				gossip1: '¿Escuchaste lo que {{author, usermention}} [acaba de decir]({{url}})?',
 				gossip2: 'no puedo creer que {{author, usermention}} [haya dicho eso]({{url}}).',
@@ -124,6 +441,14 @@
 			}
 		},
 		roll: {
+			name: 'roll',
+			description: 'Roll some dice! You can roll up to 20 dice at a time.',
+			options: {
+				notation: {
+					name: 'notation',
+					description: 'Describe which and how many dice to roll, using D&D dice notation. E.g. "d4" or "3d20".'
+				}
+			},
 			reply: {
 				'invalid-notation': 'No se pudo reconocer su entrada.',
 				'notation-explanation_other': 'Este comando usa [notación de dados](https://en.wikipedia.org/wiki/Dice_notation) \
@@ -139,7 +464,109 @@
 				addition: ' + '
 			}
 		},
+		// New command!
+		story: {
+			name: 'story',
+			description: 'Dive into interactive stories and begin your adventure!',
+			options: {
+				show: {
+					name: 'show',
+					description: 'Show available stories.',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the story you want to peek into. If left out, lists all stories.'
+						}
+					}
+				},
+				start: {
+					name: 'start',
+					description: 'Begin a new adventure!',
+					options: {
+						title: {
+							name: 'title',
+							description: 'The title of the story you want to begin.'
+						}
+					}
+				},
+				restart: {
+					name: 'restart',
+					description: 'Restart the story you are currently playing from the beginning.'
+				},
+				stop: {
+					name: 'stop',
+					description: 'Stop playing your current story. Progress will be lost.'
+				},
+				state: {
+					name: 'state',
+					description: 'See which story you are currently playing and the last interaction in it.'
+				}
+			},
+			'start-button-label': 'Start playing',
+			'state-button-label': 'Check current story state',
+			'stop-button-label': 'Stop playing current story',
+			'stop-button-label-short': 'Stop playing story',
+			'restart-button-label': 'Restart current story',
+			'restart-button-label-short': 'Restart story',
+			'story-line': '{{title}} (by {{author}})',
+			'choice-buttons-header': 'Please choose:',
+			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			'replay-button-label': 'Replay story',
+			'show-stories-title': 'The following stories are available to play.',
+			reply: {
+				'story-not-published': 'This story could not be posted publicly because it has not been published yet.',
+				'post-intro1': 'I have recently been told this story. Do you want to hear it?',
+				'post-intro2': 'There is a new adventure to be had. Shall we take a look?',
+				'post-intro3': 'I certainly know a few tales, but this one is special, no doubt.',
+				'post-intro4': 'The best adventure is the one I could have with you right now.',
+				'post-intro5': "I'm off to experience new adventures. Care to join me?",
+				'already-playing': "You're already playing a story. I can remind you of its current state. Or you can stop playing it, losing all progress.",
+				'could-not-start-story': 'There was an error trying to start this story.',
+				'could-not-save-state': "There was an error trying to save your story progress. You could check the story state again later and if it still doesn't work, you might have to restart or stop the story, losing all progress.",
+				'time-budget-exceeded': 'The next story steps could not be evaluated fast enough. This could be a problem with the story itself or the bot might just be too overloaded at the moment. Please try again later.',
+				'cannot-send-dms': 'Stories are played in your direct messages. Unfortunately I cannot send you direct messages at the moment. To allow me to do that, please open the server\'s menu (where the server name is above the channel list), select "Privacy Settings" and make sure "Direct Messages" is activated (and potentially "Message Requests" as well). On mobile, these switches are found directly in the server\'s menu. Then try playing the story again.',
+				'starting-story1': 'Your adventure begins in your direct messages…',
+				'starting-story2': "We're off to fight the dragon! See you in your direct messages.",
+				'starting-story3': 'Our story begins, like many other stories, in your direct messages.',
+				'starting-story4': 'Let me just slide into your direct messages to tell you this crazy story.',
+				'starting-story5': 'Head on over to your direct messages to see what this story is all about.',
+				'starting-story6': 'May I direct you to your direct messages, where we shall hastily begin your journey.',
+				'story-intro1': 'You are now playing this story. You can restart it or stop playing it at any time, however you will lose your progress.',
+				'story-intro2': 'The story will be told to you as lines of text and every so often you will see multiple buttons, giving you a choice of how to continue in the story. You can only press one of the buttons each time, so choose wisely!',
+				'story-intro3': 'The content of this story is the sole responsibility of its publishers and not associated with this bot or its developers. For any problems with the content, please contact the administrators of the server.',
+				'no-story-running': "You don't seem to have a story running at the moment.",
+				'could-not-continue-story': 'The story run into an error and cannot be continued.',
+				'temporary-problem': 'I ran into a problem trying to continue the story. This might be a temporary issue. Please try again later.',
+				'invalid-choice': 'Unfortunately this choice was invalid. Either there is a problem with the story or you clicked on an outdated button.',
+				'too-many-choices': '(Unfortunately the story wants to give you more choices than I can handle, so you only see the first {{choiceLimit}}.)',
+				'stop-story-failure': 'There was an error trying to stop the story.',
+				'stop-story-success': 'Story successfully stopped.',
+				'reset-story-failure': 'There was an error trying to reset the story.',
+				'reset-story-success': 'Story successfully reset.',
+				'story-state-fetch-failure': 'There was an error trying to load the current story state.',
+				'story-state-success': 'Check your direct messages to see details about your currently played story.',
+				'story-state-repeat': 'You are playing this story. This is where we left off…',
+				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!"
+			},
+			'owner-report': {
+				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',
+				'type-InkWarning': 'The Ink engine reported warnings. The story can continue as normal for the user but you might want to look at the warning. Details follow below.',
+				'type-InkError': 'The Ink engine reported errors. The story cannot continue for the user. Details follow below.',
+				'type-PotentialLoopDetected': 'The story engine has repeatedly taken too long to calculate the next steps in your story. This might be an indication that your story code creates an infinite loop without presenting any choices.',
+				'type-MaximumChoiceNumberExceeded': 'The story wants to give the user more choices at once than I can represent in a Discord message (up to {{choiceLimit}}). The user can continue playing the story but they will not see all choices and will be informed of this. The current choices at this point in the story follow below to help you identify the problematic part.',
+				'last-lines': 'The last lines in the story were:',
+				'no-repeat': 'You will not receive any more reports about issues in the same category until you upload a new file for this story.'
+			}
+		},
 		where: {
+			name: 'where',
+			description: 'Tries to find the location (role-play channel) where a character was last seen acting.',
+			options: {
+				user: {
+					name: 'user',
+					description: 'The user to look for. Leave empty to look for yourself.'
+				}
+			},
 			reply: {
 				'you-last-seen': 'Fuiste [visto por última vez]({{url}}) jugando un rol en {{channel, channelmention}}.',
 				'user-last-seen': '{{user, usermention}} fue [visto por última vez]({{url}}) jugando un rol en  {{channel, channelmention}}.',

@@ -17,7 +17,7 @@
 		'unknown-command': 'Unknown command'
 	},
 	commands: {
-		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_"
+		// Command and option names: 1-32 characters, lower-case, no spaces or special characters except for "-" and "_". Accents are allowed.
 		// Descriptions: 1-100 characters
 		// Choices: 1-100 characters
 		alt: {
