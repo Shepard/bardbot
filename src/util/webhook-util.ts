@@ -1,4 +1,4 @@
-import { DiscordAPIError, Message, Client, TextChannel, Guild, Collection, Webhook } from 'discord.js';
+import { DiscordAPIError, Message, Client, TextChannel, Guild, Collection, Webhook, ForumChannel } from 'discord.js';
 import { Logger } from 'pino';
 import { codePointLength } from './helpers.js';
 import {
@@ -10,7 +10,7 @@ import logger from './logger.js';
 import { WEBHOOK_NAME_CHARACTER_LIMIT } from './discord-constants.js';
 import { updateCommandsForSingleGuild } from '../command-handling/update-commands.js';
 
-export async function createWebhook(channel: TextChannel, client: Client, logger: Logger) {
+export async function createWebhook(channel: TextChannel | ForumChannel, client: Client, logger: Logger) {
 	try {
 		return await channel.createWebhook({ name: client.user.username });
 	} catch (e) {

@@ -2,7 +2,8 @@ import {
 	ApplicationCommandType,
 	ApplicationCommandOptionType,
 	ChatInputCommandInteraction,
-	AutocompleteInteraction
+	AutocompleteInteraction,
+	Snowflake
 } from 'discord.js';
 import { Logger } from 'pino';
 import { GuildCommandModule } from '../command-module-types.js';
@@ -45,7 +46,15 @@ const altCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 		const altName = interaction.options.getString('name');
 		const messageText = interaction.options.getString('message');
 
-		const webhook = await getWebhook(interaction, t, logger);
+		let channelId = interaction.channelId;
+		let threadId = null;
+		if (interaction.channel.isThread()) {
+			// If it's a thread, check if the *parent* channel is an RP channel and make sure we use the thread id when posting with the webhook.
+			channelId = interaction.channel.parentId;
+			threadId = interaction.channelId;
+		}
+
+		const webhook = await getWebhook(interaction, channelId, t, logger);
 		if (!webhook) {
 			// getWebhook already handled telling the user about it.
 			return;
@@ -84,7 +93,10 @@ const altCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 				// We could try to find out which roles the member is allowed to ping in a complicated way but it's easier to just restrict it to none.
 				allowedMentions: {
 					parse: []
-				}
+				},
+				// We don't have to worry about the bot reopening locked threads with its MANAGE_THREADS permission by sending this message,
+				// if the user isn't allowed to, because the user won't be able to type the command in there anyway.
+				threadId: threadId ?? undefined
 			});
 
 			try {
@@ -125,15 +137,20 @@ const altCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 	}
 };
 
-async function getWebhook(interaction: ChatInputCommandInteraction, t: ContextTranslatorFunctions, logger: Logger) {
+async function getWebhook(
+	interaction: ChatInputCommandInteraction,
+	channelId: Snowflake,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
 	let webhookId: string | null = null;
 	try {
-		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, interaction.channelId);
+		webhookId = getWebhookIdForRolePlayChannel(interaction.guildId, channelId);
 	} catch (e) {
 		logger.error(
 			e,
 			'Loading webhook id from database for channel %s in guild %s failed.',
-			interaction.channelId,
+			channelId,
 			interaction.guildId
 		);
 		await errorReply(interaction, t.user('reply.alt-message-failure'));

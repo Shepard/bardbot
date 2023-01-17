@@ -152,7 +152,7 @@
 				'alt-exists': 'Es gibt bereits einen alternativen Charakter mit dem Namen "{{name}}". Wenn Du diesen anpassen willst, benutze den Befehl {{command, commandmention}}.',
 				'add-failure': 'Hinzufügen des alternativen Charakters ist fehlgeschlagen.',
 				'add-success': 'Neuer alternativer Charakter wurde erfolgreich erstellt.',
-				'no-rp-channels-hint': 'Alternative Charaktere können nur in Rollenspiel-Kanälen verwendet werden. Du hast bisher noch keine festgelegt. Mit {{command, commandmention}} kannst Du einen Rollenspiel-Kanal hinzufügen. Dann wird auch der Befehl `/alt` zur Verfügung stehen.',
+				'no-rp-channels-hint': 'Alternative Charaktere können nur in Rollenspiel-Kanälen (oder Threads in diesen) verwendet werden. Du hast bisher noch keine festgelegt. Mit {{command, commandmention}} kannst Du einen Rollenspiel-Kanal hinzufügen. Dann wird auch der Befehl `/alt` zur Verfügung stehen.',
 				'edit-failure': 'Aktualisieren des alternativen Charakters ist fehlgeschlagen.',
 				'edit-success': 'Alternativer Charakter wurde erfolgreich erstellt.',
 				'delete-failure': 'Konnte alternativen Charakter mit dem Namen "{{name}}" nicht löschen.',
@@ -380,7 +380,7 @@
 			options: {
 				destination: {
 					name: 'ziel',
-					description: 'Der Zielkanal, zu dem gegangen werden soll'
+					description: 'Der Zielkanal oder -thread, zu dem gegangen werden soll'
 				},
 				action: {
 					name: 'aktion',

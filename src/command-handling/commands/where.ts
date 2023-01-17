@@ -69,6 +69,11 @@ const whereCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			});
 		const channelIdsToSearch = channelsToSearch.map(channel => channel.id);
 
+		// TODO Also include threads in RP channels that are:
+		// - public or
+		//   private with the interacting user being a member
+		// - active or archived or even locked
+
 		const userToFind = getUser(interaction);
 		const findingCurrentUser = userToFind.id === interaction.user.id;
 

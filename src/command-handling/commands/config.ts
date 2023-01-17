@@ -11,7 +11,8 @@ import {
 	APIInteractionDataResolvedChannel,
 	BaseGuildTextChannel,
 	TextChannel,
-	BaseInteraction
+	BaseInteraction,
+	ForumChannel
 } from 'discord.js';
 import { Logger } from 'pino';
 import { CommandModule } from '../command-module-types.js';
@@ -63,13 +64,13 @@ const configCommand: CommandModule<ChatInputCommandInteraction> = {
 						name: 'bookmarks-channel',
 						description: '',
 						type: ApplicationCommandOptionType.Channel,
-						channel_types: [ChannelType.GuildText]
+						channel_types: [ChannelType.GuildText, ChannelType.GuildAnnouncement]
 					},
 					{
 						name: 'quotes-channel',
 						description: '',
 						type: ApplicationCommandOptionType.Channel,
-						channel_types: [ChannelType.GuildText]
+						channel_types: [ChannelType.GuildText, ChannelType.GuildAnnouncement]
 					},
 					{
 						name: 'language',
@@ -128,7 +129,7 @@ const configCommand: CommandModule<ChatInputCommandInteraction> = {
 								name: 'channel',
 								description: '',
 								type: ApplicationCommandOptionType.Channel,
-								channel_types: [ChannelType.GuildText],
+								channel_types: [ChannelType.GuildText, ChannelType.GuildForum],
 								required: false
 							}
 						]
@@ -149,7 +150,7 @@ const configCommand: CommandModule<ChatInputCommandInteraction> = {
 								name: 'channel',
 								description: '',
 								type: ApplicationCommandOptionType.Channel,
-								channel_types: [ChannelType.GuildText],
+								channel_types: [ChannelType.GuildText, ChannelType.GuildForum],
 								required: false
 							}
 						]
@@ -338,11 +339,13 @@ async function handleAddRolePlayChannelInteraction(
 	t: ContextTranslatorFunctions,
 	logger: Logger
 ) {
-	const channel = getChannel(interaction);
+	const channel = getChannelForRP(interaction);
 	if (!channel) {
 		await warningReply(interaction, t.user('reply.wrong-channel-type'));
 		return;
 	}
+
+	// TODO check if it's already an RP channel
 
 	try {
 		const webhook = await createWebhook(channel, interaction.client, logger);
@@ -368,7 +371,7 @@ async function handleRemoveRolePlayChannelInteraction(
 	t: ContextTranslatorFunctions,
 	logger: Logger
 ) {
-	const channel = getChannel(interaction);
+	const channel = getChannelForRP(interaction);
 	if (!channel) {
 		await warningReply(interaction, t.user('reply.wrong-channel-type'));
 		return;
@@ -404,28 +407,31 @@ async function handleRemoveRolePlayChannelInteraction(
 	await updateCommandsAfterConfigChange(interaction, logger);
 }
 
-function getChannel(interaction: ChatInputCommandInteraction): TextChannel | null {
+function getChannelForRP(interaction: ChatInputCommandInteraction): TextChannel | ForumChannel | null {
 	// Either get the channel from a provided option 'channel' or fall back to the channel the interaction was sent in.
 	const channel = interaction.options.getChannel('channel');
 	if (channel) {
 		// Other channel types should be prevented by the command configuration anyway but just to be safe...
-		if (channel.type === ChannelType.GuildText && isGuildBasedChannel(channel)) {
+		if (
+			(channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildForum) &&
+			isWebhookEnabledChannel(channel)
+		) {
 			return channel;
+		} else {
+			return null;
 		}
 	}
 	// Make sure the user is using this command in a guild text channel.
-	// The check is a bit awkward because channel.type gives us the string version of the enum value
-	// which we have to fetch from the constants using the number version.
 	if (interaction.channel.type === ChannelType.GuildText) {
 		return interaction.channel;
 	}
 	return null;
 }
 
-function isGuildBasedChannel(
+function isWebhookEnabledChannel(
 	channel: APIInteractionDataResolvedChannel | GuildBasedChannel
-): channel is GuildBasedChannel {
-	return (channel as BaseGuildTextChannel).send !== undefined;
+): channel is TextChannel | ForumChannel {
+	return (channel as BaseGuildTextChannel).createWebhook !== undefined;
 }
 
 function getChannelsList(channelIds: string[]) {

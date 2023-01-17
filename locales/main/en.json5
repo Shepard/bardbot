@@ -157,7 +157,7 @@
 				'alt-exists': 'An alternate character with the name "{{name}}" already exists. If you want to adjust it, use the {{command, commandmention}} command.',
 				'add-failure': 'Adding the alternate character failed.',
 				'add-success': 'New alternate character was successfully created.',
-				'no-rp-channels-hint': "Alternate characters can only be used in role-play channels. You haven't determined any yet. With {{command, commandmention}} you can add role-play channels. Once you have done that, the command `/alt` will become available.",
+				'no-rp-channels-hint': "Alternate characters can only be used in role-play channels (or threads inside of them). You haven't determined any yet. With {{command, commandmention}} you can add role-play channels. Once you have done that, the command `/alt` will become available.",
 				'edit-failure': 'Updating the alternate character failed.',
 				'edit-success': 'Alternate character was successfully updated.',
 				'delete-failure': 'Could not delete alternate character by the name "{{name}}".',
@@ -387,7 +387,7 @@
 			options: {
 				destination: {
 					name: 'destination',
-					description: 'The destination channel to go to'
+					description: 'The destination channel or thread to go to'
 				},
 				action: {
 					name: 'action',

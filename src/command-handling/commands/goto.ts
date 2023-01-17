@@ -22,7 +22,7 @@ const gotoCommand: CommandModule<ChatInputCommandInteraction> = {
 				name: 'destination',
 				description: '',
 				type: ApplicationCommandOptionType.Channel,
-				channel_types: [ChannelType.GuildText],
+				channel_types: [ChannelType.GuildText, ChannelType.PublicThread],
 				required: true
 			},
 			{
@@ -35,6 +35,9 @@ const gotoCommand: CommandModule<ChatInputCommandInteraction> = {
 		]
 	},
 	async execute(interaction, { t, logger }) {
+		// We don't have to worry about the bot reopening locked threads with its MANAGE_THREADS permission:
+		// For the source channel, the user won't be able to type the command in there.
+		// And for the destination channel, Discord won't let them choose it for the option.
 		const sourceChannel = interaction.channel;
 		const destinationChannel = interaction.options.getChannel('destination') as TextBasedChannel;
 		let actionMessageText = interaction.options.getString('action');
