@@ -120,7 +120,8 @@ describe('story-message-sender', () => {
 				lines: [{ text: '', tags: ['default-button-style:primary'] }],
 				choices: [
 					{ index: 0, text: 'Pick me!' },
-					{ index: 1, text: "style-danger:Don't pick me!" }
+					{ index: 1, text: "style-danger:Don't pick me!" },
+					{ index: 1, text: 'Well done!', tags: ['button-style:success'] }
 				],
 				defaultButtonStyle: 'primary'
 			};
@@ -130,6 +131,8 @@ describe('story-message-sender', () => {
 			expect(messages[0].components[0].components[0].toJSON().style).to.equal(ButtonStyle.Primary);
 			expect(messages[0].components[0].components[1].toJSON().label).to.equal("Don't pick me!");
 			expect(messages[0].components[0].components[1].toJSON().style).to.equal(ButtonStyle.Danger);
+			expect(messages[0].components[0].components[2].toJSON().label).to.equal('Well done!');
+			expect(messages[0].components[0].components[2].toJSON().style).to.equal(ButtonStyle.Success);
 		});
 
 		it('combines and splits lines as necessary', () => {

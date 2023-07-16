@@ -10,6 +10,7 @@ import {
 } from 'discord.js';
 import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
 import { ChoiceButtonStyle, EnhancedStepData, StoryCharacter, StoryLine } from './story-types.js';
+import { parseChoiceButtonStyle } from './story-information-extractor.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../util/interaction-types.js';
 import { codePointLength, trimText, chunk, splitTextAtWhitespace, wait } from '../util/helpers.js';
 import {
@@ -46,6 +47,7 @@ function isSpecialHandlingMessage(message: StoryMessage): message is SpecialHand
 interface ButtonChoice {
 	text: string;
 	index: number;
+	tags: string[] | null;
 	style: InteractionButtonStyle;
 }
 
@@ -322,9 +324,11 @@ function appendChoiceButtons(
 }
 
 /**
- * Checks for some special syntax in the text of choices to determine if this choice should be represented by a specific button style.
- * Will strip that syntax from the choice text and enhance the choices with style information.
+ * Checks for some special tags on the choices (or for some special syntax in the text of choices [legacy])
+ * to determine if this choice should be represented by a specific button style.
+ * Will strip that syntax from the choice text if necessary and enhance the choices with style information.
  * E.g. a choice text of "style-secondary:regular choice text" will result in the button style "secondary" and the choice text "regular choice text".
+ * A choice with tag "button-style: primary" will result in the button style "primary" and the choice text will be left alone.
  * Available styles are: primary, secondary, success, danger.
  * @param choices An array of Ink choice objects.
  * @param defaultButtonStyle The button style to fall back on if none is found in a choice label.
@@ -335,7 +339,11 @@ function parseChoiceButtonStyles(choices: Choice[], defaultButtonStyle: Interact
 		let text = choice.text;
 		let style = defaultButtonStyle;
 		const separatorIndex = text.indexOf(':');
-		if (text.toLowerCase().startsWith('style-') && separatorIndex > 0) {
+		const styleFromTags = parseChoiceButtonStyle(choice);
+		if (styleFromTags) {
+			style = mapButtonStyle(styleFromTags, style);
+		} else if (text.toLowerCase().startsWith('style-') && separatorIndex > 0) {
+			// Legacy syntax: choice text prefix
 			const styleRaw = text.substring('style-'.length, separatorIndex).toLowerCase();
 			style = mapButtonStyle(styleRaw, style);
 			text = text.substring(separatorIndex + 1);

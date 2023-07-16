@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import {
 	parseCharacters,
 	parseDefaultButtonStyle,
+	parseChoiceButtonStyle,
 	parseMetadata
 } from '../../built/story/story-information-extractor.js';
 
@@ -159,6 +160,57 @@ describe('story-information-extractor', () => {
 				globalTags: ['default-button-style: danger', 'default-button-style: primary']
 			};
 			expect(parseDefaultButtonStyle(inkStory)).to.equal('danger');
+		});
+	});
+
+	describe('parseChoiceButtonStyle()', () => {
+		it('returns an empty string when no choice tags are defined', () => {
+			let choice = {};
+			expect(parseChoiceButtonStyle(choice)).to.equal('');
+			choice = {
+				tags: []
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('');
+		});
+		it('returns an empty string when no button style is defined in choice tags', () => {
+			const choice = {
+				tags: ['foo', 'bar']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('');
+		});
+		it('rejects invalid choice button styles', () => {
+			let choice = {
+				tags: ['button-style:']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('');
+			choice = {
+				tags: ['button-style:aaa']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('');
+		});
+		it('accepts valid choice button styles', () => {
+			let choice = {
+				tags: ['button-style:primary']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('primary');
+			choice = {
+				tags: ['BUTTON-style:  SeCoNdArY']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('secondary');
+			choice = {
+				tags: ['button-style: success']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('success');
+			choice = {
+				tags: ['button-style: danger']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('danger');
+		});
+		it('only uses the first defined choice button style', () => {
+			const choice = {
+				tags: ['button-style: danger', 'button-style: primary']
+			};
+			expect(parseChoiceButtonStyle(choice)).to.equal('danger');
 		});
 	});
 

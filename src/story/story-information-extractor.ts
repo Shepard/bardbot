@@ -1,5 +1,6 @@
 import { HexColorString } from 'discord.js';
 import { Story } from '@shepard4711/inkjs/engine/Story.js';
+import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
 import { StoryMetadata, StoryCharacter, ChoiceButtonStyle } from './story-types.js';
 
 /**
@@ -22,6 +23,8 @@ const AUTHOR_TAG_REGEXP = /^author:(.+)$/i;
 const TEASER_TAG_REGEXP = /^teaser:(.+)$/i;
 
 const DEFAULT_BUTTON_STYLE_TAG_REGEXP = /^default-button-style:\s*(primary|secondary|success|danger)$/i;
+
+const BUTTON_STYLE_TAG_REGEXP = /^button-style:\s*(primary|secondary|success|danger)$/i;
 
 /**
  * Parses definitions of characters of the story from the global tags of the story.
@@ -56,6 +59,18 @@ export function parseDefaultButtonStyle(inkStory: Story): ChoiceButtonStyle {
 	if (inkStory.globalTags) {
 		for (let tag of inkStory.globalTags) {
 			const match = tag.match(DEFAULT_BUTTON_STYLE_TAG_REGEXP);
+			if (match) {
+				return match[1].toLowerCase() as ChoiceButtonStyle;
+			}
+		}
+	}
+	return '';
+}
+
+export function parseChoiceButtonStyle(choice: Choice): ChoiceButtonStyle {
+	if (choice.tags) {
+		for (let tag of choice.tags) {
+			const match = tag.match(BUTTON_STYLE_TAG_REGEXP);
 			if (match) {
 				return match[1].toLowerCase() as ChoiceButtonStyle;
 			}
