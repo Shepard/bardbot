@@ -9,8 +9,8 @@ import {
 	ButtonBuilder
 } from 'discord.js';
 import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
-import { ChoiceButtonStyle, EnhancedStepData, StoryCharacter, StoryLine } from './story-types.js';
-import { parseChoiceButtonStyle } from './story-information-extractor.js';
+import { ChoiceButtonStyle, EnhancedStepData, StoryCharacter, StoryLine, CharacterImageSize } from './story-types.js';
+import { parseLineSpeech, parseChoiceButtonStyle } from './story-information-extractor.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../util/interaction-types.js';
 import { codePointLength, trimText, chunk, splitTextAtWhitespace, wait } from '../util/helpers.js';
 import {
@@ -117,20 +117,21 @@ export function getMessagesToSend(
 function appendTextMessages(messages: StoryMessage[], lines: StoryLine[], characters: Map<string, StoryCharacter>) {
 	let messageText = '';
 	let previousCharacter: StoryCharacter | null = null;
+	let previousCharacterImageSize: CharacterImageSize = 'small';
 	let previousLineWasStandalone = false;
 
 	// Append stored messageText as message before starting a new message with the current line.
 	function flushMessageText() {
 		// Discord will reject empty messages so we need to check if there's any text before creating a message.
 		if (messageText.trim().length > 0) {
-			appendMessage(messageText, previousCharacter);
+			appendMessage(messageText, previousCharacter, previousCharacterImageSize);
 			messageText = '';
 		}
 	}
 
-	function appendMessage(text: string, character: StoryCharacter | null) {
+	function appendMessage(text: string, character: StoryCharacter | null, characterImageSize: CharacterImageSize) {
 		if (character) {
-			messages.push(getCharacterMessage(text, character));
+			messages.push(getCharacterMessage(text, character, characterImageSize));
 		} else {
 			messages.push({ content: text });
 		}
@@ -139,18 +140,18 @@ function appendTextMessages(messages: StoryMessage[], lines: StoryLine[], charac
 	lines.forEach(line => {
 		let lineText = line.text;
 		let lineCharacter: StoryCharacter | null = null;
+		let lineCharacterImageSize: CharacterImageSize = 'small';
 		let messageLimit = MESSAGE_CONTENT_CHARACTER_LIMIT;
-		const separatorIndex = lineText.indexOf(':');
-		if (separatorIndex > 0) {
-			const characterName = lineText.substring(0, separatorIndex).trim();
-			lineCharacter = characters.get(characterName);
-			if (lineCharacter) {
-				lineText = lineText.substring(separatorIndex + 1).trim();
-				messageLimit = EMBED_DESCRIPTION_CHARACTER_LIMIT;
-			}
+
+		const lineSpeech = parseLineSpeech(line, characters);
+		if (lineSpeech) {
+			lineText = lineSpeech.text;
+			messageLimit = EMBED_DESCRIPTION_CHARACTER_LIMIT;
+			lineCharacter = lineSpeech.character;
+			lineCharacterImageSize = lineSpeech.characterImageSize;
 		}
 
-		if (lineCharacter !== previousCharacter) {
+		if (lineCharacter !== previousCharacter || lineCharacterImageSize !== previousCharacterImageSize) {
 			flushMessageText();
 		}
 
@@ -196,14 +197,14 @@ function appendTextMessages(messages: StoryMessage[], lines: StoryLine[], charac
 
 			const texts = splitTextAtWhitespace(lineText, messageLimit);
 			for (let i = 0; i < texts.length - 1; i++) {
-				appendMessage(texts[i], lineCharacter);
+				appendMessage(texts[i], lineCharacter, lineCharacterImageSize);
 			}
 			messageText = texts[texts.length - 1];
 		} else if (codePointLength(messageText + '\n' + lineText) > messageLimit) {
 			// messageText would exceed the character limit of a message by appending this line, so split it off into a separate messageText.
 
 			if (messageText.trim().length > 0) {
-				appendMessage(messageText, lineCharacter);
+				appendMessage(messageText, lineCharacter, lineCharacterImageSize);
 			}
 			messageText = lineText;
 		} else {
@@ -217,19 +218,36 @@ function appendTextMessages(messages: StoryMessage[], lines: StoryLine[], charac
 		}
 
 		previousCharacter = lineCharacter;
+		previousCharacterImageSize = lineCharacterImageSize;
 	});
 
 	// If we still have some text left over at the end, append it as another message.
 	flushMessageText();
 }
 
-function getCharacterMessage(messageText: string, character: StoryCharacter): MessageCreateOptions {
+function getCharacterMessage(
+	messageText: string,
+	character: StoryCharacter,
+	characterImageSize: CharacterImageSize
+): MessageCreateOptions {
 	const characterEmbed = new EmbedBuilder().setDescription(messageText);
 	const author: EmbedAuthorOptions = { name: character.name };
-	if (character.iconUrl) {
-		author.iconURL = character.iconUrl;
+	if (character.imageUrl) {
+		switch (characterImageSize) {
+			case 'small':
+				author.iconURL = character.imageUrl;
+				characterEmbed.setAuthor(author);
+				break;
+			case 'medium':
+				characterEmbed.setTitle(character.name).setThumbnail(character.imageUrl);
+				break;
+			case 'large':
+				characterEmbed.setTitle(character.name).setImage(character.imageUrl);
+				break;
+		}
+	} else {
+		characterEmbed.setAuthor(author);
 	}
-	characterEmbed.setAuthor(author);
 	if (character.colour) {
 		characterEmbed.setColor(character.colour);
 	}

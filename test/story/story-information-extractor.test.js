@@ -3,7 +3,8 @@ import {
 	parseCharacters,
 	parseDefaultButtonStyle,
 	parseChoiceButtonStyle,
-	parseMetadata
+	parseMetadata,
+	parseLineSpeech
 } from '../../built/story/story-information-extractor.js';
 
 describe('story-information-extractor', () => {
@@ -30,62 +31,114 @@ describe('story-information-extractor', () => {
 		});
 		it('finds valid characters', () => {
 			const inkStory = {
-				globalTags: ['character: Peter', 'CHARACTER:"Peter Parker"', 'author', 'character:   Spider-Man ff0000']
+				globalTags: [
+					'character: Peter',
+					'CHARACTER:"Peter Parker"',
+					'author',
+					'character:   Spider-Man ff0000',
+					'character:vader,Darth Vader',
+					'character: Luke , Luke Skywalker , ff0000'
+				]
 			};
 			const characters = parseCharacters(inkStory);
-			expect(characters).to.be.a('Map').and.to.have.lengthOf(3);
-			expect(characters).to.have.all.keys('Peter', 'Peter Parker', 'Spider-Man');
+			expect(characters).to.be.a('Map').and.to.have.lengthOf(5);
+			expect(characters).to.have.all.keys('Peter', 'Peter Parker', 'Spider-Man', 'vader', 'Luke');
 		});
 		it('detects different combinations of parameters correctly', () => {
+			// Legacy syntax
+
 			let inkStory = {
 				globalTags: ['character: Peter']
 			};
 			let characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter' });
 
 			inkStory = {
 				globalTags: ['character: Peter ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#ff0000' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter', colour: '#ff0000' });
 
 			inkStory = {
 				globalTags: ['character: Peter http://test.com/peter.png']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', iconUrl: 'http://test.com/peter.png' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter', imageUrl: 'http://test.com/peter.png' });
 
 			inkStory = {
 				globalTags: ['character: Peter http://test.com/peter.png ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', iconUrl: 'http://test.com/peter.png', colour: '#ff0000' });
+			expect(characters).to.deep.include({
+				id: 'Peter',
+				name: 'Peter',
+				imageUrl: 'http://test.com/peter.png',
+				colour: '#ff0000'
+			});
+
+			// Legacy syntax with quoted name
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker"']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter Parker' });
+			expect(characters).to.deep.include({ id: 'Peter Parker', name: 'Peter Parker' });
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker" ff0000']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter Parker', colour: '#ff0000' });
+			expect(characters).to.deep.include({ id: 'Peter Parker', name: 'Peter Parker', colour: '#ff0000' });
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker" http://test.com/peter.png']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter Parker', iconUrl: 'http://test.com/peter.png' });
+			expect(characters).to.deep.include({
+				id: 'Peter Parker',
+				name: 'Peter Parker',
+				imageUrl: 'http://test.com/peter.png'
+			});
 
 			inkStory = {
 				globalTags: ['character: "Peter Parker" http://test.com/peter.png ff0000']
 			};
 			characters = parseCharacters(inkStory);
 			expect(characters).to.deep.include({
+				id: 'Peter Parker',
 				name: 'Peter Parker',
-				iconUrl: 'http://test.com/peter.png',
+				imageUrl: 'http://test.com/peter.png',
+				colour: '#ff0000'
+			});
+
+			// New syntax
+
+			inkStory = {
+				globalTags: ['character: Peter, Peter Parker']
+			};
+			characters = parseCharacters(inkStory);
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter Parker' });
+
+			inkStory = {
+				globalTags: ['character: Peter, Peter Parker, ff0000']
+			};
+			characters = parseCharacters(inkStory);
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter Parker', colour: '#ff0000' });
+
+			inkStory = {
+				globalTags: ['character:Peter ,Peter Parker, http://test.com/peter.png']
+			};
+			characters = parseCharacters(inkStory);
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter Parker', imageUrl: 'http://test.com/peter.png' });
+
+			inkStory = {
+				globalTags: ['character: Peter, Peter Parker , http://test.com/peter.png,ff0000']
+			};
+			characters = parseCharacters(inkStory);
+			expect(characters).to.deep.include({
+				id: 'Peter',
+				name: 'Peter Parker',
+				imageUrl: 'http://test.com/peter.png',
 				colour: '#ff0000'
 			});
 		});
@@ -94,21 +147,156 @@ describe('story-information-extractor', () => {
 				globalTags: ['character: Peter #FF0000']
 			};
 			let characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#FF0000' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter', colour: '#FF0000' });
 
 			inkStory = {
-				globalTags: ['character: Peter 00Ff00']
+				globalTags: ['character: Peter, Peter Parker, 00Ff00']
 			};
 			characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#00Ff00' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter Parker', colour: '#00Ff00' });
 		});
 		it('only keeps the last character of the same name', () => {
 			const inkStory = {
-				globalTags: ['character: Peter #FF0000', 'character: Peter #0000FF']
+				globalTags: ['character: Peter #FF0000', 'character: Peter, Peter Parker, #0000FF']
 			};
 			const characters = parseCharacters(inkStory);
-			expect(characters).to.deep.include({ name: 'Peter', colour: '#0000FF' });
-			expect(characters).to.not.deep.include({ name: 'Peter', colour: '#FF0000' });
+			expect(characters).to.not.deep.include({ id: 'Peter', name: 'Peter', colour: '#FF0000' });
+			expect(characters).to.deep.include({ id: 'Peter', name: 'Peter Parker', colour: '#0000FF' });
+		});
+	});
+
+	describe('parseLineSpeech', () => {
+		it("doesn't find a character in empty line text and no tags", () => {
+			const line = {
+				text: '',
+				tags: []
+			};
+			expect(parseLineSpeech(line, new Map())).to.be.null;
+		});
+		it("doesn't find a character in line text that doesn't exist", () => {
+			const line = {
+				text: 'Doctor: Who?',
+				tags: []
+			};
+			expect(parseLineSpeech(line, new Map())).to.be.null;
+		});
+		it('finds character in line text', () => {
+			const line = {
+				text: 'Doctor : Who?',
+				tags: []
+			};
+			const characters = new Map();
+			const doctor = {
+				id: 'Doctor',
+				name: '10th Doctor'
+			};
+			characters.set('Doctor', doctor);
+
+			const result = parseLineSpeech(line, characters);
+
+			expect(result).to.not.be.null;
+			expect(result.text).to.equal('Who?');
+			expect(result.character).to.equal(doctor);
+			expect(result.characterImageSize).to.equal('small');
+		});
+		it("doesn't find a character in tags that doesn't exist", () => {
+			const line = {
+				text: 'Who?',
+				tags: ['speech:Doctor']
+			};
+			expect(parseLineSpeech(line, new Map())).to.be.null;
+		});
+		it("doesn't find a character in invalid speech tags", () => {
+			const characters = new Map();
+			const doctor = {
+				id: 'Doctor',
+				name: '10th Doctor'
+			};
+			characters.set('Doctor', doctor);
+			let line = {
+				text: 'Who?',
+				tags: ['speech:Doctor,']
+			};
+			expect(parseLineSpeech(line, characters)).to.be.null;
+			line = {
+				text: 'Who?',
+				tags: ['speech:,small']
+			};
+			expect(parseLineSpeech(line, characters)).to.be.null;
+			line = {
+				text: 'Who?',
+				tags: ['speech:Doctor,huge']
+			};
+			expect(parseLineSpeech(line, characters)).to.be.null;
+		});
+		it('finds character in tags', () => {
+			const line = {
+				text: 'Who?',
+				tags: ['speech:Doctor']
+			};
+			const characters = new Map();
+			const doctor = {
+				id: 'Doctor',
+				name: '10th Doctor'
+			};
+			characters.set('Doctor', doctor);
+
+			const result = parseLineSpeech(line, characters);
+
+			expect(result).to.not.be.null;
+			expect(result.text).to.equal('Who?');
+			expect(result.character).to.equal(doctor);
+			expect(result.characterImageSize).to.equal('small');
+		});
+		it('detects speech sizes correctly', () => {
+			const characters = new Map();
+			const doctor = {
+				id: 'Doctor',
+				name: '10th Doctor'
+			};
+			characters.set('Doctor', doctor);
+
+			let line = {
+				text: 'Who?',
+				tags: ['speech:Doctor,small']
+			};
+			const result = parseLineSpeech(line, characters);
+			expect(result.character).to.equal(doctor);
+			expect(result.characterImageSize).to.equal('small');
+			line = {
+				text: 'Who?',
+				tags: ['speech:Doctor,medium']
+			};
+			expect(parseLineSpeech(line, characters).characterImageSize).to.equal('medium');
+			line = {
+				text: 'Who?',
+				tags: ['speech:Doctor,large']
+			};
+			expect(parseLineSpeech(line, characters).characterImageSize).to.equal('large');
+		});
+		it('prioritises character in tags', () => {
+			const line = {
+				text: 'Doctor: Who?',
+				tags: ['speech:Peter']
+			};
+			const characters = new Map();
+			const doctor = {
+				id: 'Doctor',
+				name: '10th Doctor'
+			};
+			characters.set('Doctor', doctor);
+			const peter = {
+				id: 'Peter',
+				name: 'Peter Parker'
+			};
+			characters.set('Peter', peter);
+
+			const result = parseLineSpeech(line, characters);
+
+			expect(result).to.not.be.null;
+			expect(result.text).to.equal('Doctor: Who?');
+			expect(result.character).to.equal(peter);
+			expect(result.characterImageSize).to.equal('small');
 		});
 	});
 

@@ -1,10 +1,31 @@
 import { HexColorString } from 'discord.js';
 import { Story } from '@shepard4711/inkjs/engine/Story.js';
 import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
-import { StoryMetadata, StoryCharacter, ChoiceButtonStyle } from './story-types.js';
+import {
+	StoryMetadata,
+	StoryCharacter,
+	ChoiceButtonStyle,
+	StoryLine,
+	CharacterImageSize,
+	LineSpeech
+} from './story-types.js';
 
 /**
  * For parsing character definitions from global tags.
+ * It starts with "character:". All following parts are separated from each other by commas.
+ * The first two parts are required: character id and character name.
+ * URL and colour value are optional. The "#" of the colour value is optional because it needs to be escaped in Ink which is awkward.
+ * Examples:
+ * CHARACTER:Doctor,Doctor
+ * charactEr: vader, Darth Vader, 000000
+ * Character:  Rob  ,  Robespierre, https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Robespierre_Ducreux.jpeg/181px-Robespierre_Ducreux.jpeg
+ * character: lizzie, Elizabeth II, https://upload.wikimedia.org/wikipedia/commons/6/66/Queen_Elizabeth_II_on_3_June_2019.jpg, #9cc6c5
+ */
+const CHARACTER_TAG_REGEXP =
+	/^character:\s*([^,]+)\s*,\s*([^,]+)(?:\s*,\s*(?<url>http[^\s,]+))?(?:\s*,\s*(?<colour>#?[0-9a-fA-F]{6}))?$/i;
+
+/**
+ * For parsing character definitions from global tags with the legacy syntax.
  * If the name needs spaces it can be wrapped in double quotes.
  * URL and colour value are optional. The "#" of the colour value is optional because it needs to be escaped in Ink which is awkward.
  * Examples:
@@ -13,7 +34,7 @@ import { StoryMetadata, StoryCharacter, ChoiceButtonStyle } from './story-types.
  * Character:  Robespierre https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Robespierre_Ducreux.jpeg/181px-Robespierre_Ducreux.jpeg
  * character: "Elizabeth II" https://upload.wikimedia.org/wikipedia/commons/6/66/Queen_Elizabeth_II_on_3_June_2019.jpg #9cc6c5
  */
-const CHARACTER_TAG_REGEXP =
+const CHARACTER_TAG_REGEXP_LEGACY =
 	/^character:\s*(?:([^\s]+)|(?:"([^"]+)"))(?:\s+(?<url>http[^\s]+))?(?:\s+(?<colour>#?[0-9a-fA-F]{6}))?$/i;
 
 const TITLE_TAG_REGEXP = /^title:(.+)$/i;
@@ -26,6 +47,8 @@ const DEFAULT_BUTTON_STYLE_TAG_REGEXP = /^default-button-style:\s*(primary|secon
 
 const BUTTON_STYLE_TAG_REGEXP = /^button-style:\s*(primary|secondary|success|danger)$/i;
 
+const SPEECH_TAG_REGEXP = /^speech:\s*([^,]+)(?:\s*,\s*(?<size>small|medium|large))?$/i;
+
 /**
  * Parses definitions of characters of the story from the global tags of the story.
  * @returns A map mapping the name of the character to an object with more information, like a icon URL or a colour to use for that character.
@@ -35,24 +58,83 @@ export function parseCharacters(inkStory: Story) {
 
 	if (inkStory.globalTags) {
 		for (let tag of inkStory.globalTags) {
-			const match = tag.match(CHARACTER_TAG_REGEXP);
+			let match = tag.match(CHARACTER_TAG_REGEXP);
 			if (match) {
+				const id = match[1].trim();
 				// TODO later: restrict length of character name.
 				//  https://discord.com/developers/docs/resources/channel#embed-object-embed-limits -> author name can hold up to 256 chars.
-				const name = match[1] ? match[1].trim() : match[2].trim();
-				const character: StoryCharacter = { name };
+				const name = match[2].trim();
+				const character: StoryCharacter = { id, name };
 				if (match.groups.url) {
-					character.iconUrl = match.groups.url;
+					character.imageUrl = match.groups.url;
 				}
 				if (match.groups.colour) {
 					character.colour = ((match.groups.colour.startsWith('#') ? '' : '#') + match.groups.colour) as HexColorString;
 				}
-				characters.set(name, character);
+				characters.set(id, character);
+			} else {
+				match = tag.match(CHARACTER_TAG_REGEXP_LEGACY);
+				if (match) {
+					// TODO later: restrict length of character name.
+					//  https://discord.com/developers/docs/resources/channel#embed-object-embed-limits -> author name can hold up to 256 chars.
+					const name = match[1] ? match[1].trim() : match[2].trim();
+					const id = name;
+					const character: StoryCharacter = { id, name };
+					if (match.groups.url) {
+						character.imageUrl = match.groups.url;
+					}
+					if (match.groups.colour) {
+						character.colour = ((match.groups.colour.startsWith('#') ? '' : '#') +
+							match.groups.colour) as HexColorString;
+					}
+					characters.set(id, character);
+				}
 			}
 		}
 	}
 
 	return characters;
+}
+
+export function parseLineSpeech(line: StoryLine, characters: Map<string, StoryCharacter>): LineSpeech | null {
+	let text = line.text;
+	let character: StoryCharacter | null = null;
+	let characterImageSize: CharacterImageSize = 'small';
+
+	if (line.tags) {
+		for (let tag of line.tags) {
+			const match = tag.match(SPEECH_TAG_REGEXP);
+			if (match) {
+				const characterId = match[1].trim();
+				character = characters.get(characterId) ?? null;
+				if (character && match.groups.size) {
+					// We know the regexp only allows values contained in that type.
+					characterImageSize = match.groups.size as CharacterImageSize;
+				}
+			}
+		}
+	}
+
+	if (!character) {
+		const separatorIndex = text.indexOf(':');
+		if (separatorIndex > 0) {
+			const characterId = text.substring(0, separatorIndex).trim();
+			character = characters.get(characterId) ?? null;
+			if (character) {
+				text = text.substring(separatorIndex + 1).trim();
+			}
+		}
+	}
+
+	if (character) {
+		return {
+			text,
+			character,
+			characterImageSize
+		};
+	}
+
+	return null;
 }
 
 export function parseDefaultButtonStyle(inkStory: Story): ChoiceButtonStyle {

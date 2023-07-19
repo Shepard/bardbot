@@ -170,18 +170,19 @@ describe('story-message-sender', () => {
 		it('recognises character speech lines correctly', () => {
 			const characters = new Map();
 			characters.set('Darth Vader', {
+				id: 'Darth Vader',
 				name: 'Darth Vader',
 				colour: '#000000'
 			});
 			characters.set('Bard', {
+				id: 'Bard',
 				name: 'Bard',
-				iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
+				imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
 			});
 			const stepData = {
 				lines: [
 					{ text: 'Bard: What do we have here then?', tags: [] },
 					{ text: 'Darth Vader:I am your father!', tags: [] },
-					// No character named 'Luke' defined so this should be printed as a regular line.
 					{ text: "Luke: No... no... that's not true!", tags: [] }
 				],
 				choices: [],
@@ -207,8 +208,64 @@ describe('story-message-sender', () => {
 			expect(messages[1].embeds[0].toJSON().author.icon_url).to.be.undefined;
 			expect(messages[1].embeds[0].toJSON().color).to.equal(0);
 
+			// No character named 'Luke' defined so this should be printed as a regular line.
 			expect(messages[2].content).to.equal("Luke: No... no... that's not true!");
 			expect(messages[2].embeds).to.be.undefined;
+		});
+
+		it('models character speech lines at different sizes correctly', () => {
+			const characters = new Map();
+			characters.set('Darth Vader', {
+				id: 'Darth Vader',
+				name: 'Darth Vader',
+				colour: '#000000'
+			});
+			characters.set('bard', {
+				id: 'bard',
+				name: 'Bard',
+				imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
+			});
+			const stepData = {
+				lines: [
+					{ text: 'Toss a coin to your witcher', tags: ['speech:bard'] },
+					{ text: 'Toss a coin to your witcher', tags: ['speech:bard, medium'] },
+					{ text: 'Toss a coin to your witcher', tags: ['speech: bard, large'] },
+					{ text: 'I am your father!', tags: ['speech: Darth Vader, large'] }
+				],
+				choices: [],
+				characters
+			};
+
+			const messages = getMessages(stepData);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(4);
+
+			expect(messages[0].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[0].embeds[0].toJSON().description).to.equal('Toss a coin to your witcher');
+			expect(messages[0].embeds[0].toJSON().author.name).to.equal('Bard');
+			expect(messages[0].embeds[0].toJSON().author.icon_url).to.equal(
+				'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
+			);
+
+			expect(messages[1].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[1].embeds[0].toJSON().description).to.equal('Toss a coin to your witcher');
+			expect(messages[2].embeds[0].toJSON().title).to.equal('Bard');
+			expect(messages[1].embeds[0].toJSON().thumbnail.url).to.equal(
+				'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
+			);
+
+			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].embeds[0].toJSON().description).to.equal('Toss a coin to your witcher');
+			expect(messages[2].embeds[0].toJSON().title).to.equal('Bard');
+			expect(messages[2].embeds[0].toJSON().image.url).to.equal(
+				'https://upload.wikimedia.org/wikipedia/commons/6/6a/Frans_Hals_-_Luitspelende_nar.jpg'
+			);
+
+			// This character doesn't have an image, so the image size is ignored
+			// - it's modelled as an embed with just an author name.
+			expect(messages[3].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[3].embeds[0].toJSON().description).to.equal('I am your father!');
+			expect(messages[3].embeds[0].toJSON().author.name).to.equal('Darth Vader');
+			expect(messages[3].embeds[0].toJSON().author.icon_url).to.be.undefined;
 		});
 
 		it('can put choice buttons on character speech embeds', () => {
@@ -252,6 +309,21 @@ describe('story-message-sender', () => {
 			expect(messages).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[0].embeds).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[0].embeds[0].toJSON().description).to.equal('Speech line 1\nSpeech line 2');
+		});
+
+		it('does not combine multiple character speech lines of the same character but at different sizes into one embed', () => {
+			const characters = new Map();
+			characters.set('Bard', { name: 'Bard' });
+			const stepData = {
+				lines: [
+					{ text: 'Speech line 1', tags: ['speech: Bard, large'] },
+					{ text: 'Speech line 2', tags: ['speech:Bard'] }
+				],
+				choices: [],
+				characters
+			};
+			const messages = getMessages(stepData);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
 		});
 
 		it('does not combine character speech with regular lines', () => {

@@ -11,8 +11,9 @@ export interface StoryMetadata {
 }
 
 export type StoryCharacter = {
+	id: string;
 	name: string;
-	iconUrl?: string;
+	imageUrl?: string;
 	colour?: HexColorString;
 };
 
@@ -35,6 +36,14 @@ export interface EnhancedStepData extends StepData {
 	storyRecord: StoryRecord;
 	characters: Map<string, StoryCharacter>;
 	defaultButtonStyle: ChoiceButtonStyle;
+}
+
+export type CharacterImageSize = 'small' | 'medium' | 'large';
+
+export interface LineSpeech {
+	text: string;
+	character: StoryCharacter;
+	characterImageSize: CharacterImageSize;
 }
 
 export type ChoiceButtonStyle = 'primary' | 'secondary' | 'success' | 'danger' | '';
