@@ -467,17 +467,24 @@ async function handleEditStory(
 	}
 
 	let replyText: string;
+	let buttons: ButtonBuilder[];
 	if (dataChanged) {
 		replyText = t.user('reply.story-updated');
+		buttons = [
+			getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
+			getPlaytestButton(t, storyId, interaction.guildId),
+			getPublishButton(t, storyId)
+		];
 	} else {
 		replyText = t.user('reply.edit-metadata-prompt');
+		buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Primary)];
 	}
 	const reply = {
 		content: replyText,
 		components: [
 			{
 				type: ComponentType.ActionRow,
-				components: [getEditMetadataButton(t, storyId, dataChanged ? ButtonStyle.Secondary : ButtonStyle.Primary)]
+				components: buttons
 			}
 		],
 		ephemeral: true
