@@ -10,7 +10,7 @@ import {
 	MessageComponentInteraction,
 	ModalSubmitInteraction
 } from 'discord.js';
-import { Level, Logger } from 'pino';
+import { Logger } from 'pino';
 import { GuildConfiguration } from '../storage/record-types.js';
 
 export type ReplyableInteraction = CommandInteraction | MessageComponentInteraction | ModalSubmitInteraction;
