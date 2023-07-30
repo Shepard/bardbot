@@ -470,11 +470,18 @@ async function handleEditStory(
 	let buttons: ButtonBuilder[];
 	if (dataChanged) {
 		replyText = t.user('reply.story-updated');
-		buttons = [
-			getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
-			getPlaytestButton(t, storyId, interaction.guildId),
-			getPublishButton(t, storyId)
-		];
+		if (story.status === StoryStatus.Testing) {
+			buttons = [
+				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
+				getPlaytestButton(t, storyId, interaction.guildId),
+				getPublishButton(t, storyId)
+			];
+		} else {
+			buttons = [
+				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
+				getPlaytestButton(t, storyId, interaction.guildId)
+			];
+		}
 	} else {
 		replyText = t.user('reply.edit-metadata-prompt');
 		buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Primary)];
