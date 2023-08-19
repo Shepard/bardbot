@@ -247,7 +247,7 @@ export function getMemberDisplayName(interaction: ChatInputCommandInteraction) {
 	if (member) {
 		return member.displayName;
 	} else {
-		return interaction.user.username;
+		return interaction.user.displayName;
 	}
 }
 
