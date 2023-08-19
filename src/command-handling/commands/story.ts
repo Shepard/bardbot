@@ -7,16 +7,23 @@ import {
 	ComponentType,
 	ChatInputCommandInteraction,
 	MessageComponentInteraction,
-	ButtonBuilder
+	ButtonBuilder,
+	ModalSubmitInteraction,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	ActionRowBuilder
 } from 'discord.js';
 import { TFunction } from 'i18next';
 import { Logger } from 'pino';
+import { VariablesState } from '@shepard4711/inkjs/engine/VariablesState.js';
 import { GuildCommandModule } from '../command-module-types.js';
 import { GuildConfiguration, StoryRecord, StoryStatus } from '../../storage/record-types.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../../util/interaction-types.js';
-import { StoryErrorType, StoryMetadata } from '../../story/story-types.js';
+import { Input, StoryErrorType, StoryMetadata, isInputChoiceAction } from '../../story/story-types.js';
 import { startStory, continueStory, restartStory, getCurrentStoryState } from '../../story/story-engine.js';
 import { sendStoryStepData } from '../../story/story-message-sender.js';
+import { parseChoiceAction } from '../../story/story-information-extractor.js';
 import {
 	getStory,
 	getStories,
@@ -24,11 +31,16 @@ import {
 	getNumberOfStories,
 	clearCurrentStoryPlay
 } from '../../storage/story-dao.js';
-import { API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER, AUTOCOMPLETE_CHOICE_LIMIT } from '../../util/discord-constants.js';
+import {
+	API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER,
+	AUTOCOMPLETE_CHOICE_LIMIT,
+	TEXT_INPUT_LABEL_CHARACTER_LIMIT
+} from '../../util/discord-constants.js';
 import {
 	errorReply,
 	warningReply,
 	markSelectedButton,
+	markSelectedButtonAfterModalSubmit,
 	resetSelectionButtons,
 	getCustomIdForCommandRouting,
 	isStringSelectMenuInteraction,
@@ -36,6 +48,9 @@ import {
 } from '../../util/interaction-util.js';
 import { getTranslatorForInteraction } from '../../util/i18n.js';
 import RandomMessageProvider from '../../util/random-message-provider.js';
+import { trimText } from '../../util/helpers.js';
+
+const CHOICE_INPUT_MAX_LENGTH = 250;
 
 const postIntroMessages = new RandomMessageProvider()
 	.add(t => t('reply.post-intro1'))
@@ -143,6 +158,14 @@ const storyCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			return [];
 		}
 	},
+	async modalInteraction(interaction, innerCustomId, { t, logger }) {
+		if (innerCustomId.startsWith('receive-input ')) {
+			const choiceIndex = parseInt(innerCustomId.substring('receive-input '.length));
+			await handleChoiceInputDialogSubmit(interaction, choiceIndex, t, logger);
+		} else {
+			await warningReply(interaction, t.userShared('unknown-command'));
+		}
+	},
 	async componentInteraction(interaction, innerCustomId, { t, logger }) {
 		if (innerCustomId.startsWith('choice ')) {
 			const choiceIndex = parseInt(innerCustomId.substring('choice '.length));
@@ -150,6 +173,9 @@ const storyCommand: GuildCommandModule<ChatInputCommandInteraction> = {
 			// To fix this we'd have to fetch the guildId from the story first and enhance the logger as done for the start button below.
 			// Since that's awkward, the better solution is to make sure log statements provide enough other context for solving problems.
 			await handleChoiceSelection(interaction, choiceIndex, t, logger);
+		} else if (innerCustomId.startsWith('input ')) {
+			const choiceIndex = parseInt(innerCustomId.substring('input '.length));
+			await handleInputChoice(interaction, choiceIndex, t, logger);
 		} else if (innerCustomId.startsWith('start ')) {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('start '.length, spaceIndex);
@@ -225,6 +251,14 @@ function getStoryComponentId(innerCustomId: string) {
 
 export function getStartStoryButtonId(storyId: string, guildId: string) {
 	return getStoryComponentId('start ' + storyId + ' ' + guildId);
+}
+
+function getChoiceButtonId(choiceIndex: number) {
+	return getStoryComponentId('choice ' + choiceIndex);
+}
+
+function getInputButtonId(choiceIndex: number) {
+	return getStoryComponentId('input ' + choiceIndex);
 }
 
 function isCannotSendDMsError(error: any) {
@@ -407,7 +441,14 @@ async function startStoryWithId(
 			await sendStoryIntro(interaction, stepData.storyRecord, t, true);
 		}
 
-		await sendStoryStepData(interaction, stepData, t, getStoryComponentId, getStartStoryButtonId(storyId, guildId));
+		await sendStoryStepData(
+			interaction,
+			stepData,
+			t,
+			getChoiceButtonId,
+			getInputButtonId,
+			getStartStoryButtonId(storyId, guildId)
+		);
 	} catch (error) {
 		if (error.storyErrorType) {
 			switch (error.storyErrorType) {
@@ -518,12 +559,13 @@ async function handleChoiceSelection(
 	await markSelectedButton(interaction);
 
 	try {
-		const stepData = await continueStory(interaction.user.id, choiceIndex, interaction.client, logger);
+		const stepData = await continueStory(interaction.user.id, choiceIndex, [], interaction.client, logger);
 		await sendStoryStepData(
 			interaction,
 			stepData,
 			t,
-			getStoryComponentId,
+			getChoiceButtonId,
+			getInputButtonId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {
@@ -573,6 +615,224 @@ async function handleChoiceSelection(
 	}
 }
 
+/**
+ * Handles the interaction when a user clicks on a choice button that has an input action attached.
+ * Sends out a dialog for receiving input for that choice.
+ */
+async function handleInputChoice(
+	interaction: MessageComponentInteraction,
+	choiceIndex: number,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	try {
+		const stepData = await getCurrentStoryState(interaction.user.id, logger);
+		for (const choice of stepData.choices) {
+			if (choice.index === choiceIndex) {
+				const action = parseChoiceAction(choice);
+				if (isInputChoiceAction(action)) {
+					await sendChoiceInputDialog(
+						interaction,
+						choiceIndex,
+						action.input,
+						choice.text,
+						stepData.variablesState ?? null,
+						t
+					);
+					return;
+				}
+			}
+		}
+
+		// Choice not found or the action was not supported.
+		await t.privateReply(interaction, 'reply.invalid-choice');
+	} catch (error) {
+		if (error.storyErrorType) {
+			switch (error.storyErrorType) {
+				case StoryErrorType.StoryNotFound:
+					await t.privateReply(interaction, 'reply.no-story-running');
+					return;
+				case StoryErrorType.StoryNotContinueable:
+					await errorReply(interaction, t.user('reply.story-state-fetch-failure'));
+					return;
+				case StoryErrorType.TemporaryProblem:
+					await errorReply(interaction, t.user('reply.temporary-problem'));
+					return;
+			}
+		}
+
+		if (isCannotSendDMsError(error)) {
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
+		}
+
+		// We don't know what this error is. Just rethrow and let interaction handling deal with it.
+		throw error;
+	}
+}
+
+/**
+ * Sends out a dialog for receiving input for a choice that has an input action attached.
+ */
+async function sendChoiceInputDialog(
+	interaction: MessageComponentInteraction,
+	choiceIndex: number,
+	input: Input,
+	inputLabel: string,
+	variablesState: VariablesState | null,
+	t: ContextTranslatorFunctions
+) {
+	const dialogId = getCustomIdForCommandRouting(storyCommand, 'receive-input ' + choiceIndex);
+	const inputsDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('choice-inputs-dialog-title'));
+
+	const inputField = new TextInputBuilder()
+		.setCustomId('choice-input-dialog-input-field')
+		.setLabel(trimText(inputLabel, TEXT_INPUT_LABEL_CHARACTER_LIMIT))
+		// These might later be configurable via syntax in the input tag.
+		.setStyle(TextInputStyle.Short)
+		.setRequired(true)
+		.setMinLength(1)
+		.setMaxLength(CHOICE_INPUT_MAX_LENGTH);
+	if (variablesState) {
+		const value = variablesState[input.variableName];
+		if (value) {
+			inputField.setValue(String(value));
+		}
+	}
+
+	inputsDialog.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputField));
+
+	await interaction.showModal(inputsDialog);
+}
+
+/**
+ * Handles the interaction of a user submitting a dialog for choice input.
+ */
+async function handleChoiceInputDialogSubmit(
+	interaction: ModalSubmitInteraction,
+	choiceIndex: number,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	try {
+		const stepData = await getCurrentStoryState(interaction.user.id, logger);
+		for (const choice of stepData.choices) {
+			if (choice.index === choiceIndex) {
+				const action = parseChoiceAction(choice);
+				if (isInputChoiceAction(action)) {
+					await handleChoiceInput(interaction, choiceIndex, action.input, t, logger);
+					return;
+				}
+			}
+		}
+
+		// Choice not found or the action was not supported.
+		await t.privateReply(interaction, 'reply.invalid-choice');
+	} catch (error) {
+		if (error.storyErrorType) {
+			switch (error.storyErrorType) {
+				case StoryErrorType.StoryNotFound:
+					await t.privateReply(interaction, 'reply.no-story-running');
+					return;
+				case StoryErrorType.StoryNotContinueable:
+					await errorReply(interaction, t.user('reply.story-state-fetch-failure'));
+					return;
+				case StoryErrorType.TemporaryProblem:
+					await errorReply(interaction, t.user('reply.temporary-problem'));
+					return;
+			}
+		}
+
+		if (isCannotSendDMsError(error)) {
+			await warningReply(interaction, t.user('reply.cannot-send-dms'));
+			return;
+		}
+
+		// We don't know what this error is. Just rethrow and let interaction handling deal with it.
+		throw error;
+	}
+}
+
+/**
+ * Handles some input submitted by a user for a choice that has an input action attached.
+ * It will set that input as a variable in the ink story and then pick the associated choice and continue the story.
+ */
+async function handleChoiceInput(
+	interaction: ModalSubmitInteraction,
+	choiceIndex: number,
+	input: Input,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	if (interaction.isFromMessage()) {
+		// This counts as replying to the interaction. All later replies (like error reporting) are therefore followUps.
+		await markSelectedButtonAfterModalSubmit(interaction, getInputButtonId(choiceIndex));
+	}
+
+	const inputValue = interaction.fields.getTextInputValue('choice-input-dialog-input-field');
+	// In the future we might need some validation, depending on input.type.
+	const variableBindings = [[input.variableName, inputValue]];
+
+	try {
+		const stepData = await continueStory(
+			interaction.user.id,
+			choiceIndex,
+			variableBindings,
+			interaction.client,
+			logger
+		);
+		await sendStoryStepData(
+			interaction,
+			stepData,
+			t,
+			getChoiceButtonId,
+			getInputButtonId,
+			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+		);
+	} catch (error) {
+		if (error.storyErrorType) {
+			switch (error.storyErrorType) {
+				case StoryErrorType.StoryNotFound:
+					await t.privateReply(interaction, 'reply.no-story-running');
+					return;
+				case StoryErrorType.StoryNotContinueable:
+					await errorReply(interaction, t.user('reply.could-not-continue-story'));
+					return;
+				case StoryErrorType.TemporaryProblem:
+					// Re-enable the buttons so user can try again.
+					if (interaction.isFromMessage()) {
+						await resetSelectionButtons(interaction);
+					}
+					await errorReply(interaction, t.user('reply.temporary-problem'));
+					return;
+				case StoryErrorType.CouldNotSaveState: {
+					const components = [
+						{
+							type: ComponentType.ActionRow,
+							components: [getStateButton(t), getRestartButton(t), getStopButton(t)]
+						}
+					];
+					await errorReply(interaction, t.user('reply.could-not-save-state'), components);
+					return;
+				}
+				case StoryErrorType.InvalidChoice:
+					await t.privateReply(interaction, 'reply.invalid-choice');
+					return;
+				case StoryErrorType.TimeBudgetExceeded:
+					// Re-enable the buttons so user can try again.
+					if (interaction.isFromMessage()) {
+						await resetSelectionButtons(interaction);
+					}
+					await errorReply(interaction, t.user('reply.time-budget-exceeded'));
+					return;
+			}
+		}
+
+		// We don't know what this error is or don't want to deal with it here. Just rethrow and let the caller / the interaction handling deal with it.
+		throw error;
+	}
+}
+
 async function handleRestartStory(
 	interaction: ChatInputCommandInteraction | MessageComponentInteraction,
 	t: ContextTranslatorFunctions,
@@ -588,7 +848,8 @@ async function handleRestartStory(
 			interaction,
 			stepData,
 			t,
-			getStoryComponentId,
+			getChoiceButtonId,
+			getInputButtonId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {
@@ -684,7 +945,8 @@ async function handleShowState(
 			interaction,
 			stepData,
 			t,
-			getStoryComponentId,
+			getChoiceButtonId,
+			getInputButtonId,
 			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
 		);
 	} catch (error) {

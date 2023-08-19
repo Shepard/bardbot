@@ -15,7 +15,7 @@
   "author": "Simon Reinhardt",
   "license": "MIT",
   "dependencies": {
-    "@shepard4711/inkjs": "2.2.1",
+    "@shepard4711/inkjs": "2.2.2",
     "axios": "^0.27.2",
     "better-sqlite3": "^8.5.0",
     "discord.js": "^14.13.0",

@@ -3,6 +3,7 @@ import {
 	parseCharacters,
 	parseDefaultButtonStyle,
 	parseChoiceButtonStyle,
+	parseChoiceAction,
 	parseMetadata,
 	parseLineSpeech
 } from '../../built/story/story-information-extractor.js';
@@ -399,6 +400,130 @@ describe('story-information-extractor', () => {
 				tags: ['button-style: danger', 'button-style: primary']
 			};
 			expect(parseChoiceButtonStyle(choice)).to.equal('danger');
+		});
+	});
+
+	describe('parseChoiceAction', () => {
+		it('returns an empty action when no choice tags are defined', () => {
+			let choice = {
+				text: 'What is your name?'
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			choice = {
+				text: 'What is your name?',
+				tags: null
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			choice = {
+				text: 'What is your name?',
+				tags: []
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+		});
+		it('can parse a choice action from the correct syntax', () => {
+			// Regular way to write the tag
+			let choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({
+				input: {
+					type: 'text',
+					variableName: 'name'
+				}
+			});
+			// No spacing
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input:text,name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({
+				input: {
+					type: 'text',
+					variableName: 'name'
+				}
+			});
+			// Lots of spacing
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input:   text  ,   name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({
+				input: {
+					type: 'text',
+					variableName: 'name'
+				}
+			});
+		});
+		it('will not detect the wrong syntax', () => {
+			// Missing colon
+			let choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input text, name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			// Missing comma
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			// No space before colon allowed.
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input : text name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+		});
+		it('detects only the right input types', () => {
+			// 'select' is not a valid input type.
+			let choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: select, name', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+		});
+		it('only accepts valid ink identifiers as variable names', () => {
+			// Identifier can't only be digits.
+			let choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, 123', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			// Underscore is valid, even at the beginning. Does not only have digits.
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, _123', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({
+				input: {
+					type: 'text',
+					variableName: '_123'
+				}
+			});
+			// Dash not allowed.
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, a-b', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
+			// Valid character
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, \u0590', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({
+				input: {
+					type: 'text',
+					variableName: '\u0590'
+				}
+			});
+			// Excluded character
+			choice = {
+				text: 'What is your name?',
+				tags: ['hello world!', 'input: text, \u0560', 'the weather is nice']
+			};
+			expect(parseChoiceAction(choice)).to.deep.equal({});
 		});
 	});
 

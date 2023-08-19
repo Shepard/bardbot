@@ -17,7 +17,8 @@ import {
 	APIMessageActionRowComponent,
 	ChatInputCommandInteraction,
 	StringSelectMenuInteraction,
-	ComponentType
+	ComponentType,
+	ModalMessageModalSubmitInteraction
 } from 'discord.js';
 import { TFunction, TOptions, StringMap } from 'i18next';
 import { ReplyableInteraction, Components } from './interaction-types.js';
@@ -156,19 +157,31 @@ export async function sendListReply(interaction: ReplyableInteraction, listItems
 }
 
 export async function markSelectedButton(interaction: MessageComponentInteraction) {
-	const selected = interaction.customId;
-	await changeButtons(interaction, button => {
+	await changeButtons(interaction, selectedButtonMarker(interaction.customId));
+}
+
+export async function markSelectedButtonAfterModalSubmit(
+	interaction: ModalMessageModalSubmitInteraction,
+	buttonId: string
+) {
+	await changeButtons(interaction, selectedButtonMarker(buttonId));
+}
+
+function selectedButtonMarker(selectedButtonId: string) {
+	return button => {
 		button.disabled = true;
-		if ((button as APIButtonComponentWithCustomId)?.custom_id === selected) {
+		if ((button as APIButtonComponentWithCustomId)?.custom_id === selectedButtonId) {
 			button.emoji = {
 				id: null,
 				name: '✅'
 			};
 		}
-	});
+	};
 }
 
-export async function resetSelectionButtons(interaction: MessageComponentInteraction) {
+export async function resetSelectionButtons(
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction
+) {
 	await changeButtons(interaction, button => {
 		button.disabled = false;
 		delete button.emoji;
@@ -182,7 +195,7 @@ export async function disableButtons(interaction: MessageComponentInteraction) {
 }
 
 async function changeButtons(
-	interaction: MessageComponentInteraction,
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction,
 	buttonModifier: (button: APIButtonComponent) => void
 ) {
 	const components = interaction.message.components.map(component =>

@@ -23,9 +23,11 @@ describe('story-message-sender', () => {
 				return key + (options ? '#' + JSON.stringify(options) : '');
 			}
 		};
-		const mockGetStoryButtonId = innerId => '/story#' + innerId;
+		const mockGetChoiceButtonId = choiceIndex => '/story#choice ' + choiceIndex;
+		const mockGetInputButtonId = choiceIndex => '/story#input ' + choiceIndex;
 		const mockStartButtonId = '/story#start 123 321';
-		const getMessages = stepData => getMessagesToSend(stepData, mockT, mockGetStoryButtonId, mockStartButtonId);
+		const getMessages = stepData =>
+			getMessagesToSend(stepData, mockT, mockGetChoiceButtonId, mockGetInputButtonId, mockStartButtonId);
 
 		it('deals with no lines and choices', () => {
 			const stepData = { lines: [], choices: [] };

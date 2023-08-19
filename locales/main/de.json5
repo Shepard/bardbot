@@ -494,6 +494,7 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			'story-line': '{{title}} (von {{author}})',
 			'choice-buttons-header': 'Bitte wähle:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
+			'choice-inputs-dialog-title': 'Ausfüllen zum Weiterspielen',
 			'replay-button-label': 'Geschichte wiederholen',
 			'show-stories-title': 'Die folgenden Geschichten stehen zur Verfügung.',
 			reply: {

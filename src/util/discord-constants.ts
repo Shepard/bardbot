@@ -44,6 +44,9 @@ export const MESSAGE_ACTION_ROW_LIMIT = 5;
 // See https://discord.com/developers/docs/interactions/message-components#buttons
 export const ACTION_ROW_BUTTON_LIMIT = 5;
 
+// See https://discord.com/developers/docs/interactions/message-components#text-inputs-text-input-structure
+export const TEXT_INPUT_LABEL_CHARACTER_LIMIT = 45;
+
 export const COLOUR_DISCORD_YELLOW = 0xcb8515;
 
 // See https://discord.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes

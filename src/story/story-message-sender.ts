@@ -6,11 +6,20 @@ import {
 	ChatInputCommandInteraction,
 	MessageComponentInteraction,
 	MessageCreateOptions,
-	ButtonBuilder
+	ButtonBuilder,
+	ModalSubmitInteraction
 } from 'discord.js';
 import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
-import { ChoiceButtonStyle, EnhancedStepData, StoryCharacter, StoryLine, CharacterImageSize } from './story-types.js';
-import { parseLineSpeech, parseChoiceButtonStyle } from './story-information-extractor.js';
+import {
+	ChoiceButtonStyle,
+	EnhancedStepData,
+	StoryCharacter,
+	StoryLine,
+	CharacterImageSize,
+	ChoiceAction,
+	isInputChoiceAction
+} from './story-types.js';
+import { parseLineSpeech, parseChoiceButtonStyle, parseChoiceAction } from './story-information-extractor.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../util/interaction-types.js';
 import { codePointLength, trimText, chunk, splitTextAtWhitespace, wait } from '../util/helpers.js';
 import {
@@ -49,6 +58,7 @@ interface ButtonChoice {
 	index: number;
 	tags: string[] | null;
 	style: InteractionButtonStyle;
+	action: ChoiceAction;
 }
 
 /**
@@ -60,13 +70,14 @@ interface ButtonChoice {
  * @param getStoryButtonId A function for getting a custom id for a button that routes back to the story command.
  */
 export async function sendStoryStepData(
-	interaction: ChatInputCommandInteraction | MessageComponentInteraction,
+	interaction: ChatInputCommandInteraction | MessageComponentInteraction | ModalSubmitInteraction,
 	stepData: EnhancedStepData,
 	t: ContextTranslatorFunctions,
-	getStoryButtonId: (innerCustomId: string) => string,
+	getChoiceButtonId: (choiceIndex: number) => string,
+	getInputButtonId: (choiceIndex: number) => string,
 	startButtonId: string
 ) {
-	const messages = getMessagesToSend(stepData, t, getStoryButtonId, startButtonId);
+	const messages = getMessagesToSend(stepData, t, getChoiceButtonId, getInputButtonId, startButtonId);
 	const dmChannel = await interaction.user.createDM();
 	for (const message of messages) {
 		if (isSpecialHandlingMessage(message)) {
@@ -89,7 +100,8 @@ export async function sendStoryStepData(
 export function getMessagesToSend(
 	stepData: EnhancedStepData,
 	t: ContextTranslatorFunctions,
-	getStoryButtonId: (innerCustomId: string) => string,
+	getChoiceButtonId: (choiceIndex: number) => string,
+	getInputButtonId: (choiceIndex: number) => string,
 	startButtonId: string
 ) {
 	const messages: StoryMessage[] = [];
@@ -99,7 +111,14 @@ export function getMessagesToSend(
 	}
 
 	if (stepData.choices.length > 0) {
-		appendChoiceButtons(messages, stepData.choices, t, getStoryButtonId, stepData.defaultButtonStyle);
+		appendChoiceButtons(
+			messages,
+			stepData.choices,
+			t,
+			getChoiceButtonId,
+			getInputButtonId,
+			stepData.defaultButtonStyle
+		);
 	}
 
 	if (stepData.isEnd) {
@@ -267,7 +286,8 @@ function appendChoiceButtons(
 	messages: StoryMessage[],
 	choices: Choice[],
 	t: ContextTranslatorFunctions,
-	getStoryButtonId: (innerCustomId: string) => string,
+	getChoiceButtonId: (choiceIndex: number) => string,
+	getInputButtonId: (choiceIndex: number) => string,
 	defaultButtonStyleRaw: ChoiceButtonStyle
 ) {
 	// This is the message we append the buttons to.
@@ -312,8 +332,10 @@ function appendChoiceButtons(
 
 	// Create buttons and append them to the message.
 	let defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, ButtonStyle.Secondary);
-	const parsedChoices = parseChoiceButtonStyles(choices, defaultButtonStyle);
-	let buttons = parsedChoices.map(choice => getChoiceButton(t, choice, choiceTooLong, getStoryButtonId));
+	const parsedChoices = parseChoiceButtonInformation(choices, defaultButtonStyle);
+	let buttons = parsedChoices.map(choice =>
+		getChoiceButton(t, choice, choiceTooLong, getChoiceButtonId, getInputButtonId)
+	);
 	buttonMessage.components = [
 		{
 			type: ComponentType.ActionRow,
@@ -343,30 +365,36 @@ function appendChoiceButtons(
 
 /**
  * Checks for some special tags on the choices (or for some special syntax in the text of choices [legacy])
- * to determine if this choice should be represented by a specific button style.
- * Will strip that syntax from the choice text if necessary and enhance the choices with style information.
+ * to determine if this choice should be represented by a specific button style and if it should perform a specific action.
+ * Will strip that syntax from the choice text if necessary and enhance the choices with various information.
  * E.g. a choice text of "style-secondary:regular choice text" will result in the button style "secondary" and the choice text "regular choice text".
  * A choice with tag "button-style: primary" will result in the button style "primary" and the choice text will be left alone.
  * Available styles are: primary, secondary, success, danger.
  * @param choices An array of Ink choice objects.
  * @param defaultButtonStyle The button style to fall back on if none is found in a choice label.
- * @returns An array of new choice objects with potentially modified text properties and new style properties.
+ * @returns An array of new choice objects with potentially modified text properties and new style and action properties.
  */
-function parseChoiceButtonStyles(choices: Choice[], defaultButtonStyle: InteractionButtonStyle): ButtonChoice[] {
+function parseChoiceButtonInformation(choices: Choice[], defaultButtonStyle: InteractionButtonStyle): ButtonChoice[] {
 	return choices.map(choice => {
 		let text = choice.text;
 		let style = defaultButtonStyle;
-		const separatorIndex = text.indexOf(':');
+
 		const styleFromTags = parseChoiceButtonStyle(choice);
 		if (styleFromTags) {
 			style = mapButtonStyle(styleFromTags, style);
-		} else if (text.toLowerCase().startsWith('style-') && separatorIndex > 0) {
-			// Legacy syntax: choice text prefix
-			const styleRaw = text.substring('style-'.length, separatorIndex).toLowerCase();
-			style = mapButtonStyle(styleRaw, style);
-			text = text.substring(separatorIndex + 1);
+		} else {
+			const separatorIndex = text.indexOf(':');
+			if (text.toLowerCase().startsWith('style-') && separatorIndex > 0) {
+				// Legacy syntax: choice text prefix
+				const styleRaw = text.substring('style-'.length, separatorIndex).toLowerCase();
+				style = mapButtonStyle(styleRaw, style);
+				text = text.substring(separatorIndex + 1);
+			}
 		}
-		return { ...choice, text, style };
+
+		const action = parseChoiceAction(choice);
+
+		return { ...choice, text, style, action };
 	});
 }
 
@@ -399,7 +427,8 @@ function getChoiceButton(
 	t: ContextTranslatorFunctions,
 	choice: ButtonChoice,
 	choicesTooLong: Choice | null,
-	getStoryButtonId: (innerCustomId: string) => string
+	getChoiceButtonId: (choiceIndex: number) => string,
+	getInputButtonId: (choiceIndex: number) => string
 ) {
 	let label = choice.text;
 	if (choicesTooLong) {
@@ -408,11 +437,19 @@ function getChoiceButton(
 			BUTTON_LABEL_CHARACTER_LIMIT
 		);
 	}
+
+	let actionId: string;
+	if (isInputChoiceAction(choice.action)) {
+		actionId = getInputButtonId(choice.index);
+	} else {
+		actionId = getChoiceButtonId(choice.index);
+	}
+
 	return new ButtonBuilder({
 		type: ComponentType.Button,
 		style: choice.style,
 		label,
-		custom_id: getStoryButtonId('choice ' + choice.index)
+		custom_id: actionId
 	});
 }
 

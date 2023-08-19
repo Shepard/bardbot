@@ -7,7 +7,8 @@ import {
 	ChoiceButtonStyle,
 	StoryLine,
 	CharacterImageSize,
-	LineSpeech
+	LineSpeech,
+	ChoiceAction
 } from './story-types.js';
 
 /**
@@ -46,6 +47,17 @@ const TEASER_TAG_REGEXP = /^teaser:(.+)$/i;
 const DEFAULT_BUTTON_STYLE_TAG_REGEXP = /^default-button-style:\s*(primary|secondary|success|danger)$/i;
 
 const BUTTON_STYLE_TAG_REGEXP = /^button-style:\s*(primary|secondary|success|danger)$/i;
+
+// Character ranges allowed and excluded in ink identifiers:
+// https://github.com/y-lohse/inkjs/blob/master/src/compiler/Parser/InkParser.ts#L2304
+// and https://github.com/y-lohse/inkjs/blob/master/src/compiler/Parser/InkParser.ts#L370
+const INPUT_ACTION_TAG_REGEXP =
+	/^input:\s*(text)\s*,\s*(?<variable>[\w\u0041-\u007A\u0100-\u017F\u0180-\u024F\u0370-\u03FF\u0400-\u04FF\u0530-\u058F\u0590-\u05FF\u0600-\u06FF\uAC00-\uD7AF]+)$/;
+
+const INK_IDENTIFIER_EXCLUDED_CHARACTERS_REGEXP =
+	/^[\u005B-\u0060\u0378-\u0385\u0374\u0375\u0378\u0387\u038B\u038D\u03A2\u0482-\u0489\u0530\u0557-\u0560\u0588-\u058E]+$/;
+
+const DIGITS_REGEXP = /^[0-9]+$/;
 
 const SPEECH_TAG_REGEXP = /^speech:\s*([^,]+)(?:\s*,\s*(?<size>small|medium|large))?$/i;
 
@@ -159,6 +171,28 @@ export function parseChoiceButtonStyle(choice: Choice): ChoiceButtonStyle {
 		}
 	}
 	return '';
+}
+
+export function parseChoiceAction(choice: Choice): ChoiceAction {
+	if (choice.tags) {
+		for (let tag of choice.tags) {
+			const match = tag.match(INPUT_ACTION_TAG_REGEXP);
+			if (match) {
+				const variableName = match.groups.variable;
+				// See algorithm for parsing identifiers in ink:
+				// https://github.com/y-lohse/inkjs/blob/master/src/compiler/Parser/InkParser.ts#L2785C20
+				if (!variableName.match(DIGITS_REGEXP) && !variableName.match(INK_IDENTIFIER_EXCLUDED_CHARACTERS_REGEXP)) {
+					return {
+						input: {
+							type: 'text',
+							variableName
+						}
+					};
+				}
+			}
+		}
+	}
+	return {};
 }
 
 export function parseMetadata(inkStory: Story) {

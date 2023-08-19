@@ -154,6 +154,7 @@ export async function startStory(
 export async function continueStory(
 	userId: string,
 	choiceIndex: number,
+	variableBindings: string[][],
 	client: Client,
 	logger: Logger
 ): Promise<EnhancedStepData> {
@@ -180,6 +181,12 @@ export async function continueStory(
 	}
 
 	try {
+		if (variableBindings.length) {
+			for (const variableBinding of variableBindings) {
+				storyData.inkStory.variablesState[variableBinding[0]] = variableBinding[1];
+			}
+		}
+
 		storyData.inkStory.ChooseChoiceIndex(choiceIndex);
 	} catch (e) {
 		// Not aborting story here because user might've just clicked an old button.
@@ -439,6 +446,7 @@ export async function getCurrentStoryState(userId: string, logger: Logger): Prom
 	return {
 		lines,
 		choices: storyData.inkStory.currentChoices,
+		variablesState: storyData.inkStory.variablesState,
 		storyRecord: storyData.storyRecord,
 		characters: parseCharacters(storyData.inkStory),
 		defaultButtonStyle: parseDefaultButtonStyle(storyData.inkStory)
