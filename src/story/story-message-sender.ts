@@ -290,11 +290,7 @@ function appendChoiceButtons(
 	getInputButtonId: (choiceIndex: number) => string,
 	defaultButtonStyleRaw: ChoiceButtonStyle
 ) {
-	// This is the message we append the buttons to.
-	// Since every message needs some content, we can't send a message with only buttons.
-	// So we first need to determine/create that message.
-	// This necessity might change in the future: https://gist.github.com/NovaFox161/b69bdc908f0d95085ae94353d8db460a
-	// > Components will be able to be sent without message content/embed. even tho mason strongly objects, it looks like they're going to do it.
+	// Create the message to append the buttons to.
 	let buttonMessage: MessageCreateOptions;
 
 	// If any of the choices are too long to fit into a button label,
@@ -319,15 +315,8 @@ function appendChoiceButtons(
 		buttonMessage = { content: messageContent };
 		messages.push(buttonMessage);
 	} else {
-		// For the choice message we either use the last regular line that happened before the choices,
-		// or a fixed message if there was no regular line before it.
-		if (messages.length) {
-			buttonMessage = findLastRegularMessage(messages);
-		}
-		if (!buttonMessage) {
-			buttonMessage = { content: t.user('choice-buttons-header') };
-			messages.push(buttonMessage);
-		}
+		buttonMessage = {};
+		messages.push(buttonMessage);
 	}
 
 	// Create buttons and append them to the message.
@@ -410,14 +399,6 @@ function mapButtonStyle(styleRaw: string, defaultStyle: InteractionButtonStyle) 
 			return ButtonStyle.Danger;
 	}
 	return defaultStyle;
-}
-
-function findLastRegularMessage(messages: StoryMessage[]): MessageCreateOptions | null {
-	const lastMessage = messages[messages.length - 1];
-	if (!isSpecialHandlingMessage(lastMessage)) {
-		return lastMessage;
-	}
-	return null;
 }
 
 /**

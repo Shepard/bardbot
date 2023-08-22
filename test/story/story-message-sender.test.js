@@ -45,7 +45,7 @@ describe('story-message-sender', () => {
 			expect(getMessages(stepData)).to.be.an('array').that.is.empty;
 		});
 
-		it('creates a choice button message if no lines exist', () => {
+		it('creates a message for choice buttons', () => {
 			const stepData = { lines: [], choices: [{ index: 0, text: 'Pick me!' }] };
 			expect(getMessages(stepData)).to.be.an('array').and.to.have.lengthOf(1);
 		});
@@ -67,7 +67,7 @@ describe('story-message-sender', () => {
 				]
 			};
 			const messages = getMessages(stepData);
-			// It should ignore the message created for the line and create a new one (for the full choice text).
+			// One message for the line of text and one message for the choice buttons and the full choice text.
 			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
 			expect(messages[1].components[0].components[0].toJSON().label).to.have.lengthOf.at.most(
 				BUTTON_LABEL_CHARACTER_LIMIT
@@ -86,7 +86,7 @@ describe('story-message-sender', () => {
 			}
 			assert.isAbove(stepData.choices.length, choiceLimit);
 			const messages = getMessages(stepData);
-			// We get the message for the buttoms and then a warning message below.
+			// We get the message for the buttons and then a warning message below.
 			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
 			expect(messages[0].components).to.have.lengthOf(MESSAGE_ACTION_ROW_LIMIT);
 			for (const component of messages[0].components) {
@@ -94,7 +94,9 @@ describe('story-message-sender', () => {
 			}
 		});
 
-		it('attaches choice buttons to the right last message', () => {
+		// Buttons used to be attached to the last message instead of getting their own separate message.
+		// Hence, this is kind of a "regression" test.
+		it('always creates a separate message for buttons', () => {
 			const stepData = {
 				lines: [
 					{ text: 'Line 1', tags: [] },
@@ -105,16 +107,17 @@ describe('story-message-sender', () => {
 			};
 
 			// Creates messages for: 'Line 1', delay, 'Line 2', delay, buttons.
-			// Buttons can't attach to delay handling message.
 			expect(getMessages(stepData)).to.be.an('array').and.to.have.lengthOf(5);
 
 			stepData.lines[2].text = 'Line 3';
 			const messages = getMessages(stepData);
-			// Creates messages for: 'Line 1', delay, 'Line 2', delay, 'Line 3' + buttons.
-			expect(messages).to.be.an('array').and.to.have.lengthOf(5);
-			// Buttons can now attach to last message.
+			// Creates messages for: 'Line 1', delay, 'Line 2', delay, 'Line 3', buttons.
+			expect(messages).to.be.an('array').and.to.have.lengthOf(6);
+			// Check if buttons get a separate message with no text.
 			expect(messages[4].content).to.equal('Line 3');
-			expect(messages[4].components).to.have.lengthOf(1);
+			expect(messages[4].components).to.be.undefined;
+			expect(messages[5].content).to.be.undefined;
+			expect(messages[5].components).to.have.lengthOf(1);
 		});
 
 		it('applies button styles correctly', () => {
@@ -268,20 +271,6 @@ describe('story-message-sender', () => {
 			expect(messages[3].embeds[0].toJSON().description).to.equal('I am your father!');
 			expect(messages[3].embeds[0].toJSON().author.name).to.equal('Darth Vader');
 			expect(messages[3].embeds[0].toJSON().author.icon_url).to.be.undefined;
-		});
-
-		it('can put choice buttons on character speech embeds', () => {
-			const characters = new Map();
-			characters.set('Bard', { name: 'Bard' });
-			const stepData = {
-				lines: [{ text: 'Bard: Yes?', tags: [] }],
-				choices: [{ index: 0, text: 'Can you play a song?' }],
-				characters
-			};
-			const messages = getMessages(stepData);
-			expect(messages).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[0].embeds).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[0].components).to.be.an('array').and.to.have.lengthOf(1);
 		});
 
 		it('ignores empty character speech lines', () => {
@@ -502,11 +491,11 @@ describe('story-message-sender', () => {
 				isEnd: true
 			};
 			const messages = getMessages(stepData);
-			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
-			expect(messages[0].components).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[1].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
 			expect(messages[1].components).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[1].components[0].components[0].toJSON().custom_id).to.equal(mockStartButtonId);
+			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockStartButtonId);
 		});
 	});
 });

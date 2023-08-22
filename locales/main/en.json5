@@ -500,7 +500,6 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 			'restart-button-label': 'Restart current story',
 			'restart-button-label-short': 'Restart story',
 			'story-line': '{{title}} (by {{author}})',
-			'choice-buttons-header': 'Please choose:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'choice-inputs-dialog-title': 'Fill out to continue playing',
 			'replay-button-label': 'Replay story',

@@ -492,7 +492,6 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 			'restart-button-label': 'Aktuelle Geschichte neu beginnen',
 			'restart-button-label-short': 'Geschichte neu beginnen',
 			'story-line': '{{title}} (von {{author}})',
-			'choice-buttons-header': 'Bitte wähle:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'choice-inputs-dialog-title': 'Ausfüllen zum Weiterspielen',
 			'replay-button-label': 'Geschichte wiederholen',

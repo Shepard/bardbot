@@ -509,7 +509,6 @@
 			'restart-button-label': 'Restart current story',
 			'restart-button-label-short': 'Restart story',
 			'story-line': '{{title}} (by {{author}})',
-			'choice-buttons-header': 'Please choose:',
 			'choice-button-indexed-label': '{{choiceIndex}}. {{choiceText}}',
 			'choice-inputs-dialog-title': 'Fill out to continue playing', // max. 45 characters
 			'replay-button-label': 'Replay story',
