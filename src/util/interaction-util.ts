@@ -18,7 +18,8 @@ import {
 	ChatInputCommandInteraction,
 	StringSelectMenuInteraction,
 	ComponentType,
-	ModalMessageModalSubmitInteraction
+	ModalMessageModalSubmitInteraction,
+	ChannelSelectMenuInteraction
 } from 'discord.js';
 import { TFunction, TOptions, StringMap } from 'i18next';
 import { ReplyableInteraction, Components } from './interaction-types.js';
@@ -188,7 +189,7 @@ export async function resetSelectionButtons(
 	});
 }
 
-export async function disableButtons(interaction: MessageComponentInteraction) {
+export async function disableButtons(interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction) {
 	await changeButtons(interaction, button => {
 		button.disabled = true;
 	});
@@ -260,8 +261,24 @@ export function isStringSelectMenuInteraction(
 	);
 }
 
+export function isChannelSelectMenuInteraction(
+	interaction: ChatInputCommandInteraction | MessageComponentInteraction
+): interaction is ChannelSelectMenuInteraction {
+	const channelSelectInteraction = interaction as ChannelSelectMenuInteraction;
+	return (
+		channelSelectInteraction.componentType === ComponentType.ChannelSelect &&
+		channelSelectInteraction.channels !== undefined
+	);
+}
+
 export function isChatInputCommandInteraction(
 	interaction: ChatInputCommandInteraction | MessageComponentInteraction
 ): interaction is ChatInputCommandInteraction {
 	return (interaction as ChatInputCommandInteraction).options !== undefined;
+}
+
+export function isModalSubmitInteraction(
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction
+): interaction is ModalMessageModalSubmitInteraction {
+	return (interaction as ModalMessageModalSubmitInteraction).fields !== undefined;
 }

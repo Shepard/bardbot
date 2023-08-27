@@ -98,6 +98,7 @@ export enum StoryStatus {
 	Draft = 'Draft',
 	Testing = 'Testing',
 	Published = 'Published',
+	Unlisted = 'Unlisted',
 	ToBeDeleted = 'ToBeDeleted'
 }
 

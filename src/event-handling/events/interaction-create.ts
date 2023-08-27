@@ -44,7 +44,7 @@ async function handleInteraction(interaction: BaseInteraction) {
 		}
 	} else if (interaction.isModalSubmit()) {
 		await handleComponent(interaction, true);
-	} else if (interaction.isButton() || interaction.isStringSelectMenu()) {
+	} else if (interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu()) {
 		await handleComponent(interaction, false);
 	}
 }

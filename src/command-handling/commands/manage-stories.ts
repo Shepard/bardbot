@@ -15,7 +15,14 @@ import {
 	InteractionReplyOptions,
 	ButtonBuilder,
 	MessageComponentInteraction,
-	ModalSubmitInteraction
+	ModalSubmitInteraction,
+	StringSelectMenuBuilder,
+	ChannelSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+	ChannelType,
+	ModalMessageModalSubmitInteraction,
+	APIStringSelectComponent,
+	AnyComponent
 } from 'discord.js';
 import { Logger } from 'pino';
 import axios from 'axios';
@@ -37,7 +44,8 @@ import {
 	publishStory,
 	markStoryForDeletion,
 	setStoryStatus,
-	deleteStory
+	deleteStory,
+	publishStoryUnlisted
 } from '../../storage/story-dao.js';
 import {
 	AUTOCOMPLETE_CHOICE_LIMIT,
@@ -50,7 +58,9 @@ import {
 	warningReply,
 	disableButtons,
 	isStringSelectMenuInteraction,
-	isChatInputCommandInteraction
+	isChatInputCommandInteraction,
+	isChannelSelectMenuInteraction,
+	isModalSubmitInteraction
 } from '../../util/interaction-util.js';
 import { probeStory, stopStoryPlayAndInformPlayers } from '../../story/story-engine.js';
 import { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
@@ -68,6 +78,8 @@ const MAX_TITLE_LENGTH = COMMAND_OPTION_CHOICE_NAME_CHARACTER_LIMIT;
 const MAX_AUTHOR_LENGTH = 100;
 // Something that will easily fit into a message.
 const MAX_TEASER_LENGTH = 1000;
+
+const CHANNEL_MENTION_PATTERN = /<#(\d+)>/;
 
 const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 	configuration: {
@@ -172,10 +184,13 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			return [];
 		}
 	},
-	async modalInteraction(interaction, innerCustomId, { t, logger }) {
+	async modalInteraction(interaction, innerCustomId, { t, logger, guildConfig }) {
 		if (innerCustomId.startsWith('metadata ')) {
 			const storyId = innerCustomId.substring('metadata '.length);
 			await handleMetadataDialogSubmit(storyId, interaction, t, logger);
+		} else if (innerCustomId.startsWith('custom-message-post ') && interaction.isFromMessage()) {
+			const storyId = innerCustomId.substring('custom-message-post '.length);
+			await handlePublishStory(interaction, storyId, true, t, guildConfig, logger);
 		} else {
 			await warningReply(interaction, t.userShared('unknown-command'));
 		}
@@ -192,9 +207,24 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			const storyId = innerCustomId.substring('undo-delete '.length, spaceIndex);
 			const previousStatus = innerCustomId.substring(spaceIndex + 1);
 			await handleUndoDeleteStory(interaction, storyId, previousStatus, t, logger);
+		} else if (innerCustomId.startsWith('publish-wizard ')) {
+			const storyId = innerCustomId.substring('publish-wizard '.length);
+			await handleShowPublishStoryWizard(interaction, storyId, null, t);
+		} else if (innerCustomId.startsWith('publish-listed ')) {
+			const storyId = innerCustomId.substring('publish-listed '.length);
+			await handleShowPublishStoryWizard(interaction, storyId, 'publish-listed', t);
+		} else if (innerCustomId.startsWith('publish-in-channel ')) {
+			const storyId = innerCustomId.substring('publish-in-channel '.length);
+			await handleShowPublishStoryWizard(interaction, storyId, 'publish-in-channel', t);
+		} else if (innerCustomId.startsWith('publish-and-post ')) {
+			const storyId = innerCustomId.substring('publish-and-post '.length);
+			await handlePublishStory(interaction, storyId, true, t, guildConfig, logger);
+		} else if (innerCustomId.startsWith('publish-with-custom-message ')) {
+			const storyId = innerCustomId.substring('publish-with-custom-message '.length);
+			await handleTriggerCustomPublishMessageDialog(interaction, storyId, t);
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
-			await handlePublishStory(interaction, storyId, t, guildConfig, logger);
+			await handlePublishStory(interaction, storyId, false, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('post ')) {
 			const storyId = innerCustomId.substring('post '.length);
 			await handlePostStory(interaction, storyId, guildConfig, logger);
@@ -274,7 +304,7 @@ async function handleCreateStory(
 			const buttons = [
 				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
 				getPlaytestButton(t, storyId, interaction.guildId),
-				getPublishButton(t, storyId)
+				getPublishWizardButton(t, storyId)
 			];
 			reply = {
 				content,
@@ -474,7 +504,7 @@ async function handleEditStory(
 			buttons = [
 				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
 				getPlaytestButton(t, storyId, interaction.guildId),
-				getPublishButton(t, storyId)
+				getPublishWizardButton(t, storyId)
 			];
 		} else {
 			buttons = [
@@ -520,7 +550,7 @@ async function handleDeleteStory(
 	}
 
 	if (story) {
-		if (story.status === StoryStatus.Published) {
+		if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
 			// Deleting stories that have already been published is a bit more "catastrophic",
 			// so to prevent user error, they don't get deleted straight away.
 			// They just get made unavailable and the user can undo this.
@@ -596,7 +626,7 @@ async function handleUndoDeleteStory(
 
 /**
  * The difference to "/story show" is that it will show stories that are not visible to others
- * (e.g. because they have unlock triggers or are in a testing status)
+ * (e.g. because they are unlisted or are in a testing status)
  * and that it will list more details about a story and show different actions.
  */
 async function handleShowStories(
@@ -634,8 +664,10 @@ async function handleShowStories(
 		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
 		if (story.status === StoryStatus.Testing) {
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
-			buttons.push(getPublishButton(t, storyId));
-		} else if (story.status === StoryStatus.Published) {
+			buttons.push(getPublishWizardButton(t, storyId));
+		} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
+			// TODO regular post & custom post buttons.
+			// TODO button to make it listed if it's not.
 			buttons.push(getPostButton(t, storyId));
 			// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 		}
@@ -688,7 +720,7 @@ async function handleShowStories(
 						components: [
 							{
 								type: ComponentType.StringSelect,
-								custom_id: getConfigStoryComponentId('show'),
+								custom_id: getManageStoriesComponentId('show'),
 								placeholder: t.userShared('show-story-details-select-label'),
 								options
 							}
@@ -719,8 +751,35 @@ function getDeleteButton(t: ContextTranslatorFunctions, storyId: string) {
 	return getTranslatedConfigStoryButton(t, 'delete-button-label', 'delete ' + storyId, ButtonStyle.Danger);
 }
 
+function getPublishWizardButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'publish-wizard-button-label',
+		'publish-wizard ' + storyId,
+		ButtonStyle.Success
+	);
+}
+
+function getPublishAndPostButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'publish-and-post-button-label',
+		'publish-and-post ' + storyId,
+		ButtonStyle.Success
+	);
+}
+
+function getPublishWithCustomMessageButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'publish-with-custom-message-button-label',
+		'publish-with-custom-message ' + storyId,
+		ButtonStyle.Secondary
+	);
+}
+
 function getPublishButton(t: ContextTranslatorFunctions, storyId: string) {
-	return getTranslatedConfigStoryButton(t, 'publish-button-label', 'publish ' + storyId, ButtonStyle.Success);
+	return getTranslatedConfigStoryButton(t, 'publish-button-label', 'publish ' + storyId, ButtonStyle.Secondary);
 }
 
 function getPostButton(t: ContextTranslatorFunctions, storyId: string) {
@@ -757,11 +816,11 @@ function getConfigStoryButton(
 		type: ComponentType.Button,
 		style,
 		label,
-		custom_id: getConfigStoryComponentId(innerCustomId)
+		custom_id: getManageStoriesComponentId(innerCustomId)
 	});
 }
 
-function getConfigStoryComponentId(innerCustomId: string) {
+function getManageStoriesComponentId(innerCustomId: string) {
 	return getCustomIdForCommandRouting(manageStoriesCommand, innerCustomId);
 }
 
@@ -792,7 +851,7 @@ async function showMetadataDialog(
 	interaction: MessageComponentInteraction,
 	t: ContextTranslatorFunctions
 ) {
-	const dialogId = getCustomIdForCommandRouting(manageStoriesCommand, 'metadata ' + storyRecord.id);
+	const dialogId = getManageStoriesComponentId('metadata ' + storyRecord.id);
 	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('metadata-dialog-title'));
 
 	const titleField = new TextInputBuilder()
@@ -882,14 +941,9 @@ async function handleMetadataDialogSubmit(
 		let content = t.user('reply.story-metadata-updated');
 		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
 		if (storyRecord.status === StoryStatus.Testing) {
-			content +=
-				'\n' +
-				t.user('reply.story-possible-actions-in-testing', {
-					command: '/manage-stories show',
-					guildId: interaction.guildId
-				});
+			content += '\n' + t.user('reply.story-possible-actions-in-testing');
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
-			buttons.push(getPublishButton(t, storyId));
+			buttons.push(getPublishWizardButton(t, storyId));
 		}
 		if (interaction.isFromMessage()) {
 			await interaction.update({
@@ -910,16 +964,229 @@ async function handleMetadataDialogSubmit(
 	}
 }
 
-async function handlePublishStory(
+/**
+ * This receives both the initial button click to launch the publish wizard,
+ * as well as updates to the wizard (when selecting values in the drop-downs).
+ */
+async function handleShowPublishStoryWizard(
 	interaction: MessageComponentInteraction,
 	storyId: string,
+	updateField: string | null,
+	t: ContextTranslatorFunctions
+) {
+	const { listed, channelToPostIn } = getPublishWizardSettingsFromMessage(interaction, updateField);
+
+	let content = t.user('reply.publish-wizard-intro', {
+		command1: '/story start',
+		command2: '/manage-stories show',
+		guildId: interaction.guildId
+	});
+
+	const embeds = [];
+	if (listed) {
+		embeds.push(
+			new EmbedBuilder().setDescription(
+				t.user('reply.publish-wizard-listed', {
+					command: '/story start',
+					guildId: interaction.guildId
+				})
+			)
+		);
+	} else {
+		embeds.push(
+			new EmbedBuilder().setDescription(
+				t.user('reply.publish-wizard-unlisted', {
+					command: '/story start',
+					guildId: interaction.guildId
+				})
+			)
+		);
+	}
+	if (channelToPostIn === interaction.channelId) {
+		embeds.push(new EmbedBuilder().setDescription(t.user('reply.publish-wizard-this-channel')));
+	} else {
+		embeds.push(
+			new EmbedBuilder().setDescription(t.user('reply.publish-wizard-channel-mention', { channel: channelToPostIn }))
+		);
+	}
+
+	const listedSelect = [
+		new StringSelectMenuBuilder()
+			.setCustomId(getManageStoriesComponentId('publish-listed ' + storyId))
+			.setOptions(
+				new StringSelectMenuOptionBuilder()
+					.setLabel(t.user('publish-wizard-listed-option-label'))
+					.setValue('true')
+					.setDefault(listed),
+				new StringSelectMenuOptionBuilder()
+					.setLabel(t.user('publish-wizard-unlisted-option-label'))
+					.setValue('false')
+					.setDefault(!listed)
+			)
+	];
+	const channelSelect = [
+		// Unfortunately we can't prefill channel selects with previous values yet, so we have to show the current state in the message instead.
+		new ChannelSelectMenuBuilder()
+			.setCustomId(getManageStoriesComponentId('publish-in-channel ' + storyId))
+			.setPlaceholder(t.user('publish-wizard-post-where-placeholder'))
+			.setChannelTypes(
+				ChannelType.GuildText,
+				ChannelType.GuildForum,
+				ChannelType.GuildAnnouncement,
+				ChannelType.PublicThread,
+				ChannelType.PrivateThread,
+				ChannelType.AnnouncementThread
+			)
+	];
+
+	// TODO later: publish a story for everyone or selectively or set unlock triggers
+	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
+
+	const buttons = [
+		getPublishAndPostButton(t, storyId),
+		getPublishWithCustomMessageButton(t, storyId),
+		getPublishButton(t, storyId)
+	];
+
+	if (updateField) {
+		await interaction.update({
+			content,
+			embeds,
+			components: [
+				{
+					type: ComponentType.ActionRow,
+					components: listedSelect
+				},
+				{
+					type: ComponentType.ActionRow,
+					components: channelSelect
+				},
+				{
+					type: ComponentType.ActionRow,
+					components: buttons
+				}
+			]
+		});
+	} else {
+		// Make sure previous message can't be interacted with anymore.
+		await disableButtons(interaction);
+		await interaction.followUp({
+			content,
+			embeds,
+			components: [
+				{
+					type: ComponentType.ActionRow,
+					components: listedSelect
+				},
+				{
+					type: ComponentType.ActionRow,
+					components: channelSelect
+				},
+				{
+					type: ComponentType.ActionRow,
+					components: buttons
+				}
+			],
+			ephemeral: true
+		});
+	}
+}
+
+function getPublishWizardSettingsFromMessage(interaction: MessageComponentInteraction, updateField: string | null) {
+	// Default values of these two settings
+	let listed = true;
+	let channelToPostIn = interaction.channelId;
+	// User updates one field: Extract the value of the other from the message.
+	if (updateField === 'publish-listed' && isStringSelectMenuInteraction(interaction) && interaction.values.length) {
+		listed = interaction.values[0] === 'true';
+		// We only receive the value of the field that changed. So we have to get the value of the other field in some other way somehow.
+		// Unfortunately Discord does not provide a way. We could persist this in the database which seems like overkill for wizard data.
+		// Or we could encode it in all the custom ids, but they don't provide enough space.
+		// Instead, we try to extract it back from the message sent to the user.
+		const channelIdFromMention = getChannelIdFromMention(interaction);
+		if (channelIdFromMention) {
+			channelToPostIn = channelIdFromMention;
+		}
+	} else if (
+		updateField === 'publish-in-channel' &&
+		isChannelSelectMenuInteraction(interaction) &&
+		interaction.channels.size
+	) {
+		channelToPostIn = interaction.channels.first().id;
+		// In this case we can get the value of the other field in a hacky way: We set it as the default value of the field so we can use that
+		// setting to retrieve the value again.
+		listed = getListedSettingFromMessage(interaction);
+	}
+	return { listed, channelToPostIn };
+}
+
+function getListedSettingFromMessage(
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction
+): boolean {
+	const actionRows = interaction.message.components;
+	if (actionRows?.length) {
+		const firstRowComponents = actionRows[0].components;
+		if (firstRowComponents?.length) {
+			const firstComponentData = firstRowComponents[0].data;
+			if (isStringSelectComponent(firstComponentData) && firstComponentData.options.length) {
+				return firstComponentData.options[0].default === true;
+			}
+		}
+	}
+	return false;
+}
+
+function isStringSelectComponent(component: AnyComponent): component is APIStringSelectComponent {
+	return (component as APIStringSelectComponent).options !== undefined;
+}
+
+function getChannelIdFromMention(interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction) {
+	for (const embed of interaction.message.embeds) {
+		const channelMatch = embed.description.match(CHANNEL_MENTION_PATTERN);
+		if (channelMatch) {
+			return channelMatch[1];
+		}
+	}
+	return null;
+}
+
+async function handleTriggerCustomPublishMessageDialog(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	t: ContextTranslatorFunctions
+) {
+	const dialogId = getManageStoriesComponentId('custom-message-post ' + storyId);
+	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('custom-message-post-dialog-title'));
+
+	const customMessageField = new TextInputBuilder()
+		.setCustomId('custom-message-post-dialog-field')
+		.setLabel(t.user('custom-message-post-dialog-field-label'))
+		.setStyle(TextInputStyle.Paragraph)
+		.setRequired(false)
+		.setMinLength(1)
+		// Kinda arbitrary limit for the message.
+		.setMaxLength(MAX_TEASER_LENGTH);
+
+	metadataDialog.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(customMessageField));
+
+	await interaction.showModal(metadataDialog);
+}
+
+async function handlePublishStory(
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction,
+	storyId: string,
+	post: boolean,
 	t: ContextTranslatorFunctions,
 	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
 	let found: boolean;
 	try {
-		found = publishStory(storyId, interaction.guildId);
+		if (getListedSettingFromMessage(interaction)) {
+			found = publishStory(storyId, interaction.guildId);
+		} else {
+			found = publishStoryUnlisted(storyId, interaction.guildId);
+		}
 	} catch (error) {
 		logger.error(error, 'Error while trying to publish story %s.', storyId);
 		await errorReply(interaction, t.user('reply.publish-failure'));
@@ -928,15 +1195,21 @@ async function handlePublishStory(
 
 	if (found) {
 		await disableButtons(interaction);
-		await postStory(storyId, true, interaction, guildConfig, logger);
+		if (post) {
+			let customMessage = null;
+			if (isModalSubmitInteraction(interaction)) {
+				customMessage = interaction.fields.getTextInputValue('custom-message-post-dialog-field') ?? '';
+			}
+			const channelIdFromMention = getChannelIdFromMention(interaction);
+			await postStory(storyId, customMessage, channelIdFromMention, interaction, guildConfig, logger);
+		} else {
+			await t.privateReply(interaction, 'reply.publish-success');
+		}
 
 		await updateCommandsAfterConfigChange(interaction, logger);
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}
-
-	// TODO later: via config commands you can publish a story for everyone or selectively or you can set unlock triggers
-	//  so stories become available to someone if they e.g. completed another story (or got a certain ending in it).
 }
 
 async function handlePostStory(
@@ -945,7 +1218,8 @@ async function handlePostStory(
 	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
-	await postStory(storyId, true, interaction, guildConfig, logger);
+	// TODO this should handle both a simple post and a custom post
+	await postStory(storyId, null, null, interaction, guildConfig, logger);
 }
 
 export default manageStoriesCommand;

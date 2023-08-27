@@ -12,7 +12,9 @@ import {
 	ModalBuilder,
 	TextInputBuilder,
 	TextInputStyle,
-	ActionRowBuilder
+	ActionRowBuilder,
+	ModalMessageModalSubmitInteraction,
+	TextBasedChannel
 } from 'discord.js';
 import { TFunction } from 'i18next';
 import { Logger } from 'pino';
@@ -279,7 +281,7 @@ async function handleShowStories(
 	}
 
 	if (storyId) {
-		await postStoryInner(storyId, false, interaction, t, logger);
+		await postStoryInner(storyId, false, '', null, interaction, t, logger);
 	} else {
 		// TODO later: not all stories might be available to the current user straight away. some might get unlocked by finishing other stories. saved as flags for user.
 		let guildStories: StoryRecord[] = null;
@@ -327,20 +329,23 @@ async function handleShowStories(
 
 export async function postStory(
 	storyId: string,
-	publicly: boolean,
-	interaction: ChatInputCommandInteraction | MessageComponentInteraction,
+	customMessage: string | null,
+	channelId: string | null,
+	interaction: ChatInputCommandInteraction | MessageComponentInteraction | ModalMessageModalSubmitInteraction,
 	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
 	// Make sure we use a translator tailored to this command when called from somewhere else, so that we can get to the right tanslations.
 	const storyT = getTranslatorForInteraction(interaction, storyCommand, guildConfig);
-	await postStoryInner(storyId, publicly, interaction, storyT, logger);
+	await postStoryInner(storyId, true, customMessage, channelId, interaction, storyT, logger);
 }
 
 async function postStoryInner(
 	storyId: string,
 	publicly: boolean,
-	interaction: ChatInputCommandInteraction | MessageComponentInteraction,
+	customMessage: string | null,
+	channelId: string | null,
+	interaction: ChatInputCommandInteraction | MessageComponentInteraction | ModalMessageModalSubmitInteraction,
 	t: ContextTranslatorFunctions,
 	logger: Logger
 ) {
@@ -356,7 +361,7 @@ async function postStoryInner(
 		await warningReply(interaction, t.userShared('story-not-found'));
 		return;
 	}
-	if (publicly && story.status !== StoryStatus.Published) {
+	if (publicly && story.status !== StoryStatus.Published && story.status !== StoryStatus.Unlisted) {
 		await warningReply(interaction, t.user('reply.story-not-published'));
 		return;
 	}
@@ -366,10 +371,17 @@ async function postStoryInner(
 
 	let content: string;
 	if (publicly) {
-		content = postIntroMessages.any(t.guild);
+		if (customMessage !== null) {
+			content = customMessage;
+		} else {
+			content = postIntroMessages.any(t.guild);
+		}
 	}
 
-	const storyEmbed = getDefaultStoryEmbed(story);
+	const embeds = [];
+	if (customMessage === null) {
+		embeds.push(getDefaultStoryEmbed(story));
+	}
 	const components = [
 		{
 			type: ComponentType.ActionRow,
@@ -378,11 +390,14 @@ async function postStoryInner(
 	];
 	const message = {
 		content,
-		embeds: [storyEmbed],
+		embeds,
 		components,
 		ephemeral: !publicly
 	};
-	if (interaction.replied) {
+	if (channelId) {
+		const channel = interaction.client.channels.cache.get(channelId) as TextBasedChannel;
+		await channel.send(message);
+	} else if (interaction.replied) {
 		await interaction.followUp(message);
 	} else {
 		await interaction.reply(message);

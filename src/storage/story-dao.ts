@@ -64,7 +64,7 @@ registerDbInitialisedListener(() => {
 	getPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and owner_id = :userId)) ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR ((status = 'Testing' OR status = 'Unlisted') AND owner_id = :userId)) ORDER BY title"
 	);
 	findMatchingStoriesStatement = db.prepare(
 		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
@@ -74,7 +74,7 @@ registerDbInitialisedListener(() => {
 	findMatchingPublishedStoriesStatement = db.prepare(
 		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
-			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR (status = 'Testing' and owner_id = :userId)) AND title LIKE :pattern ESCAPE '#' ORDER BY title"
+			"FROM story WHERE guild_id = :guildId AND (status = 'Published' OR ((status = 'Testing' OR status = 'Unlisted') AND owner_id = :userId)) AND title LIKE :pattern ESCAPE '#' ORDER BY title"
 	);
 	countStoriesStatement = db
 		.prepare("SELECT count(id) FROM story WHERE guild_id = :guildId AND status != 'Draft' AND status != 'ToBeDeleted'")
@@ -309,6 +309,10 @@ export function moveStoryToTesting(storyId: string, guildId: string) {
 
 export function publishStory(storyId: string, guildId: string) {
 	return setStoryStatus(storyId, guildId, StoryStatus.Published);
+}
+
+export function publishStoryUnlisted(storyId: string, guildId: string) {
+	return setStoryStatus(storyId, guildId, StoryStatus.Unlisted);
 }
 
 /**
