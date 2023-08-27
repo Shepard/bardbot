@@ -240,6 +240,8 @@
 			'custom-message-post-dialog-field-label': 'Text for story post',
 			'post-button-label': 'Post story publicly',
 			'post-with-custom-message-button-label': 'Post with custom message',
+			'make-listed-button-label': 'Change to listed',
+			'make-unlisted-button-label': 'Change to unlisted',
 			'metadata-dialog-title': 'Edit story metadata',
 			'metadata-dialog-title-field-label': 'Title',
 			'metadata-dialog-author-field-label': 'Author',
@@ -279,6 +281,7 @@ You can decide to publish the story but not have it show up anywhere yet. You wi
 				'publish-wizard-channel-mention': 'The story will be posted in the channel {{channel, channelmention}}. Change below.',
 				'publish-success': 'The story has been successfully published.',
 				'publish-failure': 'Publishing the story failed.',
+				'change-listed-status-failure': 'Changing the listed status of the story failed.',
 				'no-stories-in-server': 'There are no stories on this server yet.'
 			}
 		},

@@ -234,6 +234,12 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 		} else if (innerCustomId.startsWith('post-with-custom-message ')) {
 			const storyId = innerCustomId.substring('post-with-custom-message '.length);
 			await handleTriggerCustomPostMessageDialog(interaction, storyId, false, t);
+		} else if (innerCustomId.startsWith('make-listed ')) {
+			const storyId = innerCustomId.substring('make-listed '.length);
+			await handleChangeListedStatus(interaction, storyId, true, t, logger);
+		} else if (innerCustomId.startsWith('make-unlisted ')) {
+			const storyId = innerCustomId.substring('make-unlisted '.length);
+			await handleChangeListedStatus(interaction, storyId, false, t, logger);
 		} else if (innerCustomId.startsWith('show')) {
 			await handleShowStories(interaction, t, logger);
 		} else {
@@ -662,33 +668,7 @@ async function handleShowStories(
 			return;
 		}
 
-		const storyEmbed = getDefaultStoryEmbed(story);
-		storyEmbed.addFields([
-			{ name: t.user('show-field-owner'), value: userMention(story.ownerId), inline: false },
-			{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
-		]);
-		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
-		if (story.status === StoryStatus.Testing) {
-			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
-			buttons.push(getPublishWizardButton(t, storyId));
-		} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
-			buttons.push(getPostButton(t, storyId));
-			buttons.push(getPostWithCustomMessageButton(t, storyId));
-			// TODO button to make it listed if it's not.
-			// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
-		}
-		buttons.push(getDeleteButton(t, storyId));
-		const components = [
-			{
-				type: ComponentType.ActionRow,
-				components: buttons
-			}
-		];
-		await interaction.reply({
-			embeds: [storyEmbed],
-			components,
-			ephemeral: true
-		});
+		await interaction.reply(getShowStoryMessage(story, interaction, t));
 	} else {
 		let guildStories: StoryRecord[] = [];
 		try {
@@ -739,6 +719,45 @@ async function handleShowStories(
 			await t.privateReply(interaction, 'reply.no-stories-in-server');
 		}
 	}
+}
+
+function getShowStoryMessage(
+	story: StoryRecord,
+	interaction: ChatInputCommandInteraction | MessageComponentInteraction,
+	t: ContextTranslatorFunctions
+) {
+	const storyEmbed = getDefaultStoryEmbed(story);
+	storyEmbed.addFields([
+		{ name: t.user('show-field-owner'), value: userMention(story.ownerId), inline: false },
+		{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
+	]);
+	const buttons = [getEditMetadataButton(t, story.id, ButtonStyle.Secondary)];
+	if (story.status === StoryStatus.Testing) {
+		buttons.push(getPlaytestButton(t, story.id, interaction.guildId));
+		buttons.push(getPublishWizardButton(t, story.id));
+	} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
+		buttons.push(getPostButton(t, story.id));
+		buttons.push(getPostWithCustomMessageButton(t, story.id));
+		if (story.status === StoryStatus.Unlisted) {
+			buttons.push(getMakeListedButton(t, story.id));
+		} else {
+			buttons.push(getMakeUnlistedButton(t, story.id));
+		}
+		// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
+	}
+	buttons.push(getDeleteButton(t, story.id));
+	const components = [
+		{
+			type: ComponentType.ActionRow,
+			components: buttons
+		}
+	];
+
+	return {
+		embeds: [storyEmbed],
+		components,
+		ephemeral: true
+	};
 }
 
 function getEditMetadataButton(
@@ -797,6 +816,19 @@ function getPostWithCustomMessageButton(t: ContextTranslatorFunctions, storyId: 
 		t,
 		'post-with-custom-message-button-label',
 		'post-with-custom-message ' + storyId,
+		ButtonStyle.Secondary
+	);
+}
+
+function getMakeListedButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(t, 'make-listed-button-label', 'make-listed ' + storyId, ButtonStyle.Secondary);
+}
+
+function getMakeUnlistedButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'make-unlisted-button-label',
+		'make-unlisted ' + storyId,
 		ButtonStyle.Secondary
 	);
 }
@@ -1243,6 +1275,48 @@ async function handlePostStory(
 		customMessage = interaction.fields.getTextInputValue('custom-message-post-dialog-field') ?? '';
 	}
 	await postStory(storyId, customMessage, null, interaction, guildConfig, logger);
+}
+
+async function handleChangeListedStatus(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	makeListed: boolean,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	let found: boolean;
+	try {
+		if (makeListed) {
+			found = setStoryStatus(storyId, interaction.guildId, StoryStatus.Published, StoryStatus.Unlisted);
+		} else {
+			found = setStoryStatus(storyId, interaction.guildId, StoryStatus.Unlisted, StoryStatus.Published);
+		}
+	} catch (error) {
+		logger.error(error, 'Error while trying to change listed status of story %s.', storyId);
+		await errorReply(interaction, t.user('reply.change-listed-status-failure'));
+		return;
+	}
+
+	if (found) {
+		let story: StoryRecord | null = null;
+		try {
+			story = getStory(storyId, interaction.guildId);
+		} catch (error) {
+			logger.error(error, 'Error while trying to fetch story %s from database', storyId);
+			await errorReply(interaction, t.userShared('story-db-fetch-error'));
+			return;
+		}
+		if (!story) {
+			await warningReply(interaction, t.userShared('story-not-found'));
+			return;
+		}
+
+		await interaction.update(getShowStoryMessage(story, interaction, t));
+
+		await updateCommandsAfterConfigChange(interaction, logger);
+	} else {
+		await warningReply(interaction, t.userShared('story-not-found'));
+	}
 }
 
 export default manageStoriesCommand;

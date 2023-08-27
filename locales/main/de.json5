@@ -229,6 +229,8 @@
 			'custom-message-post-dialog-field-label': 'Text für Geschichts-Post',
 			'post-button-label': 'Geschichte öffentlich posten',
 			'post-with-custom-message-button-label': 'Mit eigener Nachricht posten',
+			'make-listed-button-label': 'Auf gelistet umstellen',
+			'make-unlisted-button-label': 'Auf ungelistet umstellen',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
 			'metadata-dialog-title-field-label': 'Titel',
 			'metadata-dialog-author-field-label': 'Verfassende Person',
@@ -268,6 +270,7 @@ Du kannst Dich entscheiden, die Geschichte zu veröffentlichen, aber sie noch ni
 				'publish-wizard-channel-mention': 'Die Geschichte wird in den Kanal {{channel, channelmention}} gepostet. Unten ändern.',
 				'publish-success': 'Die Geschichte wurde erfolgreich veröffentlicht.',
 				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
+				'change-listed-status-failure': 'Änderung des Gelistet-Status der Geschichte fehlgeschlagen.',
 				'no-stories-in-server': 'Es gibt auf diesem Server noch keine Geschichten.'
 			}
 		},
