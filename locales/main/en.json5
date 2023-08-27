@@ -233,6 +233,7 @@
 			'custom-message-post-dialog-title': 'Enter your custom message',
 			'custom-message-post-dialog-field-label': 'Text for story post',
 			'post-button-label': 'Post story publicly',
+			'post-with-custom-message-button-label': 'Post with custom message',
 			'metadata-dialog-title': 'Edit story metadata',
 			'metadata-dialog-title-field-label': 'Title',
 			'metadata-dialog-author-field-label': 'Author',

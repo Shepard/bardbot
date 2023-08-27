@@ -188,9 +188,12 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 		if (innerCustomId.startsWith('metadata ')) {
 			const storyId = innerCustomId.substring('metadata '.length);
 			await handleMetadataDialogSubmit(storyId, interaction, t, logger);
+		} else if (innerCustomId.startsWith('publish-custom-message-post ') && interaction.isFromMessage()) {
+			const storyId = innerCustomId.substring('publish-custom-message-post '.length);
+			await handlePublishStory(interaction, storyId, true, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('custom-message-post ') && interaction.isFromMessage()) {
 			const storyId = innerCustomId.substring('custom-message-post '.length);
-			await handlePublishStory(interaction, storyId, true, t, guildConfig, logger);
+			await handlePostStory(interaction, storyId, guildConfig, logger);
 		} else {
 			await warningReply(interaction, t.userShared('unknown-command'));
 		}
@@ -221,13 +224,16 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			await handlePublishStory(interaction, storyId, true, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('publish-with-custom-message ')) {
 			const storyId = innerCustomId.substring('publish-with-custom-message '.length);
-			await handleTriggerCustomPublishMessageDialog(interaction, storyId, t);
+			await handleTriggerCustomPostMessageDialog(interaction, storyId, true, t);
 		} else if (innerCustomId.startsWith('publish ')) {
 			const storyId = innerCustomId.substring('publish '.length);
 			await handlePublishStory(interaction, storyId, false, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('post ')) {
 			const storyId = innerCustomId.substring('post '.length);
 			await handlePostStory(interaction, storyId, guildConfig, logger);
+		} else if (innerCustomId.startsWith('post-with-custom-message ')) {
+			const storyId = innerCustomId.substring('post-with-custom-message '.length);
+			await handleTriggerCustomPostMessageDialog(interaction, storyId, false, t);
 		} else if (innerCustomId.startsWith('show')) {
 			await handleShowStories(interaction, t, logger);
 		} else {
@@ -666,9 +672,9 @@ async function handleShowStories(
 			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
 			buttons.push(getPublishWizardButton(t, storyId));
 		} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
-			// TODO regular post & custom post buttons.
-			// TODO button to make it listed if it's not.
 			buttons.push(getPostButton(t, storyId));
+			buttons.push(getPostWithCustomMessageButton(t, storyId));
+			// TODO button to make it listed if it's not.
 			// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 		}
 		buttons.push(getDeleteButton(t, storyId));
@@ -784,6 +790,15 @@ function getPublishButton(t: ContextTranslatorFunctions, storyId: string) {
 
 function getPostButton(t: ContextTranslatorFunctions, storyId: string) {
 	return getTranslatedConfigStoryButton(t, 'post-button-label', 'post ' + storyId, ButtonStyle.Secondary);
+}
+
+function getPostWithCustomMessageButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'post-with-custom-message-button-label',
+		'post-with-custom-message ' + storyId,
+		ButtonStyle.Secondary
+	);
 }
 
 function getPlaytestButton(t: ContextTranslatorFunctions, storyId: string, guildId: string) {
@@ -1150,12 +1165,17 @@ function getChannelIdFromMention(interaction: MessageComponentInteraction | Moda
 	return null;
 }
 
-async function handleTriggerCustomPublishMessageDialog(
+async function handleTriggerCustomPostMessageDialog(
 	interaction: MessageComponentInteraction,
 	storyId: string,
+	publish: boolean,
 	t: ContextTranslatorFunctions
 ) {
-	const dialogId = getManageStoriesComponentId('custom-message-post ' + storyId);
+	let commandPrefix = 'custom-message-post ';
+	if (publish) {
+		commandPrefix = 'publish-custom-message-post ';
+	}
+	const dialogId = getManageStoriesComponentId(commandPrefix + storyId);
 	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('custom-message-post-dialog-title'));
 
 	const customMessageField = new TextInputBuilder()
@@ -1213,13 +1233,16 @@ async function handlePublishStory(
 }
 
 async function handlePostStory(
-	interaction: MessageComponentInteraction,
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction,
 	storyId: string,
 	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
-	// TODO this should handle both a simple post and a custom post
-	await postStory(storyId, null, null, interaction, guildConfig, logger);
+	let customMessage = null;
+	if (isModalSubmitInteraction(interaction)) {
+		customMessage = interaction.fields.getTextInputValue('custom-message-post-dialog-field') ?? '';
+	}
+	await postStory(storyId, customMessage, null, interaction, guildConfig, logger);
 }
 
 export default manageStoriesCommand;

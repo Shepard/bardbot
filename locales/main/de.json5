@@ -228,6 +228,7 @@
 			'custom-message-post-dialog-title': 'Eigene Nachricht eingeben',
 			'custom-message-post-dialog-field-label': 'Text für Geschichts-Post',
 			'post-button-label': 'Geschichte öffentlich posten',
+			'post-with-custom-message-button-label': 'Mit eigener Nachricht posten',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
 			'metadata-dialog-title-field-label': 'Titel',
 			'metadata-dialog-author-field-label': 'Verfassende Person',
