@@ -222,6 +222,7 @@
 			'story-line': '{{title}} (by {{author}}) [{{status}}]',
 			'story-status-Testing': 'Testing',
 			'story-status-Published': 'Published',
+			'story-status-Unlisted': 'Unlisted',
 			'show-field-owner': 'Owner',
 			'show-field-status': 'Status',
 			'delete-button-label': 'Delete story',

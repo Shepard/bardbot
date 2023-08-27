@@ -211,6 +211,7 @@
 			'story-line': '{{title}} (von {{author}}) [{{status}}]',
 			'story-status-Testing': 'Im Test',
 			'story-status-Published': 'Veröffentlicht',
+			'story-status-Unlisted': 'Ungelistet',
 			'show-field-owner': 'Verantwortliche Person',
 			'show-field-status': 'Status',
 			'delete-button-label': 'Geschichte löschen',
