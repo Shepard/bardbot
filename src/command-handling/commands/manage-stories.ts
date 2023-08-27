@@ -731,25 +731,31 @@ function getShowStoryMessage(
 		{ name: t.user('show-field-owner'), value: userMention(story.ownerId), inline: false },
 		{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
 	]);
-	const buttons = [getEditMetadataButton(t, story.id, ButtonStyle.Secondary)];
+
+	const editButtons = [getEditMetadataButton(t, story.id, ButtonStyle.Secondary)];
+	const actionButtons = [];
 	if (story.status === StoryStatus.Testing) {
-		buttons.push(getPlaytestButton(t, story.id, interaction.guildId));
-		buttons.push(getPublishWizardButton(t, story.id));
+		actionButtons.push(getPlaytestButton(t, story.id, interaction.guildId));
+		actionButtons.push(getPublishWizardButton(t, story.id));
 	} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
-		buttons.push(getPostButton(t, story.id));
-		buttons.push(getPostWithCustomMessageButton(t, story.id));
 		if (story.status === StoryStatus.Unlisted) {
-			buttons.push(getMakeListedButton(t, story.id));
+			editButtons.push(getMakeListedButton(t, story.id));
 		} else {
-			buttons.push(getMakeUnlistedButton(t, story.id));
+			editButtons.push(getMakeUnlistedButton(t, story.id));
 		}
+		actionButtons.push(getPostButton(t, story.id));
+		actionButtons.push(getPostWithCustomMessageButton(t, story.id));
 		// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 	}
-	buttons.push(getDeleteButton(t, story.id));
+	actionButtons.push(getDeleteButton(t, story.id));
 	const components = [
 		{
 			type: ComponentType.ActionRow,
-			components: buttons
+			components: editButtons
+		},
+		{
+			type: ComponentType.ActionRow,
+			components: actionButtons
 		}
 	];
 
