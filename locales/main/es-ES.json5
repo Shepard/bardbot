@@ -237,7 +237,7 @@
 			'publish-with-custom-message-button-label': 'Publish with custom message post',
 			'publish-button-label': "Publish and don't post",
 			'custom-message-post-dialog-title': 'Enter your custom message',
-			'custom-message-post-dialog-field-label': 'Text for story post',
+			'custom-message-post-dialog-field-label': 'Text for story post (optional)',
 			'post-button-label': 'Post story publicly',
 			'post-with-custom-message-button-label': 'Post with custom message',
 			'make-listed-button-label': 'Change to listed',

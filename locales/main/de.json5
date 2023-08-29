@@ -226,7 +226,7 @@
 			'publish-with-custom-message-button-label': 'Veröffentlichen und mit eigener Nachricht posten',
 			'publish-button-label': 'Veröffentlichen und nicht posten',
 			'custom-message-post-dialog-title': 'Eigene Nachricht eingeben',
-			'custom-message-post-dialog-field-label': 'Text für Geschichts-Post',
+			'custom-message-post-dialog-field-label': 'Text für Geschichts-Post (optional)',
 			'post-button-label': 'Geschichte öffentlich posten',
 			'post-with-custom-message-button-label': 'Mit eigener Nachricht posten',
 			'make-listed-button-label': 'Auf gelistet umstellen',
