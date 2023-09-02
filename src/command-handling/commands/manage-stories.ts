@@ -1214,7 +1214,9 @@ async function handleTriggerCustomPostMessageDialog(
 		commandPrefix = 'publish-custom-message-post ';
 	}
 	const dialogId = getManageStoriesComponentId(commandPrefix + storyId);
-	const metadataDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('custom-message-post-dialog-title'));
+	const customMessagePostDialog = new ModalBuilder()
+		.setCustomId(dialogId)
+		.setTitle(t.user('custom-message-post-dialog-title'));
 
 	const customMessageField = new TextInputBuilder()
 		.setCustomId('custom-message-post-dialog-field')
@@ -1225,9 +1227,9 @@ async function handleTriggerCustomPostMessageDialog(
 		// Kinda arbitrary limit for the message.
 		.setMaxLength(MAX_TEASER_LENGTH);
 
-	metadataDialog.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(customMessageField));
+	customMessagePostDialog.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(customMessageField));
 
-	await interaction.showModal(metadataDialog);
+	await interaction.showModal(customMessagePostDialog);
 }
 
 async function handlePublishStory(
