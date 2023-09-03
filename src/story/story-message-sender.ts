@@ -64,6 +64,13 @@ interface ButtonChoice {
 	action: ChoiceAction;
 }
 
+const endMessages = new RandomMessageProvider()
+	.add(t => t('reply.story-outro1'))
+	.add(t => t('reply.story-outro2'))
+	.add(t => t('reply.story-outro3'))
+	.add(t => t('reply.story-outro4'))
+	.add(t => t('reply.story-outro5'));
+
 export const suggestionMessages = new RandomMessageProvider()
 	.add(t => t('reply.suggestion1'))
 	.add(t => t('reply.suggestion2'))
@@ -451,7 +458,7 @@ function getChoiceButton(
 }
 
 function appendEndMessage(messages: StoryMessage[], t: ContextTranslatorFunctions, startButtonId: string) {
-	const endEmbed = new EmbedBuilder().setDescription(t.user('reply.story-outro'));
+	const endEmbed = new EmbedBuilder().setDescription(endMessages.any(t.user));
 	const replayButton = new ButtonBuilder({
 		type: ComponentType.Button,
 		style: ButtonStyle.Secondary,
