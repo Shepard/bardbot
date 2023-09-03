@@ -1299,7 +1299,7 @@ async function handleTriggerCustomPostMessageDialog(
 		.setLabel(t.user('custom-message-post-dialog-field-label'))
 		.setStyle(TextInputStyle.Paragraph)
 		.setRequired(false)
-		.setMinLength(1)
+		.setMinLength(0)
 		// Kinda arbitrary limit for the message.
 		.setMaxLength(MAX_TEASER_LENGTH);
 
@@ -1564,7 +1564,7 @@ async function handleTriggerSuggestStoryDialog(
 		.setLabel(t.user('suggest-story-dialog-message-field-label'))
 		.setStyle(TextInputStyle.Paragraph)
 		.setRequired(false)
-		.setMinLength(1)
+		.setMinLength(0)
 		// Kinda arbitrary limit for the message.
 		.setMaxLength(MAX_TEASER_LENGTH);
 	if (suggestion?.message) {
