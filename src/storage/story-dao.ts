@@ -195,6 +195,14 @@ export async function addStory(
 	let inserted = false;
 	let attempts = 0;
 	while (!inserted && attempts < 10) {
+		// TODO later: user can set a custom id (that will be saved as 'custom:' + their input (or 'public:' + their input)).
+		//  if they do so, the story can be referred to by that id (their input), e.g. to check for unlocks in other stories.
+		//  input provided either by tag or in metadata dialog (which would actually change the existing id later on - needs unique test and affects test plays, maybe only possible in draft status).
+		//  only do one attempt with a custom id and throw a different error on failure. or add a counter.
+		// TODO later: switch to https://github.com/ai/nanoid to get much shorter ids which helps with component custom ids.
+		//  We don't need low clash probability since we check for that and retry anyway.
+		//  All story ids in the database (in all related tables) would have to be regenerated.
+		//  Also need to consider the compatibility with ids in buttons of already posted stories.
 		id = uuidv4();
 		try {
 			addStoryStatement.run({ id, guildId, ownerId, title, author, teaser });

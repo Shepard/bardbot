@@ -1251,6 +1251,7 @@ function getPublishWizardSettingsFromMessage(interaction: MessageComponentIntera
 function getListedSettingFromMessage(
 	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction
 ): boolean {
+	// TODO find component via id instead. traversal function in interaction-utils.
 	const actionRows = interaction.message.components;
 	if (actionRows?.length) {
 		const firstRowComponents = actionRows[0].components;
@@ -1539,8 +1540,6 @@ async function handleTriggerSuggestStoryDialog(
 	// Some custom ids have a shorter name so that both story ids fit into the 100 character custom id limit.
 	// This is an unfortunate effect of choosing UUIDs for the story ids which are quite long.
 	// In the future we might attempt replacing this with e.g. https://github.com/ai/nanoid to avoid further problems like that.
-	// All story ids in the database (in all related tables) would have to be regenerated.
-	// Also need to consider the compatibility with ids in buttons of already posted stories.
 	const dialogId = getManageStoriesComponentId('save-sug ' + storyId + ' ' + suggestedStoryId);
 	const suggestStoryDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('suggest-story-dialog-title'));
 
