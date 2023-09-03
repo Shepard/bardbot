@@ -292,7 +292,8 @@ But you can also decide to keep it secret and, for example, suggest it at the en
 				'suggested-story-wizard-suggestions-exist': 'Some suggestions are already set up for this story. Select them below to edit or remove the suggestions.',
 				'save-suggestion-failure': 'Saving the suggestion failed.',
 				'delete-suggestion-failure': 'Deleting the suggestion failed.',
-				'suggestion-saved-message': 'The suggestion has been successfully saved. This is how it might be presented in the story.'
+				'suggestion-saved-message': 'The suggestion has been successfully saved. This is how it might be presented in the story.',
+				'load-suggestion-failure': 'Could not retrieve existing suggestion.'
 			}
 		},
 		config: {

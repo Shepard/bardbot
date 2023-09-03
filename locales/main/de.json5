@@ -287,7 +287,8 @@ Du kannst Dich aber auch entscheiden, die Geschichte geheim zu halten und sie z.
 				'suggested-story-wizard-suggestions-exist': 'Es gibt bereits einige Empfehlungen für diese Geschichte. Wähle sie unten, um die die Empfehlungen zu bearbeiten oder zu löschen.',
 				'save-suggestion-failure': 'Speichern der Empfehlung fehlgeschlagen.',
 				'delete-suggestion-failure': 'Löschen der Empfehlung fehlgeschlagen.',
-				'suggestion-saved-message': 'Die Empfehlung wurde erfolgreich gespeichert. Und so könnte sie in der Geschichte angezeigt werden.'
+				'suggestion-saved-message': 'Die Empfehlung wurde erfolgreich gespeichert. Und so könnte sie in der Geschichte angezeigt werden.',
+				'load-suggestion-failure': 'Konnte bestehende Empfehlung nicht laden.'
 			}
 		},
 		config: {

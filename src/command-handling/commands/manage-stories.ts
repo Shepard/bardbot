@@ -257,7 +257,7 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			await handleShowSuggestedStoryWizard(interaction, storyId, false, t, logger);
 		} else if (innerCustomId.startsWith('suggest-story ')) {
 			const storyId = innerCustomId.substring('suggest-story '.length);
-			await handleSelectStoryToSuggest(interaction, storyId, t);
+			await handleSelectStoryToSuggest(interaction, storyId, t, logger);
 		} else if (innerCustomId.startsWith('select-story-suggestion ')) {
 			const storyId = innerCustomId.substring('select-story-suggestion '.length);
 			await handleSelectStorySuggestionForEditing(interaction, storyId, t, guildConfig, logger);
@@ -265,7 +265,7 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('edit-sug '.length, spaceIndex);
 			const suggestedStoryId = innerCustomId.substring(spaceIndex + 1);
-			await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t);
+			await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, logger);
 		} else if (innerCustomId.startsWith('del-sug ')) {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('del-sug '.length, spaceIndex);
@@ -1518,7 +1518,8 @@ async function handleShowSuggestedStoryWizard(
 async function handleSelectStoryToSuggest(
 	interaction: MessageComponentInteraction,
 	storyId: string,
-	t: ContextTranslatorFunctions
+	t: ContextTranslatorFunctions,
+	logger: Logger
 ) {
 	let suggestedStoryId: string | null = null;
 	if (isStringSelectMenuInteraction(interaction) && interaction.values.length) {
@@ -1528,15 +1529,30 @@ async function handleSelectStoryToSuggest(
 		// Assertion failure, let interaction handling deal with it.
 		throw new Error('No selected value found in select interaction.');
 	}
-	await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t);
+	await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, logger);
 }
 
 async function handleTriggerSuggestStoryDialog(
 	interaction: MessageComponentInteraction,
 	storyId: string,
 	suggestedStoryId: string,
-	t: ContextTranslatorFunctions
+	t: ContextTranslatorFunctions,
+	logger: Logger
 ) {
+	let suggestion: StorySuggestion | null = null;
+	try {
+		suggestion = getStorySuggestion(storyId, suggestedStoryId);
+	} catch (error) {
+		logger.error(
+			error,
+			'Error while trying to fetch suggestion between stories %s and %s from database',
+			storyId,
+			suggestedStoryId
+		);
+		await errorReply(interaction, t.user('load-suggestion-failure'));
+		return;
+	}
+
 	// Some custom ids have a shorter name so that both story ids fit into the 100 character custom id limit.
 	// This is an unfortunate effect of choosing UUIDs for the story ids which are quite long.
 	// In the future we might attempt replacing this with e.g. https://github.com/ai/nanoid to avoid further problems like that.
@@ -1551,6 +1567,9 @@ async function handleTriggerSuggestStoryDialog(
 		.setMinLength(1)
 		// Kinda arbitrary limit for the message.
 		.setMaxLength(MAX_TEASER_LENGTH);
+	if (suggestion?.message) {
+		messageField.setValue(suggestion.message);
+	}
 
 	// Later: Optional single-line text field for an unlock id needed to make this suggestion trigger.
 
@@ -1611,8 +1630,8 @@ async function showStorySuggestion(
 	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
-	let suggestion: StorySuggestion;
-	let suggestedStory: StoryRecord;
+	let suggestion: StorySuggestion | null = null;
+	let suggestedStory: StoryRecord | null = null;
 	try {
 		suggestion = getStorySuggestion(storyId, suggestedStoryId);
 		suggestedStory = getStory(suggestedStoryId, guildConfig.id);
