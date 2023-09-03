@@ -71,7 +71,7 @@ import { probeStory, stopStoryPlayAndInformPlayers } from '../../story/story-eng
 import storyCommand, { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
 import { enumFromStringValue, trimText } from '../../util/helpers.js';
 import { updateCommandsAfterConfigChange } from './config.js';
-import { suggestionMessages } from '../../story/story-message-sender.js';
+import { getSuggestionEmbed } from '../../story/story-message-sender.js';
 import { getTranslatorForInteraction } from '../../util/i18n.js';
 
 // To make sure malicious guilds can't fill up the bot's hard drive,
@@ -257,7 +257,7 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			await handleShowSuggestedStoryWizard(interaction, storyId, false, t, logger);
 		} else if (innerCustomId.startsWith('suggest-story ')) {
 			const storyId = innerCustomId.substring('suggest-story '.length);
-			await handleSelectStoryToSuggest(interaction, storyId, t, logger);
+			await handleSelectStoryToSuggest(interaction, storyId, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('select-story-suggestion ')) {
 			const storyId = innerCustomId.substring('select-story-suggestion '.length);
 			await handleSelectStorySuggestionForEditing(interaction, storyId, t, guildConfig, logger);
@@ -265,7 +265,7 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('edit-sug '.length, spaceIndex);
 			const suggestedStoryId = innerCustomId.substring(spaceIndex + 1);
-			await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, logger);
+			await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, guildConfig, logger);
 		} else if (innerCustomId.startsWith('del-sug ')) {
 			const spaceIndex = innerCustomId.lastIndexOf(' ');
 			const storyId = innerCustomId.substring('del-sug '.length, spaceIndex);
@@ -1519,6 +1519,7 @@ async function handleSelectStoryToSuggest(
 	interaction: MessageComponentInteraction,
 	storyId: string,
 	t: ContextTranslatorFunctions,
+	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
 	let suggestedStoryId: string | null = null;
@@ -1529,7 +1530,7 @@ async function handleSelectStoryToSuggest(
 		// Assertion failure, let interaction handling deal with it.
 		throw new Error('No selected value found in select interaction.');
 	}
-	await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, logger);
+	await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t, guildConfig, logger);
 }
 
 async function handleTriggerSuggestStoryDialog(
@@ -1537,11 +1538,12 @@ async function handleTriggerSuggestStoryDialog(
 	storyId: string,
 	suggestedStoryId: string,
 	t: ContextTranslatorFunctions,
+	guildConfig: GuildConfiguration,
 	logger: Logger
 ) {
 	let suggestion: StorySuggestion | null = null;
 	try {
-		suggestion = getStorySuggestion(storyId, suggestedStoryId);
+		suggestion = getStorySuggestion(storyId, suggestedStoryId, guildConfig.id);
 	} catch (error) {
 		logger.error(
 			error,
@@ -1633,7 +1635,7 @@ async function showStorySuggestion(
 	let suggestion: StorySuggestion | null = null;
 	let suggestedStory: StoryRecord | null = null;
 	try {
-		suggestion = getStorySuggestion(storyId, suggestedStoryId);
+		suggestion = getStorySuggestion(storyId, suggestedStoryId, guildConfig.id);
 		suggestedStory = getStory(suggestedStoryId, guildConfig.id);
 	} catch (error) {
 		logger.error(error, 'Error while trying to fetch story %s or story suggestion from database', storyId);
@@ -1649,8 +1651,7 @@ async function showStorySuggestion(
 	const content = t.user('reply.suggestion-saved-message');
 
 	const storyT = getStoryCommandTranslator(interaction, guildConfig);
-	const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(storyT.user);
-	const messageEmbed = new EmbedBuilder().setDescription(suggestionMessage);
+	const messageEmbed = getSuggestionEmbed(suggestion, storyT);
 	const storyEmbed = getDefaultStoryEmbed(suggestedStory);
 
 	const buttons = [

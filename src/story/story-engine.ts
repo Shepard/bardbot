@@ -8,7 +8,7 @@ import { Story } from '@shepard4711/inkjs/engine/Story.js';
 import { ErrorType } from '@shepard4711/inkjs/engine/Error.js';
 import { ButtonStyle, Client, ComponentType, DiscordAPIError, EmbedBuilder, Guild, quote } from 'discord.js';
 import { Logger } from 'pino';
-import { FullGuildConfiguration, OwnerReportType, StoryRecord, SuggestionData } from '../storage/record-types.js';
+import { FullGuildConfiguration, OwnerReportType, StoryRecord, StorySuggestion } from '../storage/record-types.js';
 import {
 	EnhancedStepData,
 	StepData,
@@ -382,7 +382,7 @@ function detectPotentialLoop(storyRecord: StoryRecord, client: Client, lines: St
 	return false;
 }
 
-function fetchSuggestions(storyId: string, logger: Logger): SuggestionData[] {
+function fetchSuggestions(storyId: string, logger: Logger): StorySuggestion[] {
 	try {
 		return getStorySuggestions(storyId);
 	} catch (error) {

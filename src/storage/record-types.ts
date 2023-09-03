@@ -155,12 +155,6 @@ export type StoryPlay = {
 };
 
 export type StorySuggestion = {
-	sourceStoryId: string;
-	targetStoryId: string;
-	message: string;
-};
-
-export type SuggestionData = {
 	suggestedStory: StoryRecord;
 	message: string;
 };

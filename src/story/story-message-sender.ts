@@ -30,7 +30,7 @@ import {
 	MESSAGE_ACTION_ROW_LIMIT,
 	ACTION_ROW_BUTTON_LIMIT
 } from '../util/discord-constants.js';
-import { SuggestionData } from '../storage/record-types.js';
+import { StorySuggestion } from '../storage/record-types.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
 
 /**
@@ -71,7 +71,7 @@ const endMessages = new RandomMessageProvider()
 	.add(t => t('reply.story-outro4'))
 	.add(t => t('reply.story-outro5'));
 
-export const suggestionMessages = new RandomMessageProvider()
+const suggestionMessages = new RandomMessageProvider()
 	.add(t => t('reply.suggestion1'))
 	.add(t => t('reply.suggestion2'))
 	.add(t => t('reply.suggestion3'))
@@ -478,14 +478,13 @@ function appendEndMessage(messages: StoryMessage[], t: ContextTranslatorFunction
 
 function appendStorySuggestions(
 	messages: StoryMessage[],
-	suggestions: SuggestionData[],
+	suggestions: StorySuggestion[],
 	t: ContextTranslatorFunctions,
 	getStoryEmbed: (metadata: StoryMetadata) => EmbedBuilder,
 	getStartButtonId: (storyId: string) => string
 ) {
 	suggestions.forEach(suggestion => {
-		const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
-		const messageEmbed = new EmbedBuilder().setDescription(suggestionMessage);
+		const messageEmbed = getSuggestionEmbed(suggestion, t);
 		const startButton = new ButtonBuilder({
 			type: ComponentType.Button,
 			style: ButtonStyle.Secondary,
@@ -502,4 +501,9 @@ function appendStorySuggestions(
 			]
 		});
 	});
+}
+
+export function getSuggestionEmbed(suggestion: StorySuggestion, t: ContextTranslatorFunctions) {
+	const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
+	return new EmbedBuilder().setDescription(suggestionMessage);
 }

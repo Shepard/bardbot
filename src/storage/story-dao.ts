@@ -3,14 +3,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'pino';
-import {
-	OwnerReportType,
-	StoryStatus,
-	StoryRecord,
-	StoryPlay,
-	StorySuggestion,
-	SuggestionData
-} from './record-types.js';
+import { OwnerReportType, StoryStatus, StoryRecord, StoryPlay, StorySuggestion } from './record-types.js';
 import { StoryMetadata } from '../story/story-types.js';
 import db, { FILES_DIR, registerDbInitialisedListener } from './database.js';
 import { ensureGuildConfigurationExists, obsoleteGuildsSelect } from './guild-config-dao.js';
@@ -511,14 +504,20 @@ export function addOrEditStorySuggestion(
 	}
 }
 
-export function getStorySuggestion(sourceStoryId: string, targetStoryId: string): StorySuggestion | null {
+export function getStorySuggestion(
+	sourceStoryId: string,
+	targetStoryId: string,
+	guildId: string
+): StorySuggestion | null {
 	const row = getStorySuggestionStatement.get({ sourceStoryId, targetStoryId });
 	if (row) {
-		return {
-			sourceStoryId: row.source_story_id,
-			targetStoryId: row.target_story_id,
-			message: row.message
-		};
+		const story = getStory(targetStoryId, guildId);
+		if (story) {
+			return {
+				suggestedStory: story,
+				message: row.message
+			};
+		}
 	}
 	return null;
 }
@@ -527,7 +526,7 @@ export function getSuggestedStories(storyId: string): StoryRecord[] {
 	return getSuggestedStoriesStatement.all({ storyId }).map(row => new StoryRecord(row));
 }
 
-export function getStorySuggestions(storyId: string): SuggestionData[] {
+export function getStorySuggestions(storyId: string): StorySuggestion[] {
 	return getStorySuggestionsStatement
 		.all({ storyId })
 		.map(row => ({ suggestedStory: new StoryRecord(row), message: row.message }));
