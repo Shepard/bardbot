@@ -3,7 +3,7 @@ import { Story } from '@shepard4711/inkjs/engine/Story.js';
 import { Choice } from '@shepard4711/inkjs/engine/Choice.js';
 import { VariablesState } from '@shepard4711/inkjs/engine/VariablesState.js';
 import { HexColorString } from 'discord.js';
-import { StoryRecord } from '../storage/record-types.js';
+import { StoryRecord, SuggestionData } from '../storage/record-types.js';
 
 export interface StoryMetadata {
 	title: string;
@@ -26,6 +26,7 @@ export interface StepData {
 	warnings?: string[];
 	errors?: string[];
 	isEnd?: boolean;
+	suggestions?: SuggestionData[];
 }
 
 export type StoryLine = {

@@ -1,5 +1,5 @@
 import { expect, assert } from 'chai';
-import { ButtonStyle } from 'discord.js';
+import { ButtonStyle, EmbedBuilder } from 'discord.js';
 import fsPromises from 'fs/promises';
 import { getMessagesToSend } from '../../built/story/story-message-sender.js';
 import {
@@ -25,9 +25,17 @@ describe('story-message-sender', () => {
 		};
 		const mockGetChoiceButtonId = choiceIndex => '/story#choice ' + choiceIndex;
 		const mockGetInputButtonId = choiceIndex => '/story#input ' + choiceIndex;
-		const mockStartButtonId = '/story#start 123 321';
+		const mockGetStartButtonId = storyId => '/story#start ' + storyId + ' 321';
+		const mockGetStoryEmbed = metadata => new EmbedBuilder().setDescription(metadata.teaser ?? '');
 		const getMessages = stepData =>
-			getMessagesToSend(stepData, mockT, mockGetChoiceButtonId, mockGetInputButtonId, mockStartButtonId);
+			getMessagesToSend(
+				stepData,
+				mockT,
+				mockGetChoiceButtonId,
+				mockGetInputButtonId,
+				mockGetStartButtonId,
+				mockGetStoryEmbed
+			);
 
 		it('deals with no lines and choices', () => {
 			const stepData = { lines: [], choices: [] };
@@ -488,14 +496,108 @@ describe('story-message-sender', () => {
 			const stepData = {
 				lines: [{ text: 'Test', tags: [] }],
 				choices: [{ index: 0, text: 'Pick me!' }],
-				isEnd: true
+				isEnd: true,
+				storyRecord: {
+					id: '123'
+				}
 			};
 			const messages = getMessages(stepData);
 			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
 			expect(messages[1].components).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[2].components).to.be.an('array').and.to.have.lengthOf(1);
-			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockStartButtonId);
+			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockGetStartButtonId('123'));
+		});
+
+		it('suggests other stories after the end', () => {
+			const stepData = {
+				lines: [{ text: 'Test', tags: [] }],
+				choices: [{ index: 0, text: 'Pick me!' }],
+				isEnd: true,
+				storyRecord: {
+					id: '123'
+				},
+				suggestions: [
+					{
+						message: 'Test',
+						suggestedStory: {
+							id: '123',
+							guildId: '1',
+							ownerId: '2',
+							title: 'Story',
+							author: 'Shakespeare',
+							teaser: 'Once upon a time...',
+							status: 'Published',
+							lastChanged: 0,
+							reportedInkError: false,
+							reportedInkWarning: false,
+							reportedMaximumChoiceNumberExceeded: false,
+							reportedPotentialLoopDetected: false,
+							timeBudgetExceededCount: 0
+						}
+					}
+				]
+			};
+			const messages = getMessages(stepData);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(4);
+			expect(messages[1].components).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockGetStartButtonId('123'));
+			expect(messages[3].content).to.contain('Test');
+			expect(messages[3].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[3].components).to.be.an('array').and.to.have.lengthOf(1);
+		});
+
+		it('does not suggest other stories before the end', () => {
+			const stepData = {
+				lines: [{ text: 'Test', tags: [] }],
+				choices: [{ index: 0, text: 'Pick me!' }],
+				isEnd: false,
+				storyRecord: {
+					id: '123'
+				},
+				suggestions: [
+					{
+						message: 'Test',
+						suggestedStory: {
+							id: '123',
+							guildId: '1',
+							ownerId: '2',
+							title: 'Story',
+							author: 'Shakespeare',
+							teaser: 'Once upon a time...',
+							status: 'Published',
+							lastChanged: 0,
+							reportedInkError: false,
+							reportedInkWarning: false,
+							reportedMaximumChoiceNumberExceeded: false,
+							reportedPotentialLoopDetected: false,
+							timeBudgetExceededCount: 0
+						}
+					}
+				]
+			};
+			const messages = getMessages(stepData);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(2);
+		});
+
+		it('does not suggest other stories without suggestions', () => {
+			const stepData = {
+				lines: [{ text: 'Test', tags: [] }],
+				choices: [{ index: 0, text: 'Pick me!' }],
+				isEnd: true,
+				storyRecord: {
+					id: '123'
+				},
+				suggestions: []
+			};
+			const messages = getMessages(stepData);
+			expect(messages).to.be.an('array').and.to.have.lengthOf(3);
+			expect(messages[1].components).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockGetStartButtonId('123'));
 		});
 	});
 });

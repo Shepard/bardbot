@@ -3,7 +3,14 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from 'pino';
-import { OwnerReportType, StoryStatus, StoryRecord, StoryPlay } from './record-types.js';
+import {
+	OwnerReportType,
+	StoryStatus,
+	StoryRecord,
+	StoryPlay,
+	StorySuggestion,
+	SuggestionData
+} from './record-types.js';
 import { StoryMetadata } from '../story/story-types.js';
 import db, { FILES_DIR, registerDbInitialisedListener } from './database.js';
 import { ensureGuildConfigurationExists, obsoleteGuildsSelect } from './guild-config-dao.js';
@@ -43,6 +50,11 @@ let clearStoryPlaysStatement: Statement = null;
 let saveStoryPlayStateStatement: Statement = null;
 let resetStoryPlayStateStatement: Statement = null;
 let getCurrentPlayersStatement: Statement = null;
+let addOrEditStorySuggestionStatement: Statement = null;
+let getStorySuggestionStatement: Statement = null;
+let getSuggestedStoriesStatement: Statement = null;
+let getStorySuggestionsStatement: Statement = null;
+let deleteStorySuggestionStatement: Statement = null;
 
 registerDbInitialisedListener(() => {
 	addStoryStatement = db.prepare(
@@ -144,6 +156,26 @@ registerDbInitialisedListener(() => {
 	saveStoryPlayStateStatement = db.prepare('UPDATE story_play SET state_json = :stateJson WHERE user_id = :userId');
 	resetStoryPlayStateStatement = db.prepare('UPDATE story_play SET state_json = NULL WHERE user_id = :userId');
 	getCurrentPlayersStatement = db.prepare('SELECT user_id FROM story_play WHERE story_id = :storyId').pluck();
+	addOrEditStorySuggestionStatement = db.prepare(
+		'INSERT INTO story_suggestion(source_story_id, target_story_id, message) VALUES(:sourceStoryId, :targetStoryId, :message)' +
+			' ON CONFLICT(source_story_id, target_story_id) DO UPDATE SET message = :message'
+	);
+	getStorySuggestionStatement = db.prepare(
+		'SELECT message FROM story_suggestion WHERE source_story_id = :sourceStoryId AND target_story_id = :targetStoryId'
+	);
+	getSuggestedStoriesStatement = db.prepare(
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
+			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count ' +
+			'FROM story s JOIN story_suggestion g ON s.id = g.target_story_id WHERE g.source_story_id = :storyId'
+	);
+	getStorySuggestionsStatement = db.prepare(
+		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
+			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count, message ' +
+			'FROM story s JOIN story_suggestion g ON s.id = g.target_story_id WHERE g.source_story_id = :storyId'
+	);
+	deleteStorySuggestionStatement = db.prepare(
+		'DELETE FROM story_suggestion WHERE source_story_id = :sourceStoryId AND target_story_id = :targetStoryId'
+	);
 });
 
 export async function addStory(
@@ -454,3 +486,46 @@ export function getCurrentPlayers(storyId: string): string[] {
 }
 
 // TODO later: methods for saving, querying and clearing past plays
+
+export function addOrEditStorySuggestion(
+	sourceStoryId: string,
+	targetStoryId: string,
+	guildId: string,
+	message: string
+) {
+	// Ensure both stories exist in the provided guild.
+	const sourceStory = getStory(sourceStoryId, guildId);
+	const targetStory = getStory(targetStoryId, guildId);
+	if (sourceStory && targetStory) {
+		addOrEditStorySuggestionStatement.run({ sourceStoryId, targetStoryId, message });
+	} else {
+		throw new Error('Stories are not in the provided guild.');
+	}
+}
+
+export function getStorySuggestion(sourceStoryId: string, targetStoryId: string): StorySuggestion | null {
+	const row = getStorySuggestionStatement.get({ sourceStoryId, targetStoryId });
+	if (row) {
+		return {
+			sourceStoryId: row.source_story_id,
+			targetStoryId: row.target_story_id,
+			message: row.message
+		};
+	}
+	return null;
+}
+
+export function getSuggestedStories(storyId: string): StoryRecord[] {
+	return getSuggestedStoriesStatement.all({ storyId }).map(row => new StoryRecord(row));
+}
+
+export function getStorySuggestions(storyId: string): SuggestionData[] {
+	return getStorySuggestionsStatement
+		.all({ storyId })
+		.map(row => ({ suggestedStory: new StoryRecord(row), message: row.message }));
+}
+
+export function deleteStorySuggestion(sourceStoryId: string, targetStoryId: string) {
+	const info = deleteStorySuggestionStatement.run({ sourceStoryId, targetStoryId });
+	return info.changes;
+}

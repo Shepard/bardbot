@@ -462,7 +462,8 @@ async function startStoryWithId(
 			t,
 			getChoiceButtonId,
 			getInputButtonId,
-			getStartStoryButtonId(storyId, guildId)
+			storyId => getStartStoryButtonId(storyId, guildId),
+			getDefaultStoryEmbed
 		);
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -581,7 +582,8 @@ async function handleChoiceSelection(
 			t,
 			getChoiceButtonId,
 			getInputButtonId,
-			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+			storyId => getStartStoryButtonId(storyId, stepData.storyRecord.guildId),
+			getDefaultStoryEmbed
 		);
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -802,7 +804,8 @@ async function handleChoiceInput(
 			t,
 			getChoiceButtonId,
 			getInputButtonId,
-			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+			storyId => getStartStoryButtonId(storyId, stepData.storyRecord.guildId),
+			getDefaultStoryEmbed
 		);
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -865,7 +868,8 @@ async function handleRestartStory(
 			t,
 			getChoiceButtonId,
 			getInputButtonId,
-			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+			storyId => getStartStoryButtonId(storyId, stepData.storyRecord.guildId),
+			getDefaultStoryEmbed
 		);
 	} catch (error) {
 		if (error.storyErrorType) {
@@ -962,7 +966,8 @@ async function handleShowState(
 			t,
 			getChoiceButtonId,
 			getInputButtonId,
-			getStartStoryButtonId(stepData.storyRecord.id, stepData.storyRecord.guildId)
+			storyId => getStartStoryButtonId(storyId, stepData.storyRecord.guildId),
+			getDefaultStoryEmbed
 		);
 	} catch (error) {
 		if (error.storyErrorType) {

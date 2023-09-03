@@ -8,7 +8,7 @@ import { Story } from '@shepard4711/inkjs/engine/Story.js';
 import { ErrorType } from '@shepard4711/inkjs/engine/Error.js';
 import { ButtonStyle, Client, ComponentType, DiscordAPIError, EmbedBuilder, Guild, quote } from 'discord.js';
 import { Logger } from 'pino';
-import { FullGuildConfiguration, OwnerReportType, StoryRecord } from '../storage/record-types.js';
+import { FullGuildConfiguration, OwnerReportType, StoryRecord, SuggestionData } from '../storage/record-types.js';
 import {
 	EnhancedStepData,
 	StepData,
@@ -30,7 +30,8 @@ import {
 	resetStoryPlayState,
 	markIssueAsReported,
 	increaseTimeBudgetExceededCounter,
-	getCurrentPlayers
+	getCurrentPlayers,
+	getStorySuggestions
 } from '../storage/story-dao.js';
 import { getGuildConfig } from '../storage/guild-config-dao.js';
 import {
@@ -316,6 +317,8 @@ function storyStep(userId: string, inkStory: Story, storyRecord: StoryRecord, cl
 	if (stepData.choices.length === 0) {
 		endStory(userId, logger);
 		stepData.isEnd = true;
+
+		stepData.suggestions = fetchSuggestions(storyRecord.id, logger);
 	}
 
 	return stepData;
@@ -377,6 +380,15 @@ function detectPotentialLoop(storyRecord: StoryRecord, client: Client, lines: St
 		logger.error(error, 'Error while trying to detect potential loop in story %s.', storyRecord.id);
 	}
 	return false;
+}
+
+function fetchSuggestions(storyId: string, logger: Logger): SuggestionData[] {
+	try {
+		return getStorySuggestions(storyId);
+	} catch (error) {
+		logger.error(error, 'Error while trying to fetch suggestions for story %s. Ignoring.', storyId);
+		return [];
+	}
 }
 
 export async function restartStory(userId: string, client: Client, logger: Logger): Promise<EnhancedStepData> {

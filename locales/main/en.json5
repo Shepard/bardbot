@@ -214,6 +214,7 @@
 				}
 			},
 			'story-line': '{{title}} (by {{author}}) [{{status}}]',
+			'story-line-short': '{{title}} (by {{author}})',
 			'story-status-Testing': 'Testing',
 			'story-status-Published': 'Published (Listed)',
 			'story-status-Unlisted': 'Published (Unlisted)',
@@ -236,6 +237,15 @@
 			'post-with-custom-message-button-label': 'Post with custom message',
 			'make-listed-button-label': 'Change to listed',
 			'make-unlisted-button-label': 'Change to unlisted',
+			'suggested-story-wizard-button-label': 'Setup suggested stories',
+			'suggested-story-wizard-suggestions-header': 'Existing suggestions',
+			'suggest-story-select-label': 'Select story to suggest',
+			'story-suggestion-select-label': 'Select suggestion to edit',
+			'suggest-story-dialog-title': 'Story suggestion',
+			'suggest-story-dialog-message-field-label': 'Message for suggestion (optional)',
+			'edit-story-suggestion-button-label': 'Edit suggestion',
+			'delete-story-suggestion-button-label': 'Delete suggestion',
+			'return-to-suggested-story-wizard-button-label': 'Back to list',
 			'metadata-dialog-title': 'Edit story metadata',
 			'metadata-dialog-title-field-label': 'Title',
 			'metadata-dialog-author-field-label': 'Author',
@@ -268,7 +278,8 @@
 				'publish-wizard-intro': 'Publishing a story makes it playable by others in the server. Before publishing it, you can define how players will be able to find the story.\n\
 By default, a public post will be made in this channel with a button that lets players start playing the story.\n\
 Additionally, the story will show up in the list of stories when using the {{command1, commandmention}} command (it will be "listed").\n\n\
-You can decide to publish the story but not have it show up anywhere yet. You will still be able to post the story later on (via {{command2, commandmention}}) and change its *listed* status.',
+You can decide to publish the story but not have it show up anywhere yet. You will still be able to post the story later on (via {{command2, commandmention}}) and change its *listed* status.\n\
+But you can also decide to keep it secret and, for example, suggest it at the end of another story.',
 				'publish-wizard-listed': 'The story will be posted as *listed* (it will show up when using the {{command, commandmention}} command). Change below.',
 				'publish-wizard-unlisted': 'The story will be posted as *unlisted* (it will NOT show up when using the {{command, commandmention}} command). Change below.',
 				'publish-wizard-this-channel': 'The story will be posted in this channel. Change below.',
@@ -276,7 +287,12 @@ You can decide to publish the story but not have it show up anywhere yet. You wi
 				'publish-success': 'The story has been successfully published.',
 				'publish-failure': 'Publishing the story failed.',
 				'change-listed-status-failure': 'Changing the listed status of the story failed.',
-				'no-stories-in-server': 'There are no stories on this server yet.'
+				'no-stories-in-server': 'There are no stories in this server yet.',
+				'suggested-story-wizard-intro': 'You can set up stories to be suggested to the player after they finished this story. Select another story below that you want to suggest to the player. You will be asked to optionally enter some text to go along with your suggestion.',
+				'suggested-story-wizard-suggestions-exist': 'Some suggestions are already set up for this story. Select them below to edit or remove the suggestions.',
+				'save-suggestion-failure': 'Saving the suggestion failed.',
+				'delete-suggestion-failure': 'Deleting the suggestion failed.',
+				'suggestion-saved-message': 'The suggestion has been successfully saved. This is how it might be presented in the story.'
 			}
 		},
 		config: {
@@ -559,7 +575,12 @@ You can roll up to {{count}} dice at a time. You cannot roll multiple dice with 
 				'story-state-fetch-failure': 'There was an error trying to load the current story state.',
 				'story-state-success': 'Check your direct messages to see details about your currently played story.',
 				'story-state-repeat': 'You are playing this story. This is where we left off…',
-				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!"
+				'story-outro': "You finished the story! But maybe this isn't the only way this can end? Try again to find out!",
+				suggestion1: 'This story might also pique your interest.',
+				suggestion2: 'If you liked this story, you might also enjoy this other one.',
+				suggestion3: 'May I suggest also playing this other story?',
+				suggestion4: 'The journey continues - potentially in this next story.',
+				suggestion5: 'Phew, I think nothing could top this. Or maybe this next story could?'
 			},
 			'owner-report': {
 				intro: 'There are issues with your story "{{storyTitle}}" in the server "{{serverName}}":',

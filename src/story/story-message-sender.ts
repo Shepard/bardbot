@@ -17,7 +17,8 @@ import {
 	StoryLine,
 	CharacterImageSize,
 	ChoiceAction,
-	isInputChoiceAction
+	isInputChoiceAction,
+	StoryMetadata
 } from './story-types.js';
 import { parseLineSpeech, parseChoiceButtonStyle, parseChoiceAction } from './story-information-extractor.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../util/interaction-types.js';
@@ -29,6 +30,8 @@ import {
 	MESSAGE_ACTION_ROW_LIMIT,
 	ACTION_ROW_BUTTON_LIMIT
 } from '../util/discord-constants.js';
+import { SuggestionData } from '../storage/record-types.js';
+import RandomMessageProvider from '../util/random-message-provider.js';
 
 /**
  * Delay in milli seconds before posting the next message when encountering a PAUSE tag.
@@ -61,6 +64,13 @@ interface ButtonChoice {
 	action: ChoiceAction;
 }
 
+export const suggestionMessages = new RandomMessageProvider()
+	.add(t => t('reply.suggestion1'))
+	.add(t => t('reply.suggestion2'))
+	.add(t => t('reply.suggestion3'))
+	.add(t => t('reply.suggestion4'))
+	.add(t => t('reply.suggestion5'));
+
 /**
  * Takes stepData representing the lines, choices and other info for one step of the story,
  * and sends them as messages to the DMs of the user who triggered the interaction.
@@ -75,9 +85,10 @@ export async function sendStoryStepData(
 	t: ContextTranslatorFunctions,
 	getChoiceButtonId: (choiceIndex: number) => string,
 	getInputButtonId: (choiceIndex: number) => string,
-	startButtonId: string
+	getStartButtonId: (storyId: string) => string,
+	getStoryEmbed: (metadata: StoryMetadata) => EmbedBuilder
 ) {
-	const messages = getMessagesToSend(stepData, t, getChoiceButtonId, getInputButtonId, startButtonId);
+	const messages = getMessagesToSend(stepData, t, getChoiceButtonId, getInputButtonId, getStartButtonId, getStoryEmbed);
 	const dmChannel = await interaction.user.createDM();
 	for (const message of messages) {
 		if (isSpecialHandlingMessage(message)) {
@@ -102,7 +113,8 @@ export function getMessagesToSend(
 	t: ContextTranslatorFunctions,
 	getChoiceButtonId: (choiceIndex: number) => string,
 	getInputButtonId: (choiceIndex: number) => string,
-	startButtonId: string
+	getStartButtonId: (storyId: string) => string,
+	getStoryEmbed: (metadata: StoryMetadata) => EmbedBuilder
 ) {
 	const messages: StoryMessage[] = [];
 
@@ -122,7 +134,11 @@ export function getMessagesToSend(
 	}
 
 	if (stepData.isEnd) {
-		appendEndMessage(messages, t, startButtonId);
+		appendEndMessage(messages, t, getStartButtonId(stepData.storyRecord.id));
+
+		if (stepData.suggestions?.length) {
+			appendStorySuggestions(messages, stepData.suggestions, t, getStoryEmbed, getStartButtonId);
+		}
 	}
 
 	return messages;
@@ -451,6 +467,32 @@ function appendEndMessage(messages: StoryMessage[], t: ContextTranslatorFunction
 			}
 		]
 	});
-	// TODO later: story-engine could attach more properties describing the state at the end. was it a good or bad end? are there more ends? any unlocks?
-	//  "By playing through this story, you've unlocked story XYZ."
+}
+
+function appendStorySuggestions(
+	messages: StoryMessage[],
+	suggestions: SuggestionData[],
+	t: ContextTranslatorFunctions,
+	getStoryEmbed: (metadata: StoryMetadata) => EmbedBuilder,
+	getStartButtonId: (storyId: string) => string
+) {
+	suggestions.forEach(suggestion => {
+		const content = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
+		const startButton = new ButtonBuilder({
+			type: ComponentType.Button,
+			style: ButtonStyle.Secondary,
+			label: t.user('start-button-label'),
+			custom_id: getStartButtonId(suggestion.suggestedStory.id)
+		});
+		messages.push({
+			content,
+			embeds: [getStoryEmbed(suggestion.suggestedStory)],
+			components: [
+				{
+					type: ComponentType.ActionRow,
+					components: [startButton]
+				}
+			]
+		});
+	});
 }

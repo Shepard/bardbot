@@ -22,12 +22,13 @@ import {
 	ChannelType,
 	ModalMessageModalSubmitInteraction,
 	APIStringSelectComponent,
-	AnyComponent
+	AnyComponent,
+	BaseInteraction
 } from 'discord.js';
 import { Logger } from 'pino';
 import axios from 'axios';
 import { CommandModule } from '../command-module-types.js';
-import { GuildConfiguration, StoryRecord, StoryStatus } from '../../storage/record-types.js';
+import { GuildConfiguration, StoryRecord, StoryStatus, StorySuggestion } from '../../storage/record-types.js';
 import { ContextTranslatorFunctions, InteractionButtonStyle } from '../../util/interaction-types.js';
 import { StoryErrorType, StoryMetadata, StoryProbe } from '../../story/story-types.js';
 import {
@@ -45,7 +46,11 @@ import {
 	markStoryForDeletion,
 	setStoryStatus,
 	deleteStory,
-	publishStoryUnlisted
+	publishStoryUnlisted,
+	addOrEditStorySuggestion,
+	getStorySuggestion,
+	getSuggestedStories,
+	deleteStorySuggestion
 } from '../../storage/story-dao.js';
 import {
 	AUTOCOMPLETE_CHOICE_LIMIT,
@@ -63,9 +68,11 @@ import {
 	isModalSubmitInteraction
 } from '../../util/interaction-util.js';
 import { probeStory, stopStoryPlayAndInformPlayers } from '../../story/story-engine.js';
-import { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
+import storyCommand, { postStory, getStartStoryButtonId, getDefaultStoryEmbed } from './story.js';
 import { enumFromStringValue, trimText } from '../../util/helpers.js';
 import { updateCommandsAfterConfigChange } from './config.js';
+import { suggestionMessages } from '../../story/story-message-sender.js';
+import { getTranslatorForInteraction } from '../../util/i18n.js';
 
 // To make sure malicious guilds can't fill up the bot's hard drive,
 // we limit both the file size of story files and the number of stories per guild.
@@ -194,6 +201,11 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 		} else if (innerCustomId.startsWith('custom-message-post ') && interaction.isFromMessage()) {
 			const storyId = innerCustomId.substring('custom-message-post '.length);
 			await handlePostStory(interaction, storyId, guildConfig, logger);
+		} else if (innerCustomId.startsWith('save-sug ') && interaction.isFromMessage()) {
+			const spaceIndex = innerCustomId.lastIndexOf(' ');
+			const storyId = innerCustomId.substring('save-sug '.length, spaceIndex);
+			const suggestedStoryId = innerCustomId.substring(spaceIndex + 1);
+			await handleSuggestStoryDialogSubmit(interaction, storyId, suggestedStoryId, t, guildConfig, logger);
 		} else {
 			await warningReply(interaction, t.userShared('unknown-command'));
 		}
@@ -240,6 +252,28 @@ const manageStoriesCommand: CommandModule<ChatInputCommandInteraction> = {
 		} else if (innerCustomId.startsWith('make-unlisted ')) {
 			const storyId = innerCustomId.substring('make-unlisted '.length);
 			await handleChangeListedStatus(interaction, storyId, false, t, logger);
+		} else if (innerCustomId.startsWith('suggested-story-wizard ')) {
+			const storyId = innerCustomId.substring('suggested-story-wizard '.length);
+			await handleShowSuggestedStoryWizard(interaction, storyId, false, t, logger);
+		} else if (innerCustomId.startsWith('suggest-story ')) {
+			const storyId = innerCustomId.substring('suggest-story '.length);
+			await handleSelectStoryToSuggest(interaction, storyId, t);
+		} else if (innerCustomId.startsWith('select-story-suggestion ')) {
+			const storyId = innerCustomId.substring('select-story-suggestion '.length);
+			await handleSelectStorySuggestionForEditing(interaction, storyId, t, guildConfig, logger);
+		} else if (innerCustomId.startsWith('edit-sug ')) {
+			const spaceIndex = innerCustomId.lastIndexOf(' ');
+			const storyId = innerCustomId.substring('edit-sug '.length, spaceIndex);
+			const suggestedStoryId = innerCustomId.substring(spaceIndex + 1);
+			await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t);
+		} else if (innerCustomId.startsWith('del-sug ')) {
+			const spaceIndex = innerCustomId.lastIndexOf(' ');
+			const storyId = innerCustomId.substring('del-sug '.length, spaceIndex);
+			const suggestedStoryId = innerCustomId.substring(spaceIndex + 1);
+			await handleDeleteSuggestion(interaction, storyId, suggestedStoryId, t, logger);
+		} else if (innerCustomId.startsWith('return-to-suggested-story-wizard ')) {
+			const storyId = innerCustomId.substring('return-to-suggested-story-wizard '.length);
+			await handleShowSuggestedStoryWizard(interaction, storyId, true, t, logger);
 		} else if (innerCustomId.startsWith('show')) {
 			await handleShowStories(interaction, t, logger);
 		} else {
@@ -747,6 +781,7 @@ function getShowStoryMessage(
 		actionButtons.push(getPostWithCustomMessageButton(t, story.id));
 		// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 	}
+	editButtons.push(getSuggestedStoryWizardButton(t, story.id));
 	actionButtons.push(getDeleteButton(t, story.id));
 	const components = [
 		{
@@ -839,6 +874,42 @@ function getMakeUnlistedButton(t: ContextTranslatorFunctions, storyId: string) {
 	);
 }
 
+function getSuggestedStoryWizardButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'suggested-story-wizard-button-label',
+		'suggested-story-wizard ' + storyId,
+		ButtonStyle.Secondary
+	);
+}
+
+function getReturnToSuggestedStoryWizardButton(t: ContextTranslatorFunctions, storyId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'return-to-suggested-story-wizard-button-label',
+		'return-to-suggested-story-wizard ' + storyId,
+		ButtonStyle.Secondary
+	);
+}
+
+function getEditSuggestionButton(t: ContextTranslatorFunctions, storyId: string, suggestedStoryId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'edit-story-suggestion-button-label',
+		'edit-sug ' + storyId + ' ' + suggestedStoryId,
+		ButtonStyle.Secondary
+	);
+}
+
+function getDeleteSuggestionButton(t: ContextTranslatorFunctions, storyId: string, suggestedStoryId: string) {
+	return getTranslatedConfigStoryButton(
+		t,
+		'delete-story-suggestion-button-label',
+		'del-sug ' + storyId + ' ' + suggestedStoryId,
+		ButtonStyle.Danger
+	);
+}
+
 function getPlaytestButton(t: ContextTranslatorFunctions, storyId: string, guildId: string) {
 	return new ButtonBuilder({
 		type: ComponentType.Button,
@@ -875,6 +946,10 @@ function getConfigStoryButton(
 
 function getManageStoriesComponentId(innerCustomId: string) {
 	return getCustomIdForCommandRouting(manageStoriesCommand, innerCustomId);
+}
+
+function getStoryCommandTranslator(interaction: BaseInteraction, guildConfig: GuildConfiguration) {
+	return getTranslatorForInteraction(interaction, storyCommand, guildConfig);
 }
 
 async function handleTriggerEditMetadataDialog(
@@ -1325,6 +1400,279 @@ async function handleChangeListedStatus(
 	} else {
 		await warningReply(interaction, t.userShared('story-not-found'));
 	}
+}
+
+async function handleShowSuggestedStoryWizard(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	update: boolean,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	const guildId = interaction.guildId;
+	let guildStories: StoryRecord[] = [];
+	try {
+		guildStories = getStories(guildId, interaction.user.id, false);
+	} catch (error) {
+		logger.error(error, 'Error while trying to fetch stories in guild %s from database', guildId);
+		await errorReply(interaction, t.userShared('show-stories-failure'));
+		return;
+	}
+	if (guildStories.length === 0) {
+		await t.privateReply(interaction, 'reply.no-stories-in-server');
+		return;
+	}
+
+	let content = t.user('reply.suggested-story-wizard-intro');
+	const embeds = [];
+	const components = [];
+
+	let suggestedStories: StoryRecord[] = [];
+	try {
+		suggestedStories = getSuggestedStories(storyId);
+	} catch (error) {
+		logger.error(error, 'Error while trying to fetch suggested stories in guild %s from database', guildId);
+		await errorReply(interaction, t.userShared('show-stories-failure'));
+		return;
+	}
+	const suggestedIds = new Set();
+	let suggestedOptions = [];
+	if (suggestedStories.length) {
+		suggestedStories.forEach(story => {
+			suggestedIds.add(story.id);
+		});
+
+		content += '\n' + t.user('reply.suggested-story-wizard-suggestions-exist');
+
+		const collator = new Intl.Collator(interaction.locale);
+		const storyTitles = suggestedStories
+			.map(story => {
+				if (story.author) {
+					return t.user('story-line-short', {
+						title: story.title,
+						author: story.author
+					});
+				}
+				return story.title;
+			})
+			.sort(collator.compare);
+		const titlesText = storyTitles.join('\n');
+		embeds.push(
+			new EmbedBuilder().setTitle(t.user('suggested-story-wizard-suggestions-header')).setDescription(titlesText)
+		);
+
+		suggestedOptions = suggestedStories.map(story => ({
+			label: story.title,
+			value: story.id
+		}));
+	}
+
+	const suggestionOptions = guildStories
+		.filter(story => story.id !== storyId && !suggestedIds.has(story.id))
+		.map(story => ({
+			label: story.title,
+			value: story.id
+		}));
+	components.push({
+		type: ComponentType.ActionRow,
+		components: [
+			{
+				type: ComponentType.StringSelect,
+				custom_id: getManageStoriesComponentId('suggest-story ' + storyId),
+				placeholder: t.user('suggest-story-select-label'),
+				options: suggestionOptions
+			}
+		]
+	});
+
+	// If we ever go above 25 stories per server and add pagination, there should still be a limit of 25 suggested stories
+	// per story so this doesn't need pagination as well. Otherwise it gets confusing.
+	if (suggestedStories.length) {
+		components.push({
+			type: ComponentType.ActionRow,
+			components: [
+				{
+					type: ComponentType.StringSelect,
+					custom_id: getManageStoriesComponentId('select-story-suggestion ' + storyId),
+					placeholder: t.user('story-suggestion-select-label'),
+					options: suggestedOptions
+				}
+			]
+		});
+	}
+
+	const message = {
+		content,
+		embeds,
+		components,
+		ephemeral: true
+	};
+	if (update) {
+		await interaction.update(message);
+	} else {
+		await interaction.reply(message);
+	}
+}
+
+async function handleSelectStoryToSuggest(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	t: ContextTranslatorFunctions
+) {
+	let suggestedStoryId: string | null = null;
+	if (isStringSelectMenuInteraction(interaction) && interaction.values.length) {
+		suggestedStoryId = interaction.values[0];
+	}
+	if (!suggestedStoryId) {
+		// Assertion failure, let interaction handling deal with it.
+		throw new Error('No selected value found in select interaction.');
+	}
+	await handleTriggerSuggestStoryDialog(interaction, storyId, suggestedStoryId, t);
+}
+
+async function handleTriggerSuggestStoryDialog(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	suggestedStoryId: string,
+	t: ContextTranslatorFunctions
+) {
+	// Some custom ids have a shorter name so that both story ids fit into the 100 character custom id limit.
+	// This is an unfortunate effect of choosing UUIDs for the story ids which are quite long.
+	// In the future we might attempt replacing this with e.g. https://github.com/ai/nanoid to avoid further problems like that.
+	// All story ids in the database (in all related tables) would have to be regenerated.
+	// Also need to consider the compatibility with ids in buttons of already posted stories.
+	const dialogId = getManageStoriesComponentId('save-sug ' + storyId + ' ' + suggestedStoryId);
+	const suggestStoryDialog = new ModalBuilder().setCustomId(dialogId).setTitle(t.user('suggest-story-dialog-title'));
+
+	const messageField = new TextInputBuilder()
+		.setCustomId('suggest-story-dialog-message-field')
+		.setLabel(t.user('suggest-story-dialog-message-field-label'))
+		.setStyle(TextInputStyle.Paragraph)
+		.setRequired(false)
+		.setMinLength(1)
+		// Kinda arbitrary limit for the message.
+		.setMaxLength(MAX_TEASER_LENGTH);
+
+	// Later: Optional single-line text field for an unlock id needed to make this suggestion trigger.
+
+	suggestStoryDialog.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(messageField));
+
+	await interaction.showModal(suggestStoryDialog);
+}
+
+async function handleSuggestStoryDialogSubmit(
+	interaction: ModalMessageModalSubmitInteraction,
+	storyId: string,
+	suggestedStoryId: string,
+	t: ContextTranslatorFunctions,
+	guildConfig: GuildConfiguration,
+	logger: Logger
+) {
+	const message = interaction.fields.getTextInputValue('suggest-story-dialog-message-field') ?? '';
+	try {
+		addOrEditStorySuggestion(storyId, suggestedStoryId, guildConfig.id, message);
+	} catch (error) {
+		logger.error(
+			error,
+			'Error while trying to store a suggestion link between stories %s and %s.',
+			storyId,
+			suggestedStoryId
+		);
+		await errorReply(interaction, t.user('reply.save-suggestion-failure'));
+		return;
+	}
+
+	await showStorySuggestion(interaction, storyId, suggestedStoryId, t, guildConfig, logger);
+}
+
+async function handleSelectStorySuggestionForEditing(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	t: ContextTranslatorFunctions,
+	guildConfig: GuildConfiguration,
+	logger: Logger
+) {
+	let suggestedStoryId: string | null = null;
+	if (isStringSelectMenuInteraction(interaction) && interaction.values.length) {
+		suggestedStoryId = interaction.values[0];
+	}
+	if (!suggestedStoryId) {
+		// Assertion failure, let interaction handling deal with it.
+		throw new Error('No selected value found in select interaction.');
+	}
+
+	await showStorySuggestion(interaction, storyId, suggestedStoryId, t, guildConfig, logger);
+}
+
+async function showStorySuggestion(
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction,
+	storyId: string,
+	suggestedStoryId: string,
+	t: ContextTranslatorFunctions,
+	guildConfig: GuildConfiguration,
+	logger: Logger
+) {
+	let suggestion: StorySuggestion;
+	let suggestedStory: StoryRecord;
+	try {
+		suggestion = getStorySuggestion(storyId, suggestedStoryId);
+		suggestedStory = getStory(suggestedStoryId, guildConfig.id);
+	} catch (error) {
+		logger.error(error, 'Error while trying to fetch story %s or story suggestion from database', storyId);
+		await errorReply(interaction, t.userShared('story-db-fetch-error'));
+		return;
+	}
+	if (suggestion === null || suggestedStory === null) {
+		await warningReply(interaction, t.userShared('story-not-found'));
+		return;
+	}
+
+	const storyT = getStoryCommandTranslator(interaction, guildConfig);
+	const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(storyT.user);
+	// Later: show the unlock id.
+	const content = t.user('reply.suggestion-saved-message') + '\n\n>>> ' + suggestionMessage;
+	const storyEmbed = getDefaultStoryEmbed(suggestedStory);
+
+	const buttons = [
+		getEditSuggestionButton(t, storyId, suggestedStoryId),
+		getDeleteSuggestionButton(t, storyId, suggestedStoryId),
+		getReturnToSuggestedStoryWizardButton(t, storyId)
+	];
+
+	await interaction.update({
+		content,
+		embeds: [storyEmbed],
+		components: [
+			{
+				type: ComponentType.ActionRow,
+				components: buttons
+			}
+		]
+	});
+}
+
+async function handleDeleteSuggestion(
+	interaction: MessageComponentInteraction,
+	storyId: string,
+	suggestedStoryId: string,
+	t: ContextTranslatorFunctions,
+	logger: Logger
+) {
+	try {
+		deleteStorySuggestion(storyId, suggestedStoryId);
+	} catch (error) {
+		logger.error(
+			error,
+			'Error while trying to delete a suggestion link between stories %s and %s.',
+			storyId,
+			suggestedStoryId
+		);
+		await errorReply(interaction, t.user('reply.delete-suggestion-failure'));
+		return;
+	}
+
+	// Success - go back to list.
+	await handleShowSuggestedStoryWizard(interaction, storyId, true, t, logger);
 }
 
 export default manageStoriesCommand;

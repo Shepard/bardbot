@@ -209,6 +209,7 @@
 				}
 			},
 			'story-line': '{{title}} (von {{author}}) [{{status}}]',
+			'story-line-short': '{{title}} (von {{author}})',
 			'story-status-Testing': 'Im Test',
 			'story-status-Published': 'Veröffentlicht (Gelistet)',
 			'story-status-Unlisted': 'Veröffentlicht (Ungelistet)',
@@ -231,6 +232,15 @@
 			'post-with-custom-message-button-label': 'Mit eigener Nachricht posten',
 			'make-listed-button-label': 'Auf gelistet umstellen',
 			'make-unlisted-button-label': 'Auf ungelistet umstellen',
+			'suggested-story-wizard-button-label': 'Empfohlene Geschichten einrichten',
+			'suggested-story-wizard-suggestions-header': 'Bestehende Empfehlungen',
+			'suggest-story-select-label': 'Zu empfehlende Geschichte wählen',
+			'story-suggestion-select-label': 'Zu bearbeitende Empfehlung wählen',
+			'suggest-story-dialog-title': 'Geschichts-Empfehlung',
+			'suggest-story-dialog-message-field-label': 'Nachricht für Empfehlung (optional)',
+			'edit-story-suggestion-button-label': 'Empfehlung bearbeiten',
+			'delete-story-suggestion-button-label': 'Empfehlung löschen',
+			'return-to-suggested-story-wizard-button-label': 'Zurück zur Liste',
 			'metadata-dialog-title': 'Metadaten der Geschichte bearbeiten',
 			'metadata-dialog-title-field-label': 'Titel',
 			'metadata-dialog-author-field-label': 'Verfassende Person',
@@ -260,10 +270,11 @@
 				'delete-success': 'Die Geschichte wurde erfolgreich gelöscht.',
 				'undo-delete-failure': 'Wiederherstellen der Geschichte fehlgeschlagen.',
 				'undo-delete-success': 'Die Geschichte wurde wiederhergestellt und wird nicht gelöscht. Alle, die sie zuvor gespielt haben, müssen sie allerdings selbst wieder starten.',
-				'publish-wizard-intro': 'Durch die Veröffentlichung wird eine Geschichte durch andere im Server spielbar. Vor der Veröffentlichung kannst Du definieren, wie Spieler die Geschichte finden können.\n\
-Standardmäßig wird ein öffentlicher Post in diesem Kanal erstellt, der einen Button enthält, mit dem Spieler die Geschichte beginnen können.\n\
+				'publish-wizard-intro': 'Durch die Veröffentlichung wird eine Geschichte durch andere im Server spielbar. Vor der Veröffentlichung kannst Du definieren, wie Spielende die Geschichte finden können.\n\
+Standardmäßig wird ein öffentlicher Post in diesem Kanal erstellt, der einen Button enthält, mit dem Spielende die Geschichte beginnen können.\n\
 Zusätzlich taucht die Geschichte in der Liste aller Geschichten auf, wenn man den Befehl {{command1, commandmention}} verwendet (sie ist "gelistet").\n\n\
-Du kannst Dich entscheiden, die Geschichte zu veröffentlichen, aber sie noch nirgendwo auftauchen zu lassen. Du kannst die Geschichte dann später immer noch posten (mittels {{command2, commandmention}}) und ihren "gelistet"-Status ändern.',
+Du kannst Dich entscheiden, die Geschichte zu veröffentlichen, aber sie noch nirgendwo auftauchen zu lassen. Du kannst die Geschichte dann später immer noch posten (mittels {{command2, commandmention}}) und ihren "gelistet"-Status ändern.\n\
+Du kannst Dich aber auch entscheiden, die Geschichte geheim zu halten und sie z. B. nur am Ende einer anderen Geschichte zu empfehlen.',
 				'publish-wizard-listed': 'Die Geschichte wird als *gelistet* gepostet (sie wird bei Verwendung des Befehls {{command, commandmention}} angezeigt). Unten ändern.',
 				'publish-wizard-unlisted': 'Die Geschichte wird als *ungelistet* gepostet (sie wird bei Verwendung des Befehls {{command, commandmention}} NICHT angezeigt). Unten ändern.',
 				'publish-wizard-this-channel': 'Die Geschichte wird in diesen Kanal gepostet. Unten ändern.',
@@ -271,7 +282,12 @@ Du kannst Dich entscheiden, die Geschichte zu veröffentlichen, aber sie noch ni
 				'publish-success': 'Die Geschichte wurde erfolgreich veröffentlicht.',
 				'publish-failure': 'Veröffentlichen der Geschichte fehlgeschlagen.',
 				'change-listed-status-failure': 'Änderung des Gelistet-Status der Geschichte fehlgeschlagen.',
-				'no-stories-in-server': 'Es gibt auf diesem Server noch keine Geschichten.'
+				'no-stories-in-server': 'Es gibt auf diesem Server noch keine Geschichten.',
+				'suggested-story-wizard-intro': 'Du kannst andere Geschichten einrichten, die Spielenden vorgeschlagen werden, nachdem sie diese Geschichte beendet haben. Wähle eine andere Geschichte aus, die Du empfehlen möchtest. Du wirst dann gefragt, optional einen Text einzugeben, der den Spielenden zusammen mit Deiner Empfehlung angezeigt werden soll.',
+				'suggested-story-wizard-suggestions-exist': 'Es gibt bereits einige Empfehlungen für diese Geschichte. Wähle sie unten, um die die Empfehlungen zu bearbeiten oder zu löschen.',
+				'save-suggestion-failure': 'Speichern der Empfehlung fehlgeschlagen.',
+				'delete-suggestion-failure': 'Löschen der Empfehlung fehlgeschlagen.',
+				'suggestion-saved-message': 'Die Empfehlung wurde erfolgreich gespeichert. Und so könnte sie in der Geschichte angezeigt werden.'
 			}
 		},
 		config: {
@@ -551,7 +567,12 @@ Du kannst bis zu {{count}} Würfel auf einmal werfen. Du kannst nicht mehrere W�
 				'story-state-fetch-failure': 'Beim Versuch, den aktuellen Zustand der Geschichte zu laden, ist ein Fehler aufgetreten.',
 				'story-state-success': 'Für Details zur aktuell gespielten Geschichte, schaue in Deinen Direktnachrichten.',
 				'story-state-repeat': 'Du spielst diese Geschichte. Folgendes ist zuletzt passiert …',
-				'story-outro': "Du hast die Geschichte beendet! Aber vielleicht kann sie noch auf eine andere Weise enden? Versuch's nochmal, um es herauszufinden!"
+				'story-outro': "Du hast die Geschichte beendet! Aber vielleicht kann sie noch auf eine andere Weise enden? Versuch's nochmal, um es herauszufinden!",
+				suggestion1: 'Diese Geschichte könnte auch Dein Interesse wecken.',
+				suggestion2: 'Wenn Dir diese Geschichte gefallen hat, wirst Du vielleicht auch diese andere hier mögen.',
+				suggestion3: 'Darf ich vorschlagen, auch diese andere Geschichte zu spielen?',
+				suggestion4: 'Die Reise geht weiter - gegebenenfalls in dieser weiteren Geschichte.',
+				suggestion5: 'Puh, ich glaube, das kann von nichts mehr übertroffen werden. Höchstens vielleicht von dieser weiteren Geschichte?'
 			},
 			'owner-report': {
 				intro: 'Es sind Probleme mit Deiner Geschichte "{{storyTitle}}" im Server "{{serverName}}" aufgetreten:',
