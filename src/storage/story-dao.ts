@@ -445,7 +445,7 @@ export async function cleanupStories(forObsoleteGuilds: boolean, logger: Logger)
 	return storyIds.length;
 }
 
-export function getCurrentStoryPlay(userId: string): StoryPlay {
+export function getCurrentStoryPlay(userId: string): StoryPlay | null {
 	const row = getStoryPlayStatement.get({ userId });
 	if (row) {
 		return {
