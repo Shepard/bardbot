@@ -484,7 +484,8 @@ function appendStorySuggestions(
 	getStartButtonId: (storyId: string) => string
 ) {
 	suggestions.forEach(suggestion => {
-		const content = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
+		const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
+		const messageEmbed = new EmbedBuilder().setDescription(suggestionMessage);
 		const startButton = new ButtonBuilder({
 			type: ComponentType.Button,
 			style: ButtonStyle.Secondary,
@@ -492,8 +493,7 @@ function appendStorySuggestions(
 			custom_id: getStartButtonId(suggestion.suggestedStory.id)
 		});
 		messages.push({
-			content,
-			embeds: [getStoryEmbed(suggestion.suggestedStory)],
+			embeds: [messageEmbed, getStoryEmbed(suggestion.suggestedStory)],
 			components: [
 				{
 					type: ComponentType.ActionRow,

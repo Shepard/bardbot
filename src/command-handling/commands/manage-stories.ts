@@ -1626,10 +1626,12 @@ async function showStorySuggestion(
 		return;
 	}
 
+	// Later: show the unlock id.
+	const content = t.user('reply.suggestion-saved-message');
+
 	const storyT = getStoryCommandTranslator(interaction, guildConfig);
 	const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(storyT.user);
-	// Later: show the unlock id.
-	const content = t.user('reply.suggestion-saved-message') + '\n\n>>> ' + suggestionMessage;
+	const messageEmbed = new EmbedBuilder().setDescription(suggestionMessage);
 	const storyEmbed = getDefaultStoryEmbed(suggestedStory);
 
 	const buttons = [
@@ -1640,7 +1642,7 @@ async function showStorySuggestion(
 
 	await interaction.update({
 		content,
-		embeds: [storyEmbed],
+		embeds: [messageEmbed, storyEmbed],
 		components: [
 			{
 				type: ComponentType.ActionRow,

@@ -544,8 +544,8 @@ describe('story-message-sender', () => {
 			expect(messages[2].embeds).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[2].components).to.be.an('array').and.to.have.lengthOf(1);
 			expect(messages[2].components[0].components[0].toJSON().custom_id).to.equal(mockGetStartButtonId('123'));
-			expect(messages[3].content).to.contain('Test');
-			expect(messages[3].embeds).to.be.an('array').and.to.have.lengthOf(1);
+			expect(messages[3].embeds).to.be.an('array').and.to.have.lengthOf(2);
+			expect(messages[3].embeds[0].data.description).to.equal('Test');
 			expect(messages[3].components).to.be.an('array').and.to.have.lengthOf(1);
 		});
 
