@@ -675,7 +675,7 @@ async function handleShowStories(
 			guildStories = getStories(guildId, interaction.user.id, false);
 		} catch (error) {
 			logger.error(error, 'Error while trying to fetch stories in guild %s from database', guildId);
-			await t.privateReplyShared(interaction, 'show-stories-failure');
+			await errorReply(interaction, t.userShared('show-stories-failure'));
 			return;
 		}
 		if (guildStories.length) {
