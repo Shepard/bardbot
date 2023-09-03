@@ -49,6 +49,8 @@ export const TEXT_INPUT_LABEL_CHARACTER_LIMIT = 45;
 
 export const COLOUR_DISCORD_YELLOW = 0xcb8515;
 
+export const COLOUR_DEFAULT_THEME_EMBED = 0x5962b3;
+
 // See https://discord.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes
 export const API_ERROR_CODE__OPENING_DMS_TOO_FAST = 40003;
 export const API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER = 50007;

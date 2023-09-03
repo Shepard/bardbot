@@ -28,7 +28,8 @@ import {
 	EMBED_DESCRIPTION_CHARACTER_LIMIT,
 	BUTTON_LABEL_CHARACTER_LIMIT,
 	MESSAGE_ACTION_ROW_LIMIT,
-	ACTION_ROW_BUTTON_LIMIT
+	ACTION_ROW_BUTTON_LIMIT,
+	COLOUR_DEFAULT_THEME_EMBED
 } from '../util/discord-constants.js';
 import { StorySuggestion } from '../storage/record-types.js';
 import RandomMessageProvider from '../util/random-message-provider.js';
@@ -458,7 +459,7 @@ function getChoiceButton(
 }
 
 function appendEndMessage(messages: StoryMessage[], t: ContextTranslatorFunctions, startButtonId: string) {
-	const endEmbed = new EmbedBuilder().setDescription(endMessages.any(t.user));
+	const endEmbed = new EmbedBuilder().setDescription(endMessages.any(t.user)).setColor(COLOUR_DEFAULT_THEME_EMBED);
 	const replayButton = new ButtonBuilder({
 		type: ComponentType.Button,
 		style: ButtonStyle.Secondary,
@@ -505,5 +506,5 @@ function appendStorySuggestions(
 
 export function getSuggestionEmbed(suggestion: StorySuggestion, t: ContextTranslatorFunctions) {
 	const suggestionMessage = suggestion.message ? suggestion.message : suggestionMessages.any(t.user);
-	return new EmbedBuilder().setDescription(suggestionMessage);
+	return new EmbedBuilder().setDescription(suggestionMessage).setColor(COLOUR_DEFAULT_THEME_EMBED);
 }
