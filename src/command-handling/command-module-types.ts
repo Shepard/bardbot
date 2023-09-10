@@ -1,6 +1,5 @@
 import {
 	Client,
-	Guild,
 	CommandInteraction,
 	ChatInputCommandInteraction,
 	AutocompleteInteraction,

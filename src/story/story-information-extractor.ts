@@ -69,7 +69,7 @@ export function parseCharacters(inkStory: Story) {
 	const characters = new Map<string, StoryCharacter>();
 
 	if (inkStory.globalTags) {
-		for (let tag of inkStory.globalTags) {
+		for (const tag of inkStory.globalTags) {
 			let match = tag.match(CHARACTER_TAG_REGEXP);
 			if (match) {
 				const id = match[1].trim();
@@ -114,7 +114,7 @@ export function parseLineSpeech(line: StoryLine, characters: Map<string, StoryCh
 	let characterImageSize: CharacterImageSize = 'small';
 
 	if (line.tags) {
-		for (let tag of line.tags) {
+		for (const tag of line.tags) {
 			const match = tag.match(SPEECH_TAG_REGEXP);
 			if (match) {
 				const characterId = match[1].trim();
@@ -151,7 +151,7 @@ export function parseLineSpeech(line: StoryLine, characters: Map<string, StoryCh
 
 export function parseDefaultButtonStyle(inkStory: Story): ChoiceButtonStyle {
 	if (inkStory.globalTags) {
-		for (let tag of inkStory.globalTags) {
+		for (const tag of inkStory.globalTags) {
 			const match = tag.match(DEFAULT_BUTTON_STYLE_TAG_REGEXP);
 			if (match) {
 				return match[1].toLowerCase() as ChoiceButtonStyle;
@@ -163,7 +163,7 @@ export function parseDefaultButtonStyle(inkStory: Story): ChoiceButtonStyle {
 
 export function parseChoiceButtonStyle(choice: Choice): ChoiceButtonStyle {
 	if (choice.tags) {
-		for (let tag of choice.tags) {
+		for (const tag of choice.tags) {
 			const match = tag.match(BUTTON_STYLE_TAG_REGEXP);
 			if (match) {
 				return match[1].toLowerCase() as ChoiceButtonStyle;
@@ -175,7 +175,7 @@ export function parseChoiceButtonStyle(choice: Choice): ChoiceButtonStyle {
 
 export function parseChoiceAction(choice: Choice): ChoiceAction {
 	if (choice.tags) {
-		for (let tag of choice.tags) {
+		for (const tag of choice.tags) {
 			const match = tag.match(INPUT_ACTION_TAG_REGEXP);
 			if (match) {
 				const variableName = match.groups.variable;
@@ -203,7 +203,7 @@ export function parseMetadata(inkStory: Story) {
 	};
 
 	if (inkStory.globalTags) {
-		for (let tag of inkStory.globalTags) {
+		for (const tag of inkStory.globalTags) {
 			const titleMatch = tag.match(TITLE_TAG_REGEXP);
 			if (titleMatch) {
 				metadata.title = titleMatch[1].trim();

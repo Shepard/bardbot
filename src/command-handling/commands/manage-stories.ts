@@ -340,7 +340,7 @@ async function handleCreateStory(
 			}
 
 			const storyEmbed = getDefaultStoryEmbed(storyData.metadata);
-			let content =
+			const content =
 				t.user('reply.story-test-created') +
 				'\n' +
 				t.user('reply.story-possible-actions-in-testing', {
@@ -1104,7 +1104,7 @@ async function handleShowPublishStoryWizard(
 ) {
 	const { listed, channelToPostIn } = getPublishWizardSettingsFromMessage(interaction, updateField);
 
-	let content = t.user('reply.publish-wizard-intro', {
+	const content = t.user('reply.publish-wizard-intro', {
 		command1: '/story start',
 		command2: '/manage-stories show',
 		guildId: interaction.guildId

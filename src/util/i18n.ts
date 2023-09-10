@@ -85,6 +85,7 @@ export function getTranslatorForInteraction(
 	const commandPrefix = 'commands.' + (command.i18nKeyPrefix ?? command.configuration.name);
 	const sharedPrefix = 'shared';
 	const t = {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		/* @ts-ignore Avoid TS2589 ("Type instantiation is excessively deep and possibly infinite.") */
 		user: i18n.getFixedT(userLocale, null, commandPrefix),
 		guild: i18n.getFixedT(guildLocale, null, commandPrefix),

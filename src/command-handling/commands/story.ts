@@ -263,6 +263,7 @@ function getInputButtonId(choiceIndex: number) {
 	return getStoryComponentId('input ' + choiceIndex);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isCannotSendDMsError(error: any) {
 	return error instanceof DiscordAPIError && error.code === API_ERROR_CODE__CANNOT_SEND_DMS_TO_USER;
 }

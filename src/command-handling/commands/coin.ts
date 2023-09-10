@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandType, ChatInputCommandInteraction } from 'discord.js';
 import { getMemberDisplayName } from '../../util/interaction-util.js';
 import { CommandModule } from '../command-module-types.js';
 

@@ -76,7 +76,7 @@ function diceRoll(numberOfDice: number, numberOfFaces: number): number[] {
 }
 
 function sum(diceRollResult: number[]) {
-	var result = 0;
+	let result = 0;
 	for (let i = 0; i < diceRollResult.length; i++) {
 		result += diceRollResult[i];
 	}

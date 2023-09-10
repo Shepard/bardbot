@@ -27,9 +27,9 @@ export function getCurrentDateString() {
 
 export function codePointLength(s: string) {
 	let i = 0;
-	/* eslint-disable no-unused-vars */
 	// This produces code points rather than chars.
-	for (let c of s) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	for (const c of s) {
 		i++;
 	}
 	return i;
@@ -44,7 +44,7 @@ export function trimText(text: string, maxCodePoints: number) {
 	let tooLong = false;
 	let i = 0;
 	// This produces code points rather than chars.
-	for (let c of text) {
+	for (const c of text) {
 		if (i === maxCodePoints - 1) {
 			lastChar = c;
 		} else if (i === maxCodePoints) {
@@ -80,7 +80,7 @@ export function splitTextAtWhitespace(text: string, maxCodePointsPerPart: number
 	let lastWhitespaceChar = '';
 	let lineBreakSeen = false;
 	// This produces code points rather than chars.
-	for (let c of text) {
+	for (const c of text) {
 		if (counter === maxCodePointsPerPart) {
 			if (bufferUpToWhitespace.length > 0) {
 				result.push(bufferUpToWhitespace);

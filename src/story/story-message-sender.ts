@@ -344,9 +344,9 @@ function appendChoiceButtons(
 	}
 
 	// Create buttons and append them to the message.
-	let defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, ButtonStyle.Secondary);
+	const defaultButtonStyle = mapButtonStyle(defaultButtonStyleRaw, ButtonStyle.Secondary);
 	const parsedChoices = parseChoiceButtonInformation(choices, defaultButtonStyle);
-	let buttons = parsedChoices.map(choice =>
+	const buttons = parsedChoices.map(choice =>
 		getChoiceButton(t, choice, choiceTooLong, getChoiceButtonId, getInputButtonId)
 	);
 	buttonMessage.components = [

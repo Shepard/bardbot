@@ -44,7 +44,7 @@ To get the latest version of the code and deploy it:
 
 All files should be run through linting and formatting before being checked in, to ensure consistency and prevent common issues.
 
-Note: While there is an npm script for eslint, this is currently not set up correctly. It needs to be switched to TypeScript linting in the future.
+`npm run lint` will run the linter. Make sure to fix any problems it reports or ignore them using eslint comments if necessary.
 
 For formatting, this project uses Prettier. There is no command set up for this. You can set up automatic formatting on save using Prettier plugins for your IDE though.
 

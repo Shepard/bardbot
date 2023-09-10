@@ -20,6 +20,7 @@ export function transformCommandConfigurations(commands: ApplicationCommandData[
 }
 
 function transformCommandConfiguration(command: ApplicationCommandData) {
+	// eslint-disable-next-line no-extra-boolean-cast
 	const default_member_permissions = !!command.defaultMemberPermissions
 		? new PermissionsBitField(command.defaultMemberPermissions).bitfield.toString()
 		: null;
