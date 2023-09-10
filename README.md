@@ -2,6 +2,8 @@
 
 A Discord bot for supporting role-playing servers.
 
+[End user documentation](https://github.com/Shepard/bardbot/wiki)
+
 ## Running the bot yourself
 
 - Create a Discord application and bot. You can [follow this tutorial](https://discordjs.guide/preparations/setting-up-a-bot-application.html).
@@ -13,7 +15,7 @@ A Discord bot for supporting role-playing servers.
   - This will install all code dependencies, build the code of the bot, and also connect the bot to Discord to register its commands. You can run each of these steps individually later on, if you wish - for example if you add a command of your own and want to register that.
   - For some of the dependencies of this project you might need additional tools for compiling native code. In particular, you might need to install [node-gyp](https://github.com/nodejs/node-gyp) if you're working on a Windows machine.
 - To start the bot, run `npm run start`.
-  - For a more permanent setup for starting and managing the bot I recommend using a Node process manager like [pm2](https://pm2.keymetrics.io/).
+  - For a more permanent setup for starting and managing the bot, I recommend using a Node process manager like [pm2](https://pm2.keymetrics.io/).
 - [Configure the bot on your server](https://github.com/Shepard/bardbot/wiki/User-Guide#configuring-the-bot-on-a-server) using the `/config` command.
 
 ### Setting up a config file
@@ -30,3 +32,24 @@ To get the latest version of the code and deploy it:
 - Run `git pull`.
 - Run `npm run upgrade`.
 - Start the bot again.
+
+## Development
+
+### Running
+
+- `npm run build` will transpile the TypeScript sources to JavaScript. From there, you can the transpiled files using `npm run start`.
+- Alternatively, `npm run tsstart` will do both at once. It takes a bit longer to start the bot this way since it still transpiles the files in the background. But you only have to run one command instead of two. And any error stacktraces in the log will point to the TypeScript sources rather than the transpiled JavaScript files.
+
+### Linting and formatting
+
+All files should be run through linting and formatting before being checked in, to ensure consistency and prevent common issues.
+
+Note: While there is an npm script for eslint, this is currently not set up correctly. It needs to be switched to TypeScript linting in the future.
+
+For formatting, this project uses Prettier. There is no command set up for this. You can set up automatic formatting on save using Prettier plugins for your IDE though.
+
+### Testing
+
+`npm run test` will execute all tests.
+
+The tests can be found in `/test` and are currently written in JavaScript (to be converted to TypeScript in the future). Feel free to extend them when adding new features.
