@@ -9,6 +9,7 @@
     "deploy": "node built/deploy-global-commands.js && node built/deploy-guild-commands.js",
     "upgrade": "npm install --no-save && npm run build && npm run deploy",
     "start": "node built/.",
+    "tsstart": "ts-node-esm src/index.ts",
     "lint": "eslint ./",
     "test": "mocha --recursive"
   },
@@ -36,6 +37,7 @@
     "eslint-config-prettier": "^8.9.0",
     "mocha": "^10.0.0",
     "prettier": "2.5.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
 }
