@@ -44,9 +44,13 @@ To get the latest version of the code and deploy it:
 
 All files should be run through linting and formatting before being checked in, to ensure consistency and prevent common issues.
 
+Linting is done via ESLint.
 `npm run lint` will run the linter. Make sure to fix any problems it reports or ignore them using eslint comments if necessary.
+I recommend using an ESLint plugin for your IDE to see live warnings while editing a code file.
 
-For formatting, this project uses Prettier. There is no command set up for this. You can set up automatic formatting on save using Prettier plugins for your IDE though.
+For formatting, this project uses Prettier.
+`npm run format` will automatically format all files in the project.
+I also recommend using a Prettier plugin for your IDE though, so you can set it up to automatically format a file on saving it.
 
 ### Testing
 

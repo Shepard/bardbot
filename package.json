@@ -11,6 +11,7 @@
     "start": "node built/.",
     "tsstart": "ts-node-esm src/index.ts",
     "lint": "eslint ./",
+    "format": "prettier . --write",
     "test": "mocha --recursive"
   },
   "author": "Simon Reinhardt",
