@@ -164,7 +164,10 @@ registerDbInitialisedListener(() => {
 	getStorySuggestionsStatement = db.prepare(
 		'SELECT id, guild_id, owner_id, title, author, teaser, status, last_changed_timestamp, ' +
 			'reported_ink_error, reported_ink_warning, reported_maximum_choice_number_exceeded, reported_potential_loop_detected, time_budget_exceeded_count, message ' +
-			'FROM story s JOIN story_suggestion g ON s.id = g.target_story_id WHERE g.source_story_id = :storyId'
+			'FROM story s JOIN story_suggestion g ON s.id = g.target_story_id ' +
+			// Only owners can see stories in status "Testing" as suggestions, not admins who can use /manage-stories.
+			// But that's probably ok, the owners are the ones who are supposed to test stories.
+			"WHERE g.source_story_id = :storyId AND guild_id = :guildId AND (status = 'Published' OR status = 'Unlisted' OR (status = 'Testing' AND owner_id = :userId))"
 	);
 	deleteStorySuggestionStatement = db.prepare(
 		'DELETE FROM story_suggestion WHERE source_story_id = :sourceStoryId AND target_story_id = :targetStoryId'
@@ -526,9 +529,9 @@ export function getSuggestedStories(storyId: string): StoryRecord[] {
 	return getSuggestedStoriesStatement.all({ storyId }).map(row => new StoryRecord(row));
 }
 
-export function getStorySuggestions(storyId: string): StorySuggestion[] {
+export function getStorySuggestions(storyId: string, guildId: string, userId: string): StorySuggestion[] {
 	return getStorySuggestionsStatement
-		.all({ storyId })
+		.all({ storyId, guildId, userId })
 		.map(row => ({ suggestedStory: new StoryRecord(row), message: row.message }));
 }
 

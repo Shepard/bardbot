@@ -318,7 +318,7 @@ function storyStep(userId: string, inkStory: Story, storyRecord: StoryRecord, cl
 		endStory(userId, logger);
 		stepData.isEnd = true;
 
-		stepData.suggestions = fetchSuggestions(storyRecord.id, logger);
+		stepData.suggestions = fetchSuggestions(storyRecord.id, storyRecord.guildId, userId, logger);
 	}
 
 	return stepData;
@@ -382,9 +382,9 @@ function detectPotentialLoop(storyRecord: StoryRecord, client: Client, lines: St
 	return false;
 }
 
-function fetchSuggestions(storyId: string, logger: Logger): StorySuggestion[] {
+function fetchSuggestions(storyId: string, guildId: string, userId: string, logger: Logger): StorySuggestion[] {
 	try {
-		return getStorySuggestions(storyId);
+		return getStorySuggestions(storyId, guildId, userId);
 	} catch (error) {
 		logger.error(error, 'Error while trying to fetch suggestions for story %s. Ignoring.', storyId);
 		return [];

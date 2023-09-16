@@ -1413,6 +1413,8 @@ async function handleShowSuggestedStoryWizard(
 	const guildId = interaction.guildId;
 	let guildStories: StoryRecord[] = [];
 	try {
+		// This will also show stories in status "Testing". They can be configured as suggestions
+		// but they won't be suggested to a player unless they can see them.
 		guildStories = getStories(guildId, interaction.user.id, false);
 	} catch (error) {
 		logger.error(error, 'Error while trying to fetch stories in guild %s from database', guildId);
