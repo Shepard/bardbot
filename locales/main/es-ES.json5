@@ -275,7 +275,7 @@
 				'story-updated': "Your changes to the story have been saved. If you want to, you can also edit the story's metadata.",
 				'edit-metadata-prompt': "You can edit the story's metadata by pressing the button below.",
 				'story-metadata-updated': 'The metadata has been changed. This is what your story currently looks like.',
-				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Clicking "Publish..." will lead you through the steps to decide where and how to post the story and who should be able to see it.',
+				'story-possible-actions-in-testing': 'You can keep editing it, you can start playing it to test it before publishing, or you can publish it now. Clicking "Publish story..." will lead you through the steps to decide where and how to post the story and who should be able to see it.',
 				'delete-failure': 'Deleting the story failed.',
 				'marked-for-deletion-success': 'The story has been made unavailable and will be completely deleted at a later point. You can undo this by pressing the button below. Note however that all running plays of it have been stopped for players and this cannot be undone.',
 				'delete-success': 'The story has been successfully deleted.',
