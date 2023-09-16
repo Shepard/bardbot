@@ -23,7 +23,9 @@ import {
 	ModalMessageModalSubmitInteraction,
 	APIStringSelectComponent,
 	AnyComponent,
-	BaseInteraction
+	BaseInteraction,
+	ActionRowData,
+	MessageActionRowComponentBuilder
 } from 'discord.js';
 import { Logger } from 'pino';
 import axios from 'axios';
@@ -347,20 +349,10 @@ async function handleCreateStory(
 					command: '/manage-stories show',
 					guildId: interaction.guildId
 				});
-			const buttons = [
-				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
-				getPlaytestButton(t, storyId, interaction.guildId),
-				getPublishWizardButton(t, storyId)
-			];
 			reply = {
 				content,
 				embeds: [storyEmbed],
-				components: [
-					{
-						type: ComponentType.ActionRow,
-						components: buttons
-					}
-				],
+				components: getStoryButtonComponents(storyId, StoryStatus.Testing, t, interaction.guildId),
 				ephemeral: true
 			};
 		} else {
@@ -543,33 +535,23 @@ async function handleEditStory(
 	}
 
 	let replyText: string;
-	let buttons: ButtonBuilder[];
+	let components: ActionRowData<MessageActionRowComponentBuilder>[];
 	if (dataChanged) {
 		replyText = t.user('reply.story-updated');
-		if (story.status === StoryStatus.Testing) {
-			buttons = [
-				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
-				getPlaytestButton(t, storyId, interaction.guildId),
-				getPublishWizardButton(t, storyId)
-			];
-		} else {
-			buttons = [
-				getEditMetadataButton(t, storyId, ButtonStyle.Secondary),
-				getPlaytestButton(t, storyId, interaction.guildId)
-			];
-		}
+		components = getStoryButtonComponents(story.id, story.status, t, interaction.guildId);
 	} else {
 		replyText = t.user('reply.edit-metadata-prompt');
-		buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Primary)];
-	}
-	const reply = {
-		content: replyText,
-		components: [
+		components = [
 			{
 				type: ComponentType.ActionRow,
-				components: buttons
+				components: [getEditMetadataButton(t, storyId, ButtonStyle.Primary)]
 			}
-		],
+		];
+	}
+
+	const reply = {
+		content: replyText,
+		components,
 		ephemeral: true
 	};
 	// loadStoryFromParameter might've sent a warning reply already.
@@ -766,24 +748,37 @@ function getShowStoryMessage(
 		{ name: t.user('show-field-status'), value: t.user('story-status-' + story.status), inline: false }
 	]);
 
-	const editButtons = [getEditMetadataButton(t, story.id, ButtonStyle.Secondary)];
-	const actionButtons = [];
-	if (story.status === StoryStatus.Testing) {
-		actionButtons.push(getPlaytestButton(t, story.id, interaction.guildId));
-		actionButtons.push(getPublishWizardButton(t, story.id));
-	} else if (story.status === StoryStatus.Published || story.status === StoryStatus.Unlisted) {
-		if (story.status === StoryStatus.Unlisted) {
-			editButtons.push(getMakeListedButton(t, story.id));
+	return {
+		embeds: [storyEmbed],
+		components: getStoryButtonComponents(story.id, story.status, t, interaction.guildId),
+		ephemeral: true
+	};
+}
+
+function getStoryButtonComponents(
+	storyId: string,
+	storyStatus: StoryStatus,
+	t: ContextTranslatorFunctions,
+	guildId: string
+): ActionRowData<MessageActionRowComponentBuilder>[] {
+	const editButtons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
+	const actionButtons: ButtonBuilder[] = [];
+	if (storyStatus === StoryStatus.Testing) {
+		actionButtons.push(getPlaytestButton(t, storyId, guildId));
+		actionButtons.push(getPublishWizardButton(t, storyId));
+	} else if (storyStatus === StoryStatus.Published || storyStatus === StoryStatus.Unlisted) {
+		if (storyStatus === StoryStatus.Unlisted) {
+			editButtons.push(getMakeListedButton(t, storyId));
 		} else {
-			editButtons.push(getMakeUnlistedButton(t, story.id));
+			editButtons.push(getMakeUnlistedButton(t, storyId));
 		}
-		actionButtons.push(getPostButton(t, story.id));
-		actionButtons.push(getPostWithCustomMessageButton(t, story.id));
+		actionButtons.push(getPostButton(t, storyId));
+		actionButtons.push(getPostWithCustomMessageButton(t, storyId));
 		// TODO later: "unpublish" button for moving a story back to testing? should stop current plays.
 	}
-	editButtons.push(getSuggestedStoryWizardButton(t, story.id));
-	actionButtons.push(getDeleteButton(t, story.id));
-	const components = [
+	editButtons.push(getSuggestedStoryWizardButton(t, storyId));
+	actionButtons.push(getDeleteButton(t, storyId));
+	const components: ActionRowData<MessageActionRowComponentBuilder>[] = [
 		{
 			type: ComponentType.ActionRow,
 			components: editButtons
@@ -793,12 +788,7 @@ function getShowStoryMessage(
 			components: actionButtons
 		}
 	];
-
-	return {
-		embeds: [storyEmbed],
-		components,
-		ephemeral: true
-	};
+	return components;
 }
 
 function getEditMetadataButton(
@@ -1065,24 +1055,18 @@ async function handleMetadataDialogSubmit(
 			await errorReply(interaction, t.user('reply.edit-failure'));
 			return;
 		}
+		// We know the story exists, so we don't have to check for null.
+
 		const storyEmbed = getDefaultStoryEmbed({ title, author, teaser });
 		let content = t.user('reply.story-metadata-updated');
-		const buttons = [getEditMetadataButton(t, storyId, ButtonStyle.Secondary)];
 		if (storyRecord.status === StoryStatus.Testing) {
 			content += '\n' + t.user('reply.story-possible-actions-in-testing');
-			buttons.push(getPlaytestButton(t, storyId, interaction.guildId));
-			buttons.push(getPublishWizardButton(t, storyId));
 		}
 		if (interaction.isFromMessage()) {
 			await interaction.update({
 				content,
 				embeds: [storyEmbed],
-				components: [
-					{
-						type: ComponentType.ActionRow,
-						components: buttons
-					}
-				]
+				components: getStoryButtonComponents(storyRecord.id, storyRecord.status, t, interaction.guildId)
 			});
 		}
 
